@@ -8,15 +8,39 @@
 // hand-edited after reviewing the console output below and must never be clobbered.
 
 import { mkdir, readdir, writeFile, stat, access } from 'node:fs/promises';
-import { join, extname, relative, dirname, basename } from 'node:path';
+import { join, extname, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+// Each source gets its own id prefix, so adding a folder can never renumber the ids an
+// existing renderMap.js or gallery already points at.
 const SOURCE = '/Users/Arsalan/Downloads/WORLI- FINAL EXTERIOR RENDERS';
 // Staged by scripts/extract-brand.mjs: the page-1 cover hero, which is not in the
 // renders folder. Optional — the ingest runs fine without it.
 const STAGED = join(ROOT, '.cache/pdf-renders');
+
+const LINKS = '/Users/Arsalan/Downloads/OneDrive_1_13-08-2026/Links';
+
+// The Links folder is a working directory, not a delivery folder: alongside the finished
+// renders it holds cut-out building plates with no background, AI-generated studies, the
+// line illustrations used on the Vision slide, and a screenshot. Only the finished
+// renders are listed here — an allowlist rather than a filter, so a new working file
+// dropped in that folder can never appear in the app by accident.
+const LINKS_ALLOW = [
+  'Artboard 13.1.png',
+  'Artboard 13.2.png',
+  'Artboard 13.3.png',
+  'Artboard 14 expanded.png',
+  'DJI_0556.JPG',
+  'Entrance lobby_View 1.jpg.jpeg',
+  'artboard 15 expanded.png',
+  'artboard 16 expamded.png',
+  'artboard 17.png',
+  'artboard 4.png',
+  'artboard 5 Expanded.png',
+  'artboard 6.png',
+];
 const OUT_DIR = join(ROOT, 'public/assets/renders');
 const DATA_DIR = join(ROOT, 'src/data');
 
@@ -58,10 +82,21 @@ async function main() {
   // Sort by basename, not full path: the staged cover hero lives in .cache and would
   // otherwise sort ahead of the source folder and renumber every render, invalidating
   // the hand-edited renderMap.js.
+  const byName = (a, b) =>
+    basename(a).localeCompare(basename(b), 'en', { numeric: true, sensitivity: 'base' });
+
   const staged = (await exists(STAGED)) ? await walk(STAGED) : [];
-  const files = [...(await walk(SOURCE)), ...staged].sort((a, b) =>
-    basename(a).localeCompare(basename(b), 'en', { numeric: true, sensitivity: 'base' }),
-  );
+  const exteriors = [...(await walk(SOURCE)), ...staged].sort(byName);
+
+  const linkFiles = (await exists(LINKS))
+    ? (await walk(LINKS)).filter((f) => LINKS_ALLOW.includes(basename(f))).sort(byName)
+    : [];
+
+  const groups = [
+    { prefix: 'render', files: exteriors },
+    { prefix: 'blade', files: linkFiles },
+  ];
+  const files = groups.flatMap((g) => g.files);
 
   if (!files.length) {
     console.error(`\n  No images found in ${SOURCE}\n`);
@@ -71,13 +106,20 @@ async function main() {
   await mkdir(OUT_DIR, { recursive: true });
   await mkdir(DATA_DIR, { recursive: true });
 
-  console.log(`\n  ${files.length} render(s) found in ${SOURCE}\n`);
+  console.log(`\n  ${exteriors.length} exterior render(s) + ${linkFiles.length} from Links\n`);
   console.log('  Review this mapping, then reorder src/data/renderMap.js to match.\n');
 
   const records = [];
+  const idOf = (file) => {
+    for (const g of groups) {
+      const i = g.files.indexOf(file);
+      if (i !== -1) return `${g.prefix}-${String(i + 1).padStart(2, '0')}`;
+    }
+    return null;
+  };
 
-  for (const [i, file] of files.entries()) {
-    const id = `render-${String(i + 1).padStart(2, '0')}`;
+  for (const file of files) {
+    const id = idOf(file);
     const image = sharp(file, { limitInputPixels: false });
     const meta = await image.metadata();
 
@@ -118,7 +160,7 @@ async function main() {
     });
 
     console.log(
-      `    ${id}  ←  ${relative(file.includes(".cache") ? STAGED : SOURCE, file)}` +
+      `    ${id}  ←  ${basename(file)}` +
         `  (${meta.width}×${meta.height}, ${targets.join('/')})`,
     );
   }

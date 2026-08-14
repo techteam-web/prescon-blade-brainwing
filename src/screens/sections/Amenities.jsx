@@ -2,7 +2,8 @@ import { useCallback, useRef, useState } from 'react';
 import { Screen } from '../../layout/Screen';
 import { SectionTitle } from './SectionShell';
 import { ArrowIcon } from '../../components/Icons';
-import { RENDERS } from '../../data/renders';
+import { getRender } from '../../data/renders';
+import { AMENITY_GALLERY } from '../../data/gallery';
 import { gsap, useGSAP, Observer, E } from '../../gsap/Gsapconfig';
 
 // Every render in the project, one at a time, and almost no words.
@@ -15,6 +16,9 @@ import { gsap, useGSAP, Observer, E } from '../../gsap/Gsapconfig';
 // The gallery wraps in both directions, so the arrows never dead-end.
 const LANDSCAPE = 1.2;
 const isWide = (r) => r.width / r.height >= LANDSCAPE;
+
+// A curated running order, not "everything in renders.js" — see src/data/gallery.js.
+const RENDERS = AMENITY_GALLERY.map(getRender).filter(Boolean);
 
 export function Amenities() {
   const [index, setIndex] = useState(0);

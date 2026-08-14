@@ -5,7 +5,8 @@ import { Eyebrow, CountUp } from '../../components/Primitives';
 import { ArrowIcon } from '../../components/Icons';
 import { FEATURE_SLIDES } from '../../data/content';
 import { gsap, useGSAP, E } from '../../gsap/Gsapconfig';
-import { RENDERS } from '../../data/renders';
+import { getRender } from '../../data/renders';
+import { FEATURE_BACKDROPS } from '../../data/gallery';
 
 // A deck. One idea per slide, advanced by click, arrow keys or the rail.
 //
@@ -16,10 +17,11 @@ import { RENDERS } from '../../data/renders';
 // wipe, `data-rise` for a lifted fade), so one timeline animates every slide type and
 // there is no per-slide animation code to drift out of sync.
 
-// Each slide gets a render behind it, cycled through the set so the deck never repeats
-// two in a row. The image is part of the slide, not decoration: it wipes in with the
-// copy and drifts for the whole time the slide is up.
-const BACKDROP = FEATURE_SLIDES.map((_, i) => RENDERS[i % RENDERS.length]);
+// One backdrop per slide, chosen per slide rather than cycled — see src/data/gallery.js.
+// Every one is landscape: a portrait render behind a full-width slide crops to nothing.
+// The image is part of the slide, not decoration; it wipes in with the copy and drifts
+// for as long as the slide is up.
+const BACKDROP = FEATURE_BACKDROPS.map(getRender);
 
 const TONE = {
   cream: 'text-blade-cream',
