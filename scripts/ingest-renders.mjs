@@ -44,8 +44,11 @@ const LINKS_ALLOW = [
 const OUT_DIR = join(ROOT, 'public/assets/renders');
 const DATA_DIR = join(ROOT, 'src/data');
 
-const WIDTHS = [1600, 2560, 3840];
-const QUALITY = 82;
+// 3840 was overkill: it roughly doubled the payload for a tier almost nothing requests,
+// and decoding a 3840-wide WebP mid-transition is exactly what makes a GSAP wipe stutter.
+// 2560 covers a 4K screen at the sizes these images are actually displayed.
+const WIDTHS = [1280, 1920, 2560];
+const QUALITY = 72;
 const LQIP_WIDTH = 24;
 const EXTS = new Set(['.jpg', '.jpeg', '.png', '.tif', '.tiff', '.webp']);
 const DEFAULT_ALT = 'The Blade by Prescon — artistic impression';
@@ -134,7 +137,9 @@ async function main() {
       if (await isStale(file, dest)) {
         await sharp(file, { limitInputPixels: false })
           .resize({ width: w, withoutEnlargement: true })
-          .webp({ quality: QUALITY })
+          // effort 6 buys a noticeably smaller file for build-time CPU we do not care
+          // about; smartSubsample keeps chroma clean on the copper fins.
+          .webp({ quality: QUALITY, effort: 6, smartSubsample: true })
           .toFile(dest);
       }
       variants.push({ w, src: `/assets/renders/${name}` });

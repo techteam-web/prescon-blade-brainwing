@@ -2,18 +2,19 @@ import { useCallback, useRef, useState } from 'react';
 import { Screen } from '../../layout/Screen';
 import { SectionTitle } from './SectionShell';
 import { BladeMap } from '../../features/map/BladeMap';
+import { formatDistance, travelTimes } from '../../features/map/routing';
 import { CONNECTIVITY } from '../../data/connectivity';
 import { CONTENT } from '../../data/content';
-import { ROUTE_STYLES, LEGEND } from '../../data/routes';
 import { gsap, useGSAP, E } from '../../gsap/Gsapconfig';
 import { useApp } from '../../app/appContext';
 
 // No sheen: the map is the subject, and a copper wash over it would fight the corridor
 // colours that carry all the meaning.
 //
-// The panel is deliberately narrow — the map is what people came to look at. The list
-// scrolls INSIDE the panel, which is the one place in the app where scrolling is correct:
-// it is a control surface, not the page.
+// Layout is deliberately different by size. On a wide screen the panel floats over the
+// map on the left. On a phone the map gets the whole upper half and the panel docks to
+// the bottom — the map is what people came to look at, and a floating panel on a 375px
+// screen covers most of it.
 const TONE = {
   cream: 'text-blade-cream',
   copper: 'text-blade-copper',
@@ -21,26 +22,65 @@ const TONE = {
   rose: 'text-blade-rose',
 };
 
-function LegendKey({ id }) {
-  const s = ROUTE_STYLES[id];
-  const [a, b] = s.dash ?? [];
+function Directions({ route }) {
+  const box = useRef(null);
+
+  useGSAP(
+    () => {
+      if (!box.current) return;
+      gsap.killTweensOf(box.current);
+      gsap.set(box.current, { y: 14, autoAlpha: 0 });
+      gsap.to(box.current, { y: 0, autoAlpha: 1, duration: 0.55, ease: E.out, overwrite: 'auto' });
+    },
+    { dependencies: [route?.id, route?.state] },
+  );
+
+  if (!route) return null;
+
   return (
-    <li className="flex min-w-0 items-start gap-[0.5em]">
-      <span className="relative mt-[0.42em] block h-[3px] w-[1.6em] shrink-0" aria-hidden="true">
-        {s.casing ? (
-          <span className="absolute inset-x-0 top-1/2 block h-[3px] -translate-y-1/2" style={{ background: s.casing }} />
+    <div ref={box} className="shrink-0 border-t border-blade-ink/70 pt-[0.7em]">
+      <div className="flex items-baseline justify-between gap-[0.8em]">
+        <span className="min-w-0 truncate text-[0.68rem] font-medium uppercase tracking-[0.14em] text-blade-cream">
+          {route.label}
+        </span>
+        {route.state === 'ready' ? (
+          <span className="shrink-0 text-[0.68rem] font-medium tabular-nums text-blade-copper">
+            {formatDistance(route.distance)}
+          </span>
         ) : null}
-        <span
-          className="absolute inset-x-0 top-1/2 block h-[2px] -translate-y-1/2"
-          style={
-            s.dash
-              ? { backgroundImage: `repeating-linear-gradient(90deg, ${s.color} 0 ${a * 2}px, transparent ${a * 2}px ${(a + b) * 2}px)` }
-              : { background: s.color }
-          }
-        />
-      </span>
-      <span className="text-[0.58rem] leading-[1.25] tracking-[0.05em] text-blade-cream/65">{s.label}</span>
-    </li>
+      </div>
+
+      {route.state === 'loading' ? (
+        <p className="pt-[0.4em] text-[0.6rem] text-blade-cream/55">Finding the route…</p>
+      ) : null}
+      {route.state === 'error' ? (
+        <p className="pt-[0.4em] text-[0.6rem] text-blade-cream/55">
+          Route unavailable right now.
+        </p>
+      ) : null}
+
+      {route.state === 'ready' ? (
+        <ul className="grid grid-cols-4 gap-[0.4em] pt-[0.6em]">
+          {travelTimes(route).map((m) => (
+            <li key={m.id} className="flex min-w-0 flex-col gap-[0.15em]">
+              <span className="text-[0.55rem] uppercase tracking-[0.14em] text-blade-cream/50">
+                {m.label}
+              </span>
+              <span className="truncate text-[0.66rem] tabular-nums text-blade-cream">
+                {m.time}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {route.state === 'ready' ? (
+        <p className="pt-[0.5em] text-[0.52rem] leading-[1.3] text-blade-cream/40">
+          Driving time is routed. Metro, bus and walking are estimates from the road
+          distance.
+        </p>
+      ) : null}
+    </div>
   );
 }
 
@@ -49,51 +89,48 @@ export function Location() {
   const [category, setCategory] = useState(null);
   const [focus, setFocus] = useState(null);
   const [highlight, setHighlight] = useState(null);
+  const [route, setRoute] = useState(null);
   const panel = useRef(null);
-  const mapApi = useRef(null);
   const { isTransitioning } = useApp();
 
-  const onReady = useCallback((api) => {
-    mapApi.current = api;
-    api.resize();
-  }, []);
-
-  useGSAP(
-    () => {
-      if (isTransitioning) return;
-      gsap.delayedCall(0.05, () => mapApi.current?.resize());
-    },
-    { dependencies: [isTransitioning] },
-  );
+  const onRoute = useCallback((r) => setRoute(r), []);
 
   useGSAP(() => {
-    gsap.set(panel.current, { x: -36, autoAlpha: 0 });
-    gsap.to(panel.current, { x: 0, autoAlpha: 1, duration: 0.85, delay: 0.2, ease: E.out });
+    gsap.set(panel.current, { y: 26, autoAlpha: 0 });
+    gsap.to(panel.current, { y: 0, autoAlpha: 1, duration: 0.85, delay: 0.2, ease: E.out });
   }, []);
 
-  const rows = category ? CONNECTIVITY.filter((r) => r.cat === category || r.cat === 'node') : CONNECTIVITY;
+  void isTransitioning;
+
+  const rows = category
+    ? CONNECTIVITY.filter((r) => r.cat === category || r.cat === 'node')
+    : CONNECTIVITY;
 
   return (
     <Screen id="location" padded={false}>
-      <div className="absolute inset-0 z-0">
+      {/* On a phone the map owns the top 52% and the panel sits beneath it, so nothing
+          ever covers the thing being explained. */}
+      <div className="absolute inset-0 z-0 max-md:bottom-[48%]">
         <BladeMap
           activeCategory={category}
           focusId={focus}
           highlightId={highlight}
-          onReady={onReady}
+          onRoute={onRoute}
         />
       </div>
 
       <div
         ref={panel}
-        className="glass absolute z-10 top-[calc(var(--screen-margin)+var(--chrome-top))] left-[var(--screen-margin)] flex max-h-[62%] w-[clamp(15rem,19vw,20rem)] min-w-0 flex-col gap-[0.9em] overflow-hidden p-[1.2em] max-md:inset-x-[var(--screen-margin)] max-md:max-h-[54%] max-md:w-auto"
+        className="glass absolute z-10 top-[calc(var(--screen-margin)+var(--chrome-top))] left-[var(--screen-margin)] flex max-h-[64%] w-[clamp(15rem,19vw,20rem)] min-w-0 flex-col gap-[0.8em] overflow-hidden p-[1.1em] max-md:inset-x-0 max-md:bottom-0 max-md:top-auto max-md:max-h-[48%] max-md:w-auto max-md:rounded-none max-md:border-x-0 max-md:border-b-0 max-md:p-[1em] max-md:pb-[calc(var(--screen-margin)+var(--chrome-bottom))]"
       >
-        <SectionTitle id="location" />
+        <div className="flex items-baseline justify-between gap-[1em] max-md:hidden">
+          <SectionTitle id="location" />
+        </div>
 
         <div
           role="group"
           aria-label="Filter landmarks"
-          className="flex flex-wrap gap-x-[0.9em] gap-y-[0.3em]"
+          className="flex shrink-0 flex-wrap gap-x-[0.8em] gap-y-[0.25em]"
         >
           {c.filters.map((f) => {
             const on = category === f.id;
@@ -103,7 +140,7 @@ export function Location() {
                 type="button"
                 aria-pressed={on}
                 onClick={() => setCategory(on ? null : f.id)}
-                className={`group/f relative pb-[0.25em] text-[0.6rem] uppercase tracking-[0.18em] ${
+                className={`group/f relative pb-[0.25em] text-[0.58rem] uppercase tracking-[0.16em] ${
                   on ? TONE[f.tone] : 'text-blade-cream/45'
                 }`}
               >
@@ -122,7 +159,7 @@ export function Location() {
         {/* The one scroll container in the app, and it is a control surface. */}
         <ul
           data-overflow-ok
-          className="-mr-[0.6em] flex min-h-0 flex-1 flex-col overflow-y-auto pr-[0.6em]"
+          className="-mr-[0.5em] flex min-h-0 flex-1 flex-col overflow-y-auto pr-[0.5em]"
         >
           {rows.map((row) => {
             const on = focus === row.id;
@@ -136,12 +173,14 @@ export function Location() {
                   onFocus={() => setHighlight(row.id)}
                   onBlur={() => setHighlight(null)}
                   aria-pressed={on}
-                  className="group/r relative grid w-full grid-cols-[auto_1fr_auto] items-baseline gap-[0.6em] border-t border-blade-ink/60 py-[0.34em] text-left"
+                  className="group/r grid w-full grid-cols-[auto_1fr_auto] items-baseline gap-[0.55em] border-t border-blade-ink/60 py-[0.36em] text-left"
                 >
                   <span
                     aria-hidden="true"
                     className={`mt-[0.4em] block h-px origin-left bg-blade-copper transition-[width,opacity] duration-300 ease-out ${
-                      on ? 'w-[0.9em] opacity-100' : 'w-0 opacity-0 group-hover/r:w-[0.6em] group-hover/r:opacity-70'
+                      on
+                        ? 'w-[0.9em] opacity-100'
+                        : 'w-0 opacity-0 group-hover/r:w-[0.6em] group-hover/r:opacity-70'
                     }`}
                   />
                   <span
@@ -151,7 +190,7 @@ export function Location() {
                   >
                     {row.label}
                   </span>
-                  <span className="shrink-0 text-[0.62rem] tabular-nums text-blade-copper">
+                  <span className="shrink-0 text-[0.6rem] tabular-nums text-blade-copper">
                     {row.km.toFixed(1)}
                   </span>
                 </button>
@@ -160,11 +199,7 @@ export function Location() {
           })}
         </ul>
 
-        <ul className="grid shrink-0 grid-cols-2 gap-x-[0.7em] gap-y-[0.2em] border-t border-blade-ink/60 pt-[0.7em]">
-          {LEGEND.map((id) => (
-            <LegendKey key={id} id={id} />
-          ))}
-        </ul>
+        <Directions route={route} />
       </div>
     </Screen>
   );

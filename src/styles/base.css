@@ -181,6 +181,39 @@
     margin-top: -17vh;
   }
 
+  /* The blade wipe. A 12° edge sweeps across the frame and the new image is revealed
+     behind it — the same angle as the wordmark's stroke, so the gallery's signature move
+     is the brand's one graphic idea rather than a generic crossfade.
+     --wipe runs 112 → -12: at 112 the region is entirely off the right edge, at -12 it
+     covers the frame. GSAP drives the variable; the polygon does the rest. */
+  .blade-wipe {
+    --wipe: -12;
+    clip-path: polygon(
+      calc(var(--wipe) * 1%) 0%,
+      120% 0%,
+      120% 100%,
+      calc((var(--wipe) - 12) * 1%) 100%
+    );
+  }
+
+  /* The travelling edge itself: a copper hairline riding the wipe. */
+  .blade-wipe-edge {
+    position: absolute;
+    top: -10%;
+    bottom: -10%;
+    width: 2px;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      var(--color-blade-copper) 18%,
+      var(--color-blade-cream) 50%,
+      var(--color-blade-copper) 82%,
+      transparent 100%
+    );
+    transform: skewX(calc(-1 * var(--blade-angle)));
+    pointer-events: none;
+  }
+
   /* SplitText line wrapper. The mask edge is skewed to the blade angle so text wipes
      up through a 12° edge, not a flat one. */
   .blade-line {

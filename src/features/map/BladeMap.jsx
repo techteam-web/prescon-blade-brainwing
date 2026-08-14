@@ -1,54 +1,53 @@
 import { useCallback, useRef, useState } from 'react';
-import { gsap, useGSAP, E } from '../../gsap/Gsapconfig';
+import { gsap, useGSAP, E, prefersReducedMotion } from '../../gsap/Gsapconfig';
 import { useIdleTask } from '../../hooks/useEventListener';
 import { PROJECT, LANDMARKS, ALWAYS_ON } from '../../data/landmarks';
 import { ROUTES, ROUTE_STYLES } from '../../data/routes';
 import { CONNECTIVITY_BY_ID } from '../../data/connectivity';
 import { buildMapStyle } from './mapStyle';
+import { fetchRoute } from './routing';
 
 // MapLibre is imported dynamically so ~1 MB of map code and CSS stays out of the initial
 // bundle, and it mounts only on the first visit to this section.
 //
-// The map is fully interactive: drag to pan, wheel to zoom, right-drag or two fingers to
-// pitch and rotate into 3D. Pitch opens at 48° so it reads as a place rather than a
-// diagram.
+// Fully interactive: drag to pan, wheel to zoom, right-drag or two fingers to pitch and
+// rotate. Pitch opens at 48° so it reads as a place rather than a diagram.
 
-const HOME = {
-  center: [PROJECT.lng, PROJECT.lat],
-  zoom: 11.6,
-  bearing: -18,
-  pitch: 48,
-};
+const HOME = { center: [PROJECT.lng, PROJECT.lat], zoom: 11.6, bearing: -18, pitch: 48 };
 
-// A great-circle-ish arc between two points, so a connection reads as a flight path
-// rather than a ruler line.
-function arc(from, to, bend = 0.18, steps = 96) {
-  const [x1, y1] = from;
-  const [x2, y2] = to;
-  const mx = (x1 + x2) / 2;
-  const my = (y1 + y2) / 2;
-  // Perpendicular offset for the control point.
-  const cx = mx - (y2 - y1) * bend;
-  const cy = my + (x2 - x1) * bend;
-  const out = [];
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    const u = 1 - t;
-    out.push([u * u * x1 + 2 * u * t * cx + t * t * x2, u * u * y1 + 2 * u * t * cy + t * t * y2]);
-  }
-  return out;
-}
+const ROUTE_SRC = 'blade-route';
+const EMPTY = { type: 'FeatureCollection', features: [] };
+const lineFeature = (coordinates) => ({
+  type: 'FeatureCollection',
+  features: [{ type: 'Feature', geometry: { type: 'LineString', coordinates } }],
+});
 
-export function BladeMap({ activeCategory, focusId, highlightId, onReady }) {
+// Marching dashes. Cycling the phase shifts the gap, so the bright overlay appears to
+// travel toward the destination — the Google-directions read, done with paint only.
+const DASH_STEPS = [
+  [0, 4, 3], [0.5, 4, 2.5], [1, 4, 2], [1.5, 4, 1.5], [2, 4, 1], [2.5, 4, 0.5],
+  [3, 4, 0], [0, 0.5, 3, 3.5], [0, 1, 3, 3], [0, 1.5, 3, 2.5],
+  [0, 2, 3, 2], [0, 2.5, 3, 1.5], [0, 3, 3, 1], [0, 3.5, 3, 0.5],
+];
+
+const CORRIDOR_LAYERS = Object.keys(ROUTE_STYLES).flatMap((id) => [
+  `route-${id}`,
+  `route-${id}-casing`,
+  `route-${id}-pulse`,
+]);
+
+export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
   const host = useRef(null);
   const map = useRef(null);
   const markers = useRef(new Map());
+  const dashRaf = useRef(0);
+  const corridorTicker = useRef(null);
+  const abort = useRef(null);
   const [loaded, setLoaded] = useState(false);
 
   useIdleTask(() => {
     let cancelled = false;
     let observer = null;
-    let ticker = null;
 
     (async () => {
       const [mod] = await Promise.all([
@@ -62,30 +61,26 @@ export function BladeMap({ activeCategory, focusId, highlightId, onReady }) {
         container: host.current,
         style: buildMapStyle(),
         ...HOME,
-        attributionControl: { compact: false },
-        // Everything on: pan, wheel zoom, pitch and rotate. The brief's no-scroll law is
-        // about the page, and the map is not the page — it is an instrument inside it.
+        attributionControl: { compact: true },
         scrollZoom: true,
         dragRotate: true,
         touchPitch: true,
         doubleClickZoom: true,
-        keyboard: false, // arrow keys belong to the section navigator
+        keyboard: false,
         maxPitch: 70,
         minZoom: 9,
         maxZoom: 17,
       });
 
       m.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
-
       m.on('error', (e) => console.error('[map]', e?.error?.message ?? e));
 
       // Publish and size the map NOW. MapLibre computes its tile cover from its own
       // transform, which stays 0×0 until resize() is called — if resize() were only
       // reachable from the 'load' handler, the map would never request a tile, so 'load'
-      // would never fire. That deadlock shows up as a black map with no error at all.
+      // would never fire. That deadlock reads as a black map with no error at all.
       map.current = { maplibregl, m };
       m.resize();
-      onReady?.({ resize: () => m.resize(), home: () => m.easeTo({ ...HOME, duration: 1400 }) });
 
       const ro = new ResizeObserver(() => m.resize());
       ro.observe(host.current);
@@ -94,31 +89,24 @@ export function BladeMap({ activeCategory, focusId, highlightId, onReady }) {
       m.on('load', () => {
         if (cancelled) return;
 
-        // lineMetrics lets a gradient run ALONG the line, which is what makes the light
-        // travel rather than just blink.
-        m.addSource('routes', { type: 'geojson', data: ROUTES, lineMetrics: true });
-        m.addSource('focus', {
-          type: 'geojson',
-          lineMetrics: true,
-          data: { type: 'FeatureCollection', features: [] },
-        });
+        m.addSource('corridors', { type: 'geojson', data: ROUTES, lineMetrics: true });
+        m.addSource(ROUTE_SRC, { type: 'geojson', data: EMPTY });
 
         for (const [id, s] of Object.entries(ROUTE_STYLES)) {
-          if (!s.casing) continue;
-          m.addLayer({
-            id: `route-${id}-casing`,
-            type: 'line',
-            source: 'routes',
-            filter: ['==', ['get', 'id'], id],
-            layout: { 'line-cap': 'round', 'line-join': 'round' },
-            paint: { 'line-color': s.casing, 'line-width': s.width + 2.4, 'line-opacity': 0.85 },
-          });
-        }
-        for (const [id, s] of Object.entries(ROUTE_STYLES)) {
+          if (s.casing) {
+            m.addLayer({
+              id: `route-${id}-casing`,
+              type: 'line',
+              source: 'corridors',
+              filter: ['==', ['get', 'id'], id],
+              layout: { 'line-cap': 'round', 'line-join': 'round' },
+              paint: { 'line-color': s.casing, 'line-width': s.width + 2.4, 'line-opacity': 0.85 },
+            });
+          }
           m.addLayer({
             id: `route-${id}`,
             type: 'line',
-            source: 'routes',
+            source: 'corridors',
             filter: ['==', ['get', 'id'], id],
             layout: { 'line-cap': s.dash ? 'butt' : 'round', 'line-join': 'round' },
             paint: {
@@ -128,12 +116,10 @@ export function BladeMap({ activeCategory, focusId, highlightId, onReady }) {
               ...(s.dash ? { 'line-dasharray': s.dash } : {}),
             },
           });
-          // A pulse of light that runs the length of each corridor, so the lines read as
-          // directional instead of drawn-and-dead.
           m.addLayer({
             id: `route-${id}-pulse`,
             type: 'line',
-            source: 'routes',
+            source: 'corridors',
             filter: ['==', ['get', 'id'], id],
             layout: { 'line-cap': 'round', 'line-join': 'round' },
             paint: {
@@ -144,20 +130,37 @@ export function BladeMap({ activeCategory, focusId, highlightId, onReady }) {
           });
         }
 
-        // The line drawn to a selected destination.
+        // The directions route, in four passes: halo, dark casing, the path, and white
+        // dashes marching toward the destination.
         m.addLayer({
-          id: 'focus-line',
+          id: 'dir-glow',
           type: 'line',
-          source: 'focus',
+          source: ROUTE_SRC,
           layout: { 'line-cap': 'round', 'line-join': 'round' },
-          paint: {
-            'line-width': 2.4,
-            'line-gradient': ['interpolate', ['linear'], ['line-progress'], 0, 'rgba(0,0,0,0)', 1, 'rgba(0,0,0,0)'],
-          },
+          paint: { 'line-color': '#F0E7D3', 'line-width': 18, 'line-opacity': 0, 'line-blur': 12 },
+        });
+        m.addLayer({
+          id: 'dir-case',
+          type: 'line',
+          source: ROUTE_SRC,
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: { 'line-color': '#12100E', 'line-width': 10, 'line-opacity': 0 },
+        });
+        m.addLayer({
+          id: 'dir-base',
+          type: 'line',
+          source: ROUTE_SRC,
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: { 'line-color': '#CA8E5B', 'line-width': 5, 'line-opacity': 0 },
+        });
+        m.addLayer({
+          id: 'dir-flow',
+          type: 'line',
+          source: ROUTE_SRC,
+          layout: { 'line-cap': 'butt', 'line-join': 'round' },
+          paint: { 'line-color': '#FFF6E6', 'line-width': 5, 'line-opacity': 0, 'line-dasharray': [0, 4, 3] },
         });
 
-        // The project marker — a copper blade with a pulsing halo, deliberately unlike
-        // the small ringed dots every other place gets.
         const projectEl = document.createElement('div');
         projectEl.className = 'blade-project';
         projectEl.innerHTML =
@@ -182,28 +185,29 @@ export function BladeMap({ activeCategory, focusId, highlightId, onReady }) {
           markers.current.set(l.id, el);
         }
 
-        // Drive every gradient from one ticker: a head of copper light sweeping 0 → 1
-        // along each corridor, offset per corridor so they never march in lockstep.
-        const ids = Object.keys(ROUTE_STYLES);
-        const t0 = { v: 0 };
-        ticker = () => {
-          t0.v = (t0.v + 0.0022) % 1;
-          ids.forEach((id, k) => {
-            const head = (t0.v + k / ids.length) % 1;
-            const a = Math.max(0.0001, head - 0.12);
-            const b = Math.min(0.9999, head + 0.02);
-            if (!m.getLayer(`route-${id}-pulse`)) return;
-            m.setPaintProperty(`route-${id}-pulse`, 'line-gradient', [
-              'interpolate', ['linear'], ['line-progress'],
-              0, 'rgba(0,0,0,0)',
-              a, 'rgba(0,0,0,0)',
-              head, 'rgba(240,231,211,0.85)',
-              b, 'rgba(0,0,0,0)',
-              1, 'rgba(0,0,0,0)',
-            ]);
-          });
-        };
-        gsap.ticker.add(ticker);
+        // Light travelling along each corridor, offset per corridor so they never march
+        // in lockstep.
+        if (!prefersReducedMotion()) {
+          const ids = Object.keys(ROUTE_STYLES);
+          const t = { v: 0 };
+          const tick = () => {
+            t.v = (t.v + 0.0022) % 1;
+            ids.forEach((id, k) => {
+              const head = (t.v + k / ids.length) % 1;
+              if (!m.getLayer(`route-${id}-pulse`)) return;
+              m.setPaintProperty(`route-${id}-pulse`, 'line-gradient', [
+                'interpolate', ['linear'], ['line-progress'],
+                0, 'rgba(0,0,0,0)',
+                Math.max(0.0001, head - 0.12), 'rgba(0,0,0,0)',
+                head, 'rgba(240,231,211,0.85)',
+                Math.min(0.9999, head + 0.02), 'rgba(0,0,0,0)',
+                1, 'rgba(0,0,0,0)',
+              ]);
+            });
+          };
+          gsap.ticker.add(tick);
+          corridorTicker.current = tick;
+        }
 
         setLoaded(true);
       });
@@ -212,13 +216,14 @@ export function BladeMap({ activeCategory, focusId, highlightId, onReady }) {
     return () => {
       cancelled = true;
       observer?.disconnect();
-      if (ticker) gsap.ticker.remove(ticker);
+      abort.current?.abort();
+      cancelAnimationFrame(dashRaf.current);
+      if (corridorTicker.current) gsap.ticker.remove(corridorTicker.current);
       map.current?.m?.remove?.();
       map.current = null;
     };
   });
 
-  // The halo pulse — the only pulsing element in the app outside the map's own light.
   useGSAP(
     () => {
       if (!loaded) return;
@@ -230,11 +235,9 @@ export function BladeMap({ activeCategory, focusId, highlightId, onReady }) {
     { dependencies: [loaded] },
   );
 
-  // Category filter.
   useGSAP(
     () => {
-      const ctx = map.current;
-      if (!ctx) return;
+      if (!map.current) return;
       for (const l of LANDMARKS) {
         const el = markers.current.get(l.id);
         const on = !activeCategory || l.cat === activeCategory || ALWAYS_ON.has(l.cat);
@@ -242,64 +245,6 @@ export function BladeMap({ activeCategory, focusId, highlightId, onReady }) {
       }
     },
     { dependencies: [activeCategory, loaded] },
-  );
-
-  // Selecting a destination: fly so both ends are in frame, and draw the line to it.
-  useGSAP(
-    () => {
-      const ctx = map.current;
-      if (!ctx || !loaded) return;
-      const { maplibregl, m } = ctx;
-      const src = m.getSource('focus');
-      if (!src) return;
-
-      const dest = focusId ? CONNECTIVITY_BY_ID[focusId] : null;
-      if (!dest) {
-        src.setData({ type: 'FeatureCollection', features: [] });
-        m.easeTo({ ...HOME, duration: 1400, easing: (t) => 1 - Math.pow(1 - t, 3) });
-        return;
-      }
-
-      const path = arc([PROJECT.lng, PROJECT.lat], dest.at);
-      src.setData({
-        type: 'Feature',
-        properties: {},
-        geometry: { type: 'LineString', coordinates: path },
-      });
-
-      const bounds = new maplibregl.LngLatBounds(path[0], path[0]);
-      for (const c of path) bounds.extend(c);
-      m.fitBounds(bounds, {
-        duration: 1600,
-        // Left padding clears the panel; the rest is tight so the pair fills the frame.
-        padding: { top: 130, bottom: 150, left: 420, right: 110 },
-        maxZoom: 15.5,
-        pitch: 54,
-        bearing: -12,
-        easing: (t) => 1 - Math.pow(1 - t, 3),
-      });
-
-      // Draw the line on, then leave a soft trail behind the head.
-      const draw = { v: 0 };
-      gsap.to(draw, {
-        v: 1,
-        duration: 1.5,
-        ease: E.out,
-        onUpdate: () => {
-          if (!m.getLayer('focus-line')) return;
-          const head = Math.max(0.0002, Math.min(0.9998, draw.v));
-          m.setPaintProperty('focus-line', 'line-gradient', [
-            'interpolate', ['linear'], ['line-progress'],
-            0, 'rgba(202,142,91,0.85)',
-            Math.max(0.0001, head - 0.001), 'rgba(202,142,91,0.85)',
-            head, 'rgba(240,231,211,1)',
-            Math.min(0.9999, head + 0.001), 'rgba(0,0,0,0)',
-            1, 'rgba(0,0,0,0)',
-          ]);
-        },
-      });
-    },
-    { dependencies: [focusId, loaded] },
   );
 
   useGSAP(
@@ -311,10 +256,130 @@ export function BladeMap({ activeCategory, focusId, highlightId, onReady }) {
     { dependencies: [highlightId, loaded] },
   );
 
+  /* ------------------------------------------------------------- directions */
+
+  const setCorridors = useCallback((m, visible) => {
+    // When a route is on screen the corridors get out of the way entirely — two sets of
+    // coloured lines at once is unreadable, and the route is the answer to the question
+    // that was just asked.
+    gsap.to(
+      { o: visible ? 0 : 0.9 },
+      {
+        o: visible ? 0.9 : 0,
+        duration: 0.45,
+        ease: E.out,
+        onUpdate() {
+          const o = this.targets()[0].o;
+          for (const id of CORRIDOR_LAYERS) {
+            if (m.getLayer(id)) m.setPaintProperty(id, 'line-opacity', o);
+          }
+        },
+      },
+    );
+  }, []);
+
+  const startDashes = useCallback((m) => {
+    cancelAnimationFrame(dashRaf.current);
+    if (prefersReducedMotion()) return;
+    let step = -1;
+    const tick = () => {
+      const next = Math.floor((performance.now() / 55) % DASH_STEPS.length);
+      if (next !== step) {
+        step = next;
+        if (m.getLayer('dir-flow')) m.setPaintProperty('dir-flow', 'line-dasharray', DASH_STEPS[step]);
+      }
+      dashRaf.current = requestAnimationFrame(tick);
+    };
+    dashRaf.current = requestAnimationFrame(tick);
+  }, []);
+
+  const fadeRoute = useCallback((m, to) => {
+    gsap.to(
+      { o: to ? 0 : 1 },
+      {
+        o: to ? 1 : 0,
+        duration: to ? 0.6 : 0.4,
+        ease: E.out,
+        onUpdate() {
+          const o = this.targets()[0].o;
+          if (!m.getLayer('dir-base')) return;
+          m.setPaintProperty('dir-glow', 'line-opacity', 0.2 * o);
+          m.setPaintProperty('dir-case', 'line-opacity', 0.9 * o);
+          m.setPaintProperty('dir-base', 'line-opacity', o);
+          m.setPaintProperty('dir-flow', 'line-opacity', 0.95 * o);
+        },
+        onComplete() {
+          if (!to) m.getSource(ROUTE_SRC)?.setData(EMPTY);
+        },
+      },
+    );
+  }, []);
+
+  useGSAP(
+    () => {
+      const ctx = map.current;
+      if (!ctx || !loaded) return;
+      const { maplibregl, m } = ctx;
+
+      abort.current?.abort();
+      const dest = focusId ? CONNECTIVITY_BY_ID[focusId] : null;
+
+      if (!dest) {
+        cancelAnimationFrame(dashRaf.current);
+        fadeRoute(m, false);
+        setCorridors(m, true);
+        onRoute?.(null);
+        m.easeTo({ ...HOME, duration: 1400, easing: (t) => 1 - Math.pow(1 - t, 3) });
+        return;
+      }
+
+      const controller = new AbortController();
+      abort.current = controller;
+      onRoute?.({ id: dest.id, label: dest.label, state: 'loading' });
+
+      fetchRoute(dest.at, controller.signal)
+        .then(({ coordinates, distance, duration }) => {
+          if (controller.signal.aborted || !m.getSource(ROUTE_SRC)) return;
+          m.getSource(ROUTE_SRC).setData(lineFeature(coordinates));
+          setCorridors(m, false);
+          fadeRoute(m, true);
+          startDashes(m);
+          onRoute?.({ id: dest.id, label: dest.label, state: 'ready', distance, duration });
+
+          const bounds = new maplibregl.LngLatBounds(coordinates[0], coordinates[0]);
+          for (const c of coordinates) bounds.extend(c);
+          m.fitBounds(bounds, {
+            duration: 1500,
+            padding: fitPadding(),
+            maxZoom: 15.5,
+            pitch: 52,
+            easing: (t) => 1 - Math.pow(1 - t, 3),
+          });
+        })
+        .catch((err) => {
+          if (controller.signal.aborted) return;
+          console.error('[map] route', err);
+          onRoute?.({ id: dest.id, label: dest.label, state: 'error' });
+        });
+    },
+    { dependencies: [focusId, loaded] },
+  );
+
   const setHost = useCallback((el) => {
     host.current = el;
   }, []);
 
   // A map pans: its canvas and markers extend past the viewport by design.
   return <div ref={setHost} data-overflow-ok className="blade-map" aria-label="Map of Worli Naka, Mumbai" />;
+}
+
+// The panel sits OVER the map on wide screens, so the route has to be framed clear of it.
+// On a phone the map element is already cut short above the docked panel, so padding
+// there only needs to clear the top nav — reserving space for the panel as well would
+// double-count it and squeeze the route off screen entirely.
+function fitPadding() {
+  const w = window.innerWidth;
+  if (w < 768) return { top: 96, bottom: 56, left: 28, right: 28 };
+  if (w < 1280) return { top: 110, bottom: 150, left: 330, right: 80 };
+  return { top: 130, bottom: 150, left: 430, right: 110 };
 }

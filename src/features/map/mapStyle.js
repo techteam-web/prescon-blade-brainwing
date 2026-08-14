@@ -6,9 +6,19 @@
 // its own — and keeps only the coastline, the water, and the barest sense of the green
 // spaces. The corridors, chips and labels are added over it from src/data/routes.js.
 //
-// Tiles: OpenFreeMap (OpenMapTiles schema), free and keyless.
+// Tiles: MapTiler when VITE_MAPTILER_KEY is set, otherwise OpenFreeMap's free, keyless
+// planet tiles. Both speak the OpenMapTiles schema, so the layers below are identical
+// either way and the app works with no signup and no key in the repo.
 
-const TILES = 'https://tiles.openfreemap.org/planet';
+const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY ?? '';
+
+const TILES = MAPTILER_KEY
+  ? `https://api.maptiler.com/tiles/v3/tiles.json?key=${MAPTILER_KEY}`
+  : 'https://tiles.openfreemap.org/planet';
+
+const GLYPHS = MAPTILER_KEY
+  ? `https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=${MAPTILER_KEY}`
+  : 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf';
 
 // Sampled off page 6.
 export const MAP_COLORS = {
@@ -22,7 +32,7 @@ export const MAP_COLORS = {
 export const buildMapStyle = () => ({
   version: 8,
   name: 'Blade — Worli',
-  glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+  glyphs: GLYPHS,
   sources: {
     omt: { type: 'vector', url: TILES },
   },
