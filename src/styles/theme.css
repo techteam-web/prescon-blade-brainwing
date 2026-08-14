@@ -1,0 +1,120 @@
+/* Design tokens. Extracted from the source PDF's vector data — do not adjust, extend
+   or "improve" this set. */
+
+@theme {
+  /* ---------------------------------------------------------------- palette */
+  /* Blade core */
+  --color-blade-black: #0b0807; /* primary bg — warm near-black, NOT #000 */
+  --color-blade-black-2: #0f0b09; /* raised surface */
+  --color-blade-ink: #2d2725; /* hairlines, borders on dark */
+  --color-blade-copper: #ca8e5b; /* PRIMARY ACCENT */
+  --color-blade-cream: #f0e7d3; /* primary text on dark — NOT #fff */
+  --color-blade-ivory: #f7efe9; /* light surface — plan canvas */
+  --color-blade-terracotta: #9a6046; /* muted — LARGE TEXT ONLY (3.93:1) */
+  --color-blade-rose: #e59d89; /* field labels, meta */
+  --color-blade-cocoa: #5b382a; /* text on ivory */
+
+  /* Prescon corporate — LOGO ONLY, never a UI accent. Gold is Prescon the company;
+     copper is The Blade the building. The two systems never mix. */
+  --color-prescon-gold: #ffca05;
+  --color-prescon-gold-dark: #e6b122;
+
+  /* Floor plan states */
+  --color-plan-canvas: #f7efe9;
+  --color-plan-unit: #8e8d8d;
+  --color-plan-unit-alt: #876b57;
+  --color-plan-line: #767676;
+  --color-plan-line-light: #dbdbdb;
+  --color-plan-key: #ffc83e;
+
+  /* ------------------------------------------------------------- typography */
+  /* ADOBE FONTS SWAP POINT — when Futura PT and TT Ramillas are licensed, add the
+     Typekit <link> in index.html and delete the Jost <link>. Nothing else changes. */
+  --font-display: 'Futura PT', 'Jost', 'Century Gothic', sans-serif;
+  --font-serif: 'TT Ramillas', 'Playfair Display', Georgia, serif;
+
+  /* The brief's scale is vw-only, which overflows vertically on short viewports
+     (1366×768 laptops, iPad landscape) — and LAW 1 forbids the scroll that would
+     absorb it. Every value is unchanged; the middle term is min(Xvw, Yvh) with Y set
+     so the two are equal at 16:9 (1vw = 1.7778vh there). Identical at the 1920×1080
+     design target, automatically smaller as the aspect ratio shortens. */
+  --text-hero: clamp(2.25rem, min(3.4vw, 6.044vh), 5rem);
+  --text-headline: clamp(1.75rem, min(2.7vw, 4.8vh), 4rem);
+  --text-stat: clamp(1.5rem, min(1.9vw, 3.378vh), 2.75rem);
+  --text-subhead: clamp(1rem, min(1.15vw, 2.044vh), 1.75rem);
+  --text-body: clamp(0.875rem, min(0.95vw, 1.689vh), 1.5rem);
+  --text-caption: clamp(0.6875rem, min(0.68vw, 1.209vh), 1rem);
+  --text-eyebrow: clamp(0.625rem, min(0.62vw, 1.102vh), 0.875rem);
+
+  /* ------------------------------------------------------------ the 12° blade */
+  /* The wordmark's diagonal stroke cuts between the L and the A at 12° off vertical.
+     Every diagonal in this application is 12°. No other angle exists. */
+  --blade-angle: 12deg;
+
+  /* ------------------------------------------------------------- breakpoints */
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  --breakpoint-3xl: 1920px;
+  --breakpoint-4xl: 2560px;
+  --breakpoint-5xl: 3840px;
+}
+
+/* Values that are not Tailwind token namespaces but are read by components. */
+:root {
+  /* Frosted glass. Permitted on exactly three surfaces: the top rail, the Floor Plans
+     label chip, and the Address left panel. Nowhere else. It must read as a subtle
+     material, never as an effect. */
+  --glass-bg: rgb(15 11 9 / 0.55);
+  --glass-blur: blur(20px) saturate(115%);
+  --glass-border: 1px solid rgb(202 142 91 / 0.14);
+
+  /* The copper sheen, sampled straight off page 6 of the vision document: a circular
+     falloff pinned to the top-left corner, opening at blade-terracotta and reaching
+     blade-black at ~60% of the page diagonal. It gives the sparse screens their
+     personality. Screens that carry real information — Views, Floor Plans, Amenities,
+     Location — get none of it, because the content is the subject there. */
+  --sheen: radial-gradient(
+    circle at 0% 0%,
+    #9a6046 0%,
+    #7f503a 8%,
+    #6d4533 13%,
+    #56372a 21%,
+    #2d1e18 43%,
+    #0b0807 60%
+  );
+
+  /* Features carries the same idea at a fraction of the strength — enough for a
+     personality, not enough to compete with the slide. */
+  --sheen-soft: radial-gradient(
+    circle at 0% 0%,
+    rgb(154 96 70 / 0.34) 0%,
+    rgb(109 69 51 / 0.22) 13%,
+    rgb(86 55 42 / 0.14) 24%,
+    rgb(11 8 7 / 0) 52%
+  );
+
+  /* The landing scrim, per §7.2. */
+  --scrim-left: linear-gradient(
+    90deg,
+    rgb(11 8 7 / 0.92) 0%,
+    rgb(11 8 7 / 0.78) 38%,
+    transparent 72%
+  );
+
+  /* Standard screen margin. 4.5% at the reference layout, 6% at 4K and above. */
+  --screen-margin: 4.5%;
+
+  /* Space the persistent chrome occupies. Screen content is inset by these so nothing
+     ever sits under the rail's index/eyebrow, the Prescon lockup, the MENU control or
+     the compliance caption. The lockup is the tallest element in the top band. */
+  --chrome-top: clamp(2.6rem, 3.6vw, 4.4rem);
+  --chrome-bottom: clamp(1.7rem, 2.2vw, 2.6rem);
+}
+
+@media (min-width: 2560px) {
+  :root {
+    --screen-margin: 6%;
+  }
+}

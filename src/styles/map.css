@@ -1,0 +1,275 @@
+/* MapLibre, pulled into the brand.
+   The style itself (src/features/map/mapStyle.js) already paints a black sea and a warm
+   near-black landmass to match page 6 of the vision document. What is left here is the
+   chrome MapLibre injects, and the markers. */
+
+.blade-map {
+  width: 100%;
+  height: 100%;
+  background: #050403;
+  /* MapLibre stacks its canvas and marker layers; isolating keeps them from painting
+     over the glass panel. */
+  isolation: isolate;
+}
+
+.blade-map canvas {
+  outline: none;
+}
+
+/* Attribution is a licence requirement and is never removed — only styled down. */
+.blade-map .maplibregl-ctrl-attrib,
+.blade-map .maplibregl-ctrl-bottom-right {
+  background: transparent;
+}
+
+.blade-map .maplibregl-ctrl-attrib.maplibregl-compact,
+.blade-map .maplibregl-ctrl-attrib-inner {
+  background: transparent;
+  color: rgb(240 231 211 / 0.4);
+  font-family: var(--font-display);
+  font-size: 10px;
+  padding: 0 6px;
+}
+
+.blade-map .maplibregl-ctrl-attrib a {
+  color: rgb(240 231 211 / 0.55);
+  text-decoration: none;
+}
+
+.blade-map .maplibregl-ctrl-attrib-button {
+  display: none;
+}
+
+/* ------------------------------------------------------------------ markers */
+
+.blade-marker,
+.blade-landmark {
+  background: none;
+  border: 0;
+  cursor: default;
+}
+
+/* The project marker has to be unmistakable against fifteen small ringed dots, so it is
+   built from different parts entirely: a copper blade rising to a filled core, a standing
+   ring, a pulsing halo, and its own always-on label. */
+.blade-project {
+  position: relative;
+  width: 34px;
+  height: 62px;
+  pointer-events: none;
+}
+
+.blade-project__shard {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 2px;
+  height: 40px;
+  margin-left: -1px;
+  background: linear-gradient(180deg, var(--color-blade-cream), var(--color-blade-copper));
+  transform: skewX(calc(-1 * var(--blade-angle)));
+  transform-origin: bottom center;
+}
+
+.blade-project__core {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  background: var(--color-blade-cream);
+  transform: rotate(45deg);
+}
+
+.blade-project__ring {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 26px;
+  height: 26px;
+  margin-left: -13px;
+  border: 1px solid var(--color-blade-copper);
+  border-radius: 50%;
+}
+
+.blade-project__halo {
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  width: 34px;
+  height: 34px;
+  margin-left: -17px;
+  border: 1px solid var(--color-blade-copper);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.blade-project__label {
+  position: absolute;
+  left: 50%;
+  top: -6px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-blade-cream);
+  text-shadow: 0 0 8px rgb(5 4 3 / 0.95);
+}
+
+.blade-marker {
+  position: relative;
+  width: 24px;
+  height: 44px;
+}
+
+.blade-marker__shard {
+  position: absolute;
+  left: 50%;
+  bottom: 5px;
+  width: 2px;
+  height: 34px;
+  margin-left: -1px;
+  background: var(--color-blade-copper);
+  transform: skewX(calc(-1 * var(--blade-angle)));
+  transform-origin: bottom center;
+}
+
+.blade-marker__dot {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
+  background: var(--color-blade-copper);
+}
+
+.blade-marker__halo {
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 22px;
+  height: 22px;
+  margin-left: -11px;
+  border: 1px solid var(--color-blade-copper);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.blade-landmark {
+  position: relative;
+  width: 7px;
+  height: 7px;
+}
+
+.blade-landmark__dot {
+  display: block;
+  box-sizing: border-box;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--color-blade-copper);
+  border-radius: 50%;
+  background: transparent;
+  transition: opacity 0.4s linear;
+}
+
+.blade-landmark__label {
+  position: absolute;
+  left: 11px;
+  top: -5px;
+  white-space: nowrap;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--color-blade-cream);
+  opacity: 0;
+  pointer-events: none;
+  padding-left: 6px;
+  border-left: 1px solid var(--color-blade-copper);
+  transition: opacity 0.3s linear;
+}
+
+.blade-landmark:hover .blade-landmark__label,
+.blade-landmark[data-active='true'] .blade-landmark__label {
+  opacity: 1;
+}
+
+.blade-landmark[data-dim='true'] .blade-landmark__dot {
+  opacity: 0.15;
+}
+
+/* The distance chips from page 6: a copper hairline ring on the dark ground, the number
+   over its unit. Small, quiet, and the thing that makes the map read as a diagram. */
+.blade-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgb(202 142 91 / 0.75);
+  border-radius: 50%;
+  background: rgb(11 8 7 / 0.82);
+  backdrop-filter: blur(2px);
+  font-family: var(--font-display);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.blade-chip__n {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-blade-cream);
+  font-variant-numeric: tabular-nums;
+}
+
+.blade-chip__u {
+  font-size: 7px;
+  letter-spacing: 0.08em;
+  color: var(--color-blade-copper);
+}
+
+/* Place names, as on page 6: cream, small, no box. */
+.blade-place {
+  white-space: nowrap;
+  max-width: 13ch;
+  font-family: var(--font-display);
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  color: rgb(240 231 211 / 0.82);
+  text-shadow: 0 0 6px rgb(5 4 3 / 0.95), 0 0 2px rgb(5 4 3);
+  pointer-events: none;
+  white-space: normal;
+}
+
+/* MapLibre's own controls, brought into the system: hairline copper on glass, no chrome. */
+.blade-map .maplibregl-ctrl-group {
+  background: rgb(15 11 9 / 0.55);
+  backdrop-filter: blur(20px) saturate(115%);
+  border: 1px solid rgb(202 142 91 / 0.18);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.blade-map .maplibregl-ctrl-group button {
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border-radius: 0;
+}
+
+.blade-map .maplibregl-ctrl-group button + button {
+  border-top: 1px solid rgb(202 142 91 / 0.14);
+}
+
+.blade-map .maplibregl-ctrl-group button:hover {
+  background: rgb(202 142 91 / 0.12);
+}
+
+.blade-map .maplibregl-ctrl-icon {
+  filter: invert(88%) sepia(18%) saturate(320%) hue-rotate(340deg) brightness(96%);
+}

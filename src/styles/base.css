@@ -1,0 +1,241 @@
+/* LAW 1 — it never scrolls. This file is the contract. Nothing else in the app sets a
+   height on html, body or #root, and no component may introduce a scroll container. */
+
+@layer base {
+  html,
+  body,
+  #root {
+    width: 100dvw;
+    height: 100dvh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  html {
+    background: var(--color-blade-black);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-blade-black);
+    color: var(--color-blade-cream);
+    font-family: var(--font-display);
+    font-weight: 400;
+    /* Tight leading is essential to the brand — browser-default 1.5 reads instantly
+       off-brand. Headlines override to 1.2. */
+    line-height: 1.18;
+    font-size: var(--text-body);
+    touch-action: manipulation;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Headlines: ALL CAPS, Futura Medium, no tracking, 1.2 leading. */
+  h1,
+  h2,
+  h3 {
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1.2;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  /* Radii are 0 or 2px. There are no other radii in this app. */
+  * {
+    border-radius: 0;
+  }
+
+  /* Focus is visible but stays inside the system: a copper hairline, never a glow. */
+  :focus-visible {
+    outline: 1px solid var(--color-blade-copper);
+    outline-offset: 2px;
+  }
+
+}
+
+@layer components {
+  /* Frosted glass appears in exactly three places, and applying it only through this
+     class keeps that count greppable:
+       1. the Floor Plans floor-label chip   (src/screens/sections/Plans.jsx)
+       2. the Address left panel             (src/screens/sections/Address.jsx)
+       3. the fullscreen fallback note       (src/components/FullscreenGate.jsx)
+     §3.4 also permits it on the top rail, but the rail has no background box here —
+     it is bare type over the content — so it does not need a material. */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: var(--glass-border);
+  }
+
+  /* Eyebrows: ALL CAPS, wide tracking, copper. */
+  .eyebrow {
+    font-size: var(--text-eyebrow);
+    font-weight: 500;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--color-blade-copper);
+  }
+
+  /* Landing only. Extreme tracking appears nowhere else. */
+  .eyebrow-landing {
+    letter-spacing: 1.2em;
+  }
+
+  /* A 1px rule that animates by scaleX from an origin — the app's only divider. */
+  .hairline {
+    height: 1px;
+    background: currentColor;
+    transform-origin: left center;
+  }
+}
+
+@layer components {
+  /* --------------------------------------------------- transition furniture */
+  /* Animated exclusively by src/gsap/TransitionDirector.js. Nothing here has a CSS
+     transition — GSAP owns all motion. */
+
+  .blade-curtain {
+    position: absolute;
+    inset: -12vh -12vw;
+    display: flex;
+    visibility: hidden;
+  }
+
+  .blade-shard {
+    --edge: 0;
+    position: relative;
+    flex: 1 1 0;
+    transform: skewX(calc(-1 * var(--blade-angle))) scaleY(0);
+    transform-origin: bottom center;
+    background: var(--color-blade-black);
+  }
+
+  /* The leading-edge hairline. Driven through --edge so the pseudo-element stays a
+     pseudo-element and GSAP still controls it. */
+  .blade-shard::after {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    right: 0;
+    width: 1px;
+    background: var(--color-blade-copper);
+    opacity: var(--edge);
+  }
+
+  .blade-rise {
+    --edge: 0;
+    position: absolute;
+    inset: -12vh -12vw;
+    visibility: hidden;
+    background: var(--color-blade-black);
+    /* The top edge arrives as a blade: a 12° cut across the full width. */
+    clip-path: polygon(0 12%, 100% 0, 100% 100%, 0 100%);
+  }
+
+  .blade-rise::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 140%;
+    border-top: 2px solid var(--color-blade-copper);
+    clip-path: polygon(0 12%, 100% 0, 100% 100%, 0 100%);
+    opacity: var(--edge);
+  }
+
+  .blade-fold-line,
+  .blade-intro-line {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    visibility: hidden;
+    background: var(--color-blade-copper);
+  }
+
+  .blade-fold-line {
+    width: 34vw;
+    height: 1px;
+    margin-left: -17vw;
+  }
+
+  .blade-intro-line {
+    width: 1px;
+    height: 34vh;
+    margin-top: -17vh;
+  }
+
+  /* SplitText line wrapper. The mask edge is skewed to the blade angle so text wipes
+     up through a 12° edge, not a flat one. */
+  .blade-line {
+    display: block;
+    will-change: clip-path;
+  }
+}
+
+@layer utilities {
+  /* The copper sheen from page 6 of the vision document. Full strength on the sparse
+     screens; `-soft` on Features, which has a slide to carry. */
+  .sheen {
+    background-image: var(--sheen);
+  }
+  .sheen-soft {
+    background-image: var(--sheen-soft);
+  }
+
+  /* Content inset for any screen the top rail is drawn over. Never hand-roll the
+     padding — the rail's height is a system value, not a per-screen guess. */
+  .screen-inset {
+    padding: calc(var(--screen-margin) + var(--chrome-top)) var(--screen-margin)
+      calc(var(--screen-margin) + var(--chrome-bottom));
+  }
+
+  /* Landing and the gate carry no rail. */
+  .screen-inset-bare {
+    padding: var(--screen-margin);
+  }
+
+  /* The single graphic idea, as a utility so every diagonal is provably 12°. */
+  .skew-blade {
+    transform: skewX(calc(-1 * var(--blade-angle)));
+  }
+  .skew-blade-r {
+    transform: skewX(var(--blade-angle));
+  }
+}
+
+/* The fullscreen gate freezes the app beneath it. The gate itself is a sibling of the
+   frozen layer, never a descendant — `filter` creates a containing block for fixed
+   descendants and would blur the gate along with everything else. */
+html[data-frozen] #frozen-layer {
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+/* Reduced motion is honoured by the transition director, which collapses every
+   transition to a 0.25s crossfade. This only stops CSS-driven motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.25s !important;
+  }
+}
