@@ -28,10 +28,6 @@ export function BladeCurtain() {
           as a blade edge, carrying a copper line that fades as it lands. */}
       <div ref={ref('risePanel')} className="blade-rise" />
 
-      {/* T4 — the single copper line that survives the fold and becomes the menu's
-          vertical rule. */}
-      <div ref={ref('foldLine')} className="blade-fold-line" />
-
       {/* T6 — the line that draws from centre, skews to 12°, and strikes. */}
       <div ref={ref('introLine')} className="blade-intro-line" />
     </div>

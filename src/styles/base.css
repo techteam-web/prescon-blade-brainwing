@@ -160,22 +160,12 @@
     opacity: var(--edge);
   }
 
-  .blade-fold-line,
   .blade-intro-line {
     position: absolute;
     left: 50%;
     top: 50%;
     visibility: hidden;
     background: var(--color-blade-copper);
-  }
-
-  .blade-fold-line {
-    width: 34vw;
-    height: 1px;
-    margin-left: -17vw;
-  }
-
-  .blade-intro-line {
     width: 1px;
     height: 34vh;
     margin-top: -17vh;

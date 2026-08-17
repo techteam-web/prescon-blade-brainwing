@@ -48,6 +48,12 @@ const ruleOf = (el) => el?.querySelector('[data-headline-rule]') ?? null;
 const LINE_MASK_HIDDEN = 'inset(0 0 100% 0)';
 const LINE_MASK_SHOWN = 'inset(0 0 -10% 0)';
 
+// The same slanted wipe as .blade-wipe in base.css (see the Amenities gallery), reused
+// inline so the director can drive it on a screen root without toggling React class
+// names. GSAP tweens the --wipe custom property; the polygon does the rest.
+const WIPE =
+  'polygon(calc(var(--wipe) * 1%) 0%, 120% 0%, 120% 100%, calc((var(--wipe) - 12) * 1%) 100%)';
+
 // SplitText instances must be reverted or the DOM keeps its wrapper spans. The director
 // collects them and reverts on completion.
 function splitLines(el, cleanups) {
@@ -175,41 +181,34 @@ export function aperture({ outEl, inEl, chrome, capture, tl, cleanups }) {
   return tl;
 }
 
-// T4 — section → menu, ~2.0s.
-//
-// The section collapses into a single copper line, that line stands up as the menu's
-// vertical spine, and the rows unfold from it. Every part of the menu re-animates: the
-// render, the wordmark, the rule and the rows all arrive, every time.
-//
-// The old version scaled a HORIZONTAL line to 90× its height, which produced a fat
-// copper slab that sat over an already-visible menu and then vanished. It animated
-// nothing and meant nothing. A line that becomes the thing you are navigating with does.
-export function returnFold({ outEl, inEl, chrome, tl }) {
-  const line = chrome.foldLine;
+// T4 — section → menu, ~1.5s. The menu wipes on through the same slanted 12° edge the
+// Amenities gallery wipes its renders through (see .blade-wipe in base.css) — one graphic
+// idea for "the next thing arrives," reused rather than invented a second time. Every
+// part of the menu re-animates as it's uncovered: the render, the wordmark, the rule and
+// the rows all arrive, every time.
+export function returnFold({ outEl, inEl, tl }) {
   const rows = q(inEl, '[data-menu-row]');
   const rule = inEl?.querySelector('[data-menu-rule]') ?? null;
   const visual = inEl?.querySelector('[data-menu-visual]') ?? null;
   const brand = inEl?.querySelector('[data-menu-brand]') ?? null;
 
-  tl.set(inEl, { autoAlpha: 1, zIndex: 1 })
-    .set(some(outEl), { zIndex: 2, transformOrigin: 'center center' })
+  tl.set(inEl, { clipPath: WIPE, '--wipe': -124, autoAlpha: 1, zIndex: 2 })
+    .set(some(outEl), { zIndex: 1 })
     .set(some(rule), { scaleY: 0, transformOrigin: 'top center' })
     .set(some(visual), { autoAlpha: 0, scale: 1.06, transformOrigin: 'center center' })
-    .set(some(brand), { autoAlpha: 0, y: 18 })
-    .set(line, { autoAlpha: 1, scaleX: 0, scaleY: 1, transformOrigin: 'center center' });
+    .set(some(brand), { autoAlpha: 0, y: 18 });
   set(tl, rows, { autoAlpha: 0, x: -28 });
 
-  tl.to(some(outEl), { scaleY: 0.02, autoAlpha: 0, filter: 'blur(8px)', duration: 0.7, ease: E.in }, 0)
-    .to(line, { scaleX: 1, duration: 0.4 }, 0.55)
-    .addLabel('swap', 0.75)
-    // The hold: 0.12s on nothing but the line. Then it collapses to a point as the
-    // menu's spine stands up in its place.
-    .to(line, { scaleX: 0, duration: 0.45, ease: E.in }, 0.9)
-    .to(line, { autoAlpha: 0, duration: 0.2 }, 1.3)
-    .to(some(rule), { scaleY: 1, duration: 0.95 }, 0.9)
-    .to(some(visual), { autoAlpha: 1, scale: 1, duration: 1.1 }, 1.0)
-    .to(some(brand), { autoAlpha: 1, y: 0, duration: 0.7 }, 1.1);
-  to(tl, rows, { autoAlpha: 1, x: 0, duration: 0.85, stagger: { each: 0.055, from: 'start' } }, 1.15);
+  // The outgoing section drifts off under the wipe rather than just sitting there — it
+  // does not need to finish; whatever is left of it is covered the instant the wipe
+  // passes over it, and gone entirely once inEl finishes covering the frame.
+  tl.to(some(outEl), { autoAlpha: 0, x: 40, duration: 0.7, ease: E.in }, 0)
+    .to(inEl, { '--wipe': -12, duration: 0.85, ease: E.out }, 0)
+    .addLabel('swap', 0.85)
+    .to(some(rule), { scaleY: 1, duration: 0.9 }, 0.4)
+    .to(some(visual), { autoAlpha: 1, scale: 1, duration: 1.0 }, 0.45)
+    .to(some(brand), { autoAlpha: 1, y: 0, duration: 0.7 }, 0.55);
+  to(tl, rows, { autoAlpha: 1, x: 0, duration: 0.8, stagger: { each: 0.05, from: 'start' } }, 0.4);
 
   return tl;
 }
