@@ -1,7 +1,8 @@
 import { useCallback, useRef } from 'react';
 import { useApp } from '../app/appContext';
 import { PresconLogo } from './Wordmark';
-import { BackIcon } from './Icons';
+import { BackIcon, CompareIcon } from './Icons';
+import { EnterPortal } from './Primitives';
 import { gsap, useGSAP, D, E } from '../gsap/Gsapconfig';
 
 // Present on every screen except the gate and the landing.
@@ -51,7 +52,17 @@ function NavButton({ label, onClick, disabled, icon = false }) {
 }
 
 export function TopRail() {
-  const { stage, current, registerChrome, goToMenu, goToLanding, isTransitioning } = useApp();
+  const {
+    stage,
+    section,
+    current,
+    registerChrome,
+    goToMenu,
+    goToLanding,
+    isTransitioning,
+    compare,
+    setCompare,
+  } = useApp();
   // The director fades the whole rail out under the cut and back in with the destination,
   // so the rail never sits, unchanged, over a page that is coming apart.
   const railRef = useCallback((el) => registerChrome('rail', el), [registerChrome]);
@@ -75,11 +86,27 @@ export function TopRail() {
           {/* The two places anyone ever wants to get back to. The section index is
               deliberately NOT here: it belongs to the menu, where it orders the list,
               and repeating it beside the controls made the rail read as a breadcrumb. */}
-          <div className="flex items-start gap-[2.2em]">
+          <div className="flex min-w-0 items-start gap-[2.2em] max-sm:gap-[1.3em]">
             {stage === 'section' ? (
               <NavButton label="Menu" onClick={goToMenu} disabled={isTransitioning} icon />
             ) : null}
             <NavButton label="Home" onClick={goToLanding} disabled={isTransitioning} />
+
+            {/* Floor Plans only. The one screen with a second mode, so the one screen
+                with a framed control — everything else in the rail is a label over a
+                rule. The negative margin optically centres the box against the two-line
+                nav buttons beside it. */}
+            {stage === 'section' && section === 'plans' ? (
+              <EnterPortal
+                size="sm"
+                icon={<CompareIcon size="1.15em" />}
+                disabled={isTransitioning || compare === 'closing'}
+                onClick={() => setCompare(compare === 'off' ? 'picking' : 'closing')}
+                className="pointer-events-auto -mt-[0.55em] shrink-0"
+              >
+                {compare === 'off' ? 'Comparison' : 'Exit Compare'}
+              </EnterPortal>
+            ) : null}
           </div>
 
           <PresconLogo className="w-[clamp(3.4rem,4.6vw,6rem)] shrink-0" />
