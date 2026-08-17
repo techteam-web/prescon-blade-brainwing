@@ -2,7 +2,8 @@ import { useCallback, useRef, useState } from 'react';
 import { gsap, useGSAP, E, prefersReducedMotion } from '../../gsap/Gsapconfig';
 import { useIdleTask } from '../../hooks/useEventListener';
 import { PROJECT, LANDMARKS, ALWAYS_ON } from '../../data/landmarks';
-import { ROUTES, ROUTE_STYLES } from '../../data/routes';
+import { ROUTE_STYLES } from '../../data/routes';
+import { CORRIDORS } from '../../data/corridors';
 import { CONNECTIVITY_BY_ID } from '../../data/connectivity';
 import { buildMapStyle } from './mapStyle';
 import { fetchRoute } from './routing';
@@ -36,6 +37,17 @@ const CORRIDOR_LAYERS = Object.keys(ROUTE_STYLES).flatMap((id) => [
   `route-${id}-pulse`,
 ]);
 
+// Opacity is STATE, not a constant, and it has to live somewhere both fades can read.
+//
+// The bug this fixes: both fades used to be `gsap.to({o: <hardcoded start>}, ...)` on a
+// throwaway object. Selecting a second landmark while a route was already drawn ran the
+// corridor fade-out from a hardcoded 0.9 even though the corridors were sitting at 0 —
+// so the first frame of the tween wrote 0.9, every coloured corridor flashed back on for
+// an instant, and then faded away again. The route fade had the same fault in the other
+// direction. Tweening a PERSISTENT object instead means every fade starts from wherever
+// the layers actually are, and `overwrite` kills whatever was mid-flight.
+const CORRIDOR_ON = 0.9;
+
 export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
   const host = useRef(null);
   const map = useRef(null);
@@ -43,6 +55,9 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
   const dashRaf = useRef(0);
   const corridorTicker = useRef(null);
   const abort = useRef(null);
+  const corridorFade = useRef({ o: 0 });
+  const routeFade = useRef({ o: 0 });
+  const hasFocused = useRef(false);
   const [loaded, setLoaded] = useState(false);
 
   useIdleTask(() => {
@@ -89,9 +104,13 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
       m.on('load', () => {
         if (cancelled) return;
 
-        m.addSource('corridors', { type: 'geojson', data: ROUTES, lineMetrics: true });
+        m.addSource('corridors', { type: 'geojson', data: CORRIDORS, lineMetrics: true });
         m.addSource(ROUTE_SRC, { type: 'geojson', data: EMPTY });
 
+        // Every corridor layer is BORN at opacity 0 and is brought up by the same fade
+        // that lowers it later. Painting them in at full strength and then starting the
+        // fade-in from 0 made the corridors blink off for one frame the moment the map
+        // finished loading.
         for (const [id, s] of Object.entries(ROUTE_STYLES)) {
           if (s.casing) {
             m.addLayer({
@@ -100,7 +119,7 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
               source: 'corridors',
               filter: ['==', ['get', 'id'], id],
               layout: { 'line-cap': 'round', 'line-join': 'round' },
-              paint: { 'line-color': s.casing, 'line-width': s.width + 2.4, 'line-opacity': 0.85 },
+              paint: { 'line-color': s.casing, 'line-width': s.width + 2.4, 'line-opacity': 0 },
             });
           }
           m.addLayer({
@@ -112,7 +131,7 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
             paint: {
               'line-color': s.color,
               'line-width': s.width,
-              'line-opacity': 0.9,
+              'line-opacity': 0,
               ...(s.dash ? { 'line-dasharray': s.dash } : {}),
             },
           });
@@ -124,7 +143,7 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
             layout: { 'line-cap': 'round', 'line-join': 'round' },
             paint: {
               'line-width': s.width + 1.2,
-              'line-opacity': 0.9,
+              'line-opacity': 0,
               'line-gradient': ['interpolate', ['linear'], ['line-progress'], 0, 'rgba(0,0,0,0)', 1, 'rgba(0,0,0,0)'],
             },
           });
@@ -218,6 +237,7 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
       observer?.disconnect();
       abort.current?.abort();
       cancelAnimationFrame(dashRaf.current);
+      gsap.killTweensOf([corridorFade.current, routeFade.current]);
       if (corridorTicker.current) gsap.ticker.remove(corridorTicker.current);
       map.current?.m?.remove?.();
       map.current = null;
@@ -262,20 +282,18 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
     // When a route is on screen the corridors get out of the way entirely — two sets of
     // coloured lines at once is unreadable, and the route is the answer to the question
     // that was just asked.
-    gsap.to(
-      { o: visible ? 0 : 0.9 },
-      {
-        o: visible ? 0.9 : 0,
-        duration: 0.45,
-        ease: E.out,
-        onUpdate() {
-          const o = this.targets()[0].o;
-          for (const id of CORRIDOR_LAYERS) {
-            if (m.getLayer(id)) m.setPaintProperty(id, 'line-opacity', o);
-          }
-        },
+    const state = corridorFade.current;
+    gsap.to(state, {
+      o: visible ? CORRIDOR_ON : 0,
+      duration: 0.45,
+      ease: E.out,
+      overwrite: true,
+      onUpdate() {
+        for (const id of CORRIDOR_LAYERS) {
+          if (m.getLayer(id)) m.setPaintProperty(id, 'line-opacity', state.o);
+        }
       },
-    );
+    });
   }, []);
 
   const startDashes = useCallback((m) => {
@@ -294,25 +312,23 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
   }, []);
 
   const fadeRoute = useCallback((m, to) => {
-    gsap.to(
-      { o: to ? 0 : 1 },
-      {
-        o: to ? 1 : 0,
-        duration: to ? 0.6 : 0.4,
-        ease: E.out,
-        onUpdate() {
-          const o = this.targets()[0].o;
-          if (!m.getLayer('dir-base')) return;
-          m.setPaintProperty('dir-glow', 'line-opacity', 0.2 * o);
-          m.setPaintProperty('dir-case', 'line-opacity', 0.9 * o);
-          m.setPaintProperty('dir-base', 'line-opacity', o);
-          m.setPaintProperty('dir-flow', 'line-opacity', 0.95 * o);
-        },
-        onComplete() {
-          if (!to) m.getSource(ROUTE_SRC)?.setData(EMPTY);
-        },
+    const state = routeFade.current;
+    gsap.to(state, {
+      o: to ? 1 : 0,
+      duration: to ? 0.6 : 0.4,
+      ease: E.out,
+      overwrite: true,
+      onUpdate() {
+        if (!m.getLayer('dir-base')) return;
+        m.setPaintProperty('dir-glow', 'line-opacity', 0.2 * state.o);
+        m.setPaintProperty('dir-case', 'line-opacity', 0.9 * state.o);
+        m.setPaintProperty('dir-base', 'line-opacity', state.o);
+        m.setPaintProperty('dir-flow', 'line-opacity', 0.95 * state.o);
       },
-    );
+      onComplete() {
+        if (!to) m.getSource(ROUTE_SRC)?.setData(EMPTY);
+      },
+    });
   }, []);
 
   useGSAP(
@@ -329,10 +345,16 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
         fadeRoute(m, false);
         setCorridors(m, true);
         onRoute?.(null);
-        m.easeTo({ ...HOME, duration: 1400, easing: (t) => 1 - Math.pow(1 - t, 3) });
+        // Only fly home if we ever left. This branch also runs once when the map first
+        // loads, and a 1.4s camera move to the position the camera is already in wastes
+        // the entrance and fights the screen transition.
+        if (hasFocused.current) {
+          m.easeTo({ ...HOME, duration: 1400, easing: (t) => 1 - Math.pow(1 - t, 3) });
+        }
         return;
       }
 
+      hasFocused.current = true;
       const controller = new AbortController();
       abort.current = controller;
       onRoute?.({ id: dest.id, label: dest.label, state: 'loading' });

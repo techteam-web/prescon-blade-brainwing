@@ -11,7 +11,8 @@
     "assets": "npm run assets:brand && npm run assets:renders && npm run assets:plans",
     "assets:brand": "node scripts/extract-brand.mjs",
     "assets:renders": "node scripts/ingest-renders.mjs",
-    "assets:plans": "node scripts/extract-plans.mjs"
+    "assets:plans": "node scripts/extract-plans.mjs",
+    "assets:corridors": "node scripts/build-corridors.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
