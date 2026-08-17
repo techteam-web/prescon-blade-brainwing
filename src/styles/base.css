@@ -111,97 +111,162 @@
   /* Animated exclusively by src/gsap/TransitionDirector.js. Nothing here has a CSS
      transition — GSAP owns all motion. */
 
-  .blade-curtain {
-    position: absolute;
-    inset: -12vh -12vw;
-    display: flex;
-    visibility: hidden;
-  }
-
-  .blade-shard {
-    --edge: 0;
-    position: relative;
-    flex: 1 1 0;
-    transform: skewX(calc(-1 * var(--blade-angle))) scaleY(0);
-    transform-origin: bottom center;
-    background: var(--color-blade-black);
-  }
-
-  /* The leading-edge hairline. Driven through --edge so the pseudo-element stays a
-     pseudo-element and GSAP still controls it. */
-  .blade-shard::after {
-    content: '';
-    position: absolute;
-    inset-block: 0;
-    right: 0;
-    width: 1px;
-    background: var(--color-blade-copper);
-    opacity: var(--edge);
-  }
-
-  .blade-rise {
-    --edge: 0;
-    position: absolute;
-    inset: -12vh -12vw;
-    visibility: hidden;
-    background: var(--color-blade-black);
-    /* The top edge arrives as a blade: a 12° cut across the full width. */
-    clip-path: polygon(0 12%, 100% 0, 100% 100%, 0 100%);
-  }
-
-  .blade-rise::before {
-    content: '';
-    position: absolute;
-    inset-inline: 0;
-    top: 0;
-    height: 140%;
-    border-top: 2px solid var(--color-blade-copper);
-    clip-path: polygon(0 12%, 100% 0, 100% 100%, 0 100%);
-    opacity: var(--edge);
-  }
-
-  .blade-fold-line,
   .blade-intro-line {
     position: absolute;
     left: 50%;
     top: 50%;
     visibility: hidden;
     background: var(--color-blade-copper);
-  }
-
-  .blade-fold-line {
-    width: 34vw;
-    height: 1px;
-    margin-left: -17vw;
-  }
-
-  .blade-intro-line {
     width: 1px;
     height: 34vh;
     margin-top: -17vh;
   }
 
-  /* The blade wipe. A 12° edge sweeps across the frame and the new image is revealed
-     behind it — the same angle as the wordmark's stroke, so the gallery's signature move
-     is the brand's one graphic idea rather than a generic crossfade.
-     --wipe runs 112 → -12: at 112 the region is entirely off the right edge, at -12 it
-     covers the frame. GSAP drives the variable; the polygon does the rest. */
-  .blade-wipe {
-    --wipe: -12;
-    clip-path: polygon(
-      calc(var(--wipe) * 1%) 0%,
-      120% 0%,
-      120% 100%,
-      calc((var(--wipe) - 12) * 1%) 100%
+  /* ------------------------------------------------------------- the cut
+     THE transition. One mechanism, played forwards to leave a page and backwards to
+     arrive at one.
+
+     Two halves, each holding a live clone of a screen, each clipped to one side of a
+     seam that crosses the viewport centre at the blade angle. Forwards, the seam draws
+     itself bottom-to-top and the halves are drawn apart. Backwards, the halves arrive
+     from off-stage, close on the seam, and the seam retracts.
+
+     The halves carry nothing but a `transform`, so the whole cut is composited: the
+     clipping is set once per transition (it depends on the viewport, so it is computed
+     in JS) and never animated. */
+  .blade-split {
+    position: absolute;
+    inset: 0;
+    visibility: hidden;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .blade-split-half {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    transform-origin: center center;
+    backface-visibility: hidden;
+    will-change: transform, filter;
+  }
+
+  /* The cloned screen, forced back to a clean resting state — the original may be
+     mid-tween and carrying inline transform/opacity from GSAP when it is copied. */
+  .blade-split-half > * {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* The cut face itself. Zero-width, pinned to the centre, taller than the viewport so
+     the skew can never run out of line. Its children hang off the centreline. */
+  .blade-split-seam {
+    position: absolute;
+    left: 50%;
+    top: -30%;
+    height: 160%;
+    width: 0;
+    transform-origin: center center;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .blade-split-seam-core {
+    position: absolute;
+    inset-block: 0;
+    left: -1px;
+    width: 2px;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      var(--color-blade-copper) 12%,
+      var(--color-blade-cream) 50%,
+      var(--color-blade-copper) 88%,
+      transparent 100%
     );
   }
 
-  /* The travelling edge itself: a copper hairline riding the wipe. */
+  /* The bloom that makes the cut read as light rather than as a border. */
+  .blade-split-seam-glow {
+    position: absolute;
+    inset-block: 0;
+    left: -4.5rem;
+    width: 9rem;
+    filter: blur(18px);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgb(202 142 91 / 0.16) 38%,
+      rgb(240 231 211 / 0.42) 50%,
+      rgb(202 142 91 / 0.16) 62%,
+      transparent 100%
+    );
+  }
+
+  /* ------------------------------------------------- the gallery blade reveal
+     The wipe above animates `clip-path` through a CSS variable, which invalidates paint
+     on the whole subtree every frame — and that subtree holds a full-viewport blur. On a
+     phone that is a full-screen Gaussian re-raster per frame, which is exactly the
+     stutter it produced.
+
+     This version moves nothing but `transform`. An outer box clips; an inner box carries
+     an equal and opposite transform, so the content is provably stationary while the
+     clip sweeps across it:
+
+        outer:  skewX(-12°) translateX(T)
+        inner:  skewX(+12°) translateX(-T)
+
+     skewX composes additively, so the two skews cancel to identity and the two
+     translations cancel with them — the image never moves, never re-rasterises, and the
+     compositor does the entire animation. The outer is inflated sideways because a 12°
+     skew displaces the edges by 0.21 × height, and without the inflation the mask would
+     cut the corners off the frame.
+
+     Two details the cancellation depends on. The bleed is an absolute length on both
+     boxes, so the inner's left edge lands exactly on the frame's — a percentage would
+     resolve against two different widths. And --reveal is a bare number scaled by 1vw
+     rather than a percentage, for the same reason: percentage translations resolve
+     against each element's own box, and the two boxes differ by the bleed, so the image
+     would creep. As a number it is also the cheapest thing GSAP can tween. */
+  .blade-reveal {
+    --reveal: 0;
+    --bleed: 34dvh; /* tan(18.49°) × height, rounded up — the skew's edge displacement */
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(-1 * var(--bleed));
+    right: calc(-1 * var(--bleed));
+    overflow: hidden;
+    transform: skewX(calc(-1 * var(--blade-angle))) translateX(calc(var(--reveal) * 1vw));
+    will-change: transform;
+  }
+
+  .blade-reveal-inner {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--bleed);
+    right: var(--bleed);
+    transform: skewX(var(--blade-angle)) translateX(calc(var(--reveal) * -1vw));
+    will-change: transform;
+  }
+
+  /* The travelling edge: a copper hairline on the mask's leading edge. It carries no
+     transform of its own — it lives inside .blade-reveal, so it is already skewed to the
+     blade angle and already travelling, and it leaves the frame when the mask does. */
   .blade-wipe-edge {
     position: absolute;
-    top: -10%;
-    bottom: -10%;
+    top: 0;
+    bottom: 0;
     width: 2px;
+    z-index: 1;
     background: linear-gradient(
       180deg,
       transparent 0%,
@@ -210,15 +275,85 @@
       var(--color-blade-copper) 82%,
       transparent 100%
     );
-    transform: skewX(calc(-1 * var(--blade-angle)));
     pointer-events: none;
   }
 
   /* SplitText line wrapper. The mask edge is skewed to the blade angle so text wipes
-     up through a 12° edge, not a flat one. */
+     up through a blade edge, not a flat one. */
   .blade-line {
     display: block;
     will-change: clip-path;
+  }
+
+  /* ------------------------------------------------------- the entry control
+     The landing's one call to action. The rest of the app's controls are a label over
+     a hairline, which is correct for a rail you already know how to use and wrong for
+     the single thing a first-time visitor has to find. So this one is framed: a copper
+     rule box, a blade-angle copper fill that wipes in from the left on hover, and — the
+     part that does the work — a light that travels the frame on a slow loop, so the
+     control is never completely still and the eye is drawn to it unprompted. */
+  .enter-portal {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 1.35em;
+    padding: 1.05em 1.9em;
+    overflow: hidden;
+    border: 1px solid rgb(202 142 91 / 0.45);
+    isolation: isolate;
+  }
+
+  /* The fill, in two boxes on purpose. The outer one holds the blade skew and is never
+     touched again; the inner one is the only thing GSAP scales. A single box carrying
+     `skewX(θ) scaleX(0)` is a singular matrix, and decomposing it to animate the scale
+     loses the skew — the fill would arrive square. Inflated sideways so the skewed edge
+     still covers the corners when it lands. */
+  .enter-portal-fill {
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    left: -18%;
+    right: -18%;
+    z-index: -1;
+    transform: skewX(calc(-1 * var(--blade-angle)));
+  }
+
+  .enter-portal-fill-bar {
+    position: absolute;
+    inset: 0;
+    transform: scaleX(0);
+    transform-origin: left center;
+    background: var(--color-blade-copper);
+  }
+
+  /* The travelling light, on the frame itself. */
+  .enter-portal-sheen {
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    background: linear-gradient(
+      100deg,
+      transparent 38%,
+      rgb(240 231 211 / 0.16) 48%,
+      rgb(240 231 211 / 0.34) 50%,
+      rgb(240 231 211 / 0.16) 52%,
+      transparent 62%
+    );
+  }
+
+  .enter-portal-label {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* The blade tick: a short stroke at the mark's own angle, then the arrow. */
+  .enter-portal-tick {
+    display: block;
+    width: 1px;
+    height: 1.5em;
+    transform: skewX(calc(-1 * var(--blade-angle)));
+    background: currentColor;
+    opacity: 0.55;
   }
 }
 
@@ -230,6 +365,12 @@
   }
   .sheen-soft {
     background-image: var(--sheen-soft);
+  }
+
+  /* The information screens still get no sheen — but they no longer sit on a flat field
+     either. Well below the threshold where it reads as a gradient. */
+  .ambient {
+    background-image: var(--ambient);
   }
 
   /* Content inset for any screen the top rail is drawn over. Never hand-roll the

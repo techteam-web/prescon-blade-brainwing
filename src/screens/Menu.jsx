@@ -65,7 +65,7 @@ function MenuRow({ section, index, onEnter, onSelect, disabled, active }) {
         className="pointer-events-none absolute -inset-y-[0.1em] -left-[1.6em] right-[-2em] -z-10 opacity-0"
         style={{
           background:
-            'linear-gradient(90deg, rgb(11 8 7 / 0.72) 0%, rgb(11 8 7 / 0.5) 45%, transparent 100%)',
+            'linear-gradient(90deg, rgb(var(--scrim-rgb) / 0.72) 0%, rgb(var(--scrim-rgb) / 0.5) 45%, transparent 100%)',
         }}
       />
 
@@ -201,7 +201,7 @@ export function Menu() {
           className="absolute inset-0 z-[3]"
           style={{
             background:
-              'radial-gradient(circle at 0% 0%, rgb(154 96 70 / 0.9) 0%, rgb(127 80 58 / 0.72) 10%, rgb(109 69 51 / 0.55) 18%, rgb(86 55 42 / 0.36) 30%, rgb(11 8 7 / 0) 58%)',
+              'radial-gradient(circle at 0% 0%, rgb(154 96 70 / 0.9) 0%, rgb(127 80 58 / 0.72) 10%, rgb(109 69 51 / 0.55) 18%, rgb(86 55 42 / 0.36) 30%, rgb(var(--scrim-rgb) / 0) 58%)',
           }}
         />
         <div
@@ -209,7 +209,7 @@ export function Menu() {
           className="absolute inset-0 z-[3]"
           style={{
             background:
-              'linear-gradient(90deg, rgb(11 8 7 / 0.9) 0%, rgb(11 8 7 / 0.74) 26%, rgb(11 8 7 / 0.3) 58%, rgb(11 8 7 / 0.12) 100%)',
+              'linear-gradient(90deg, rgb(var(--scrim-rgb) / 0.9) 0%, rgb(var(--scrim-rgb) / 0.74) 26%, rgb(var(--scrim-rgb) / 0.3) 58%, rgb(var(--scrim-rgb) / 0.12) 100%)',
           }}
         />
         <div
@@ -217,7 +217,7 @@ export function Menu() {
           className="absolute inset-0 z-[3]"
           style={{
             background:
-              'linear-gradient(180deg, rgb(11 8 7 / 0.72) 0%, transparent 16%, transparent 80%, rgb(11 8 7 / 0.72) 100%)',
+              'linear-gradient(180deg, rgb(var(--scrim-rgb) / 0.72) 0%, transparent 16%, transparent 80%, rgb(var(--scrim-rgb) / 0.72) 100%)',
           }}
         />
       </div>

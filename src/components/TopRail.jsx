@@ -52,36 +52,34 @@ function NavButton({ label, onClick, disabled, icon = false }) {
 
 export function TopRail() {
   const { stage, current, registerChrome, goToMenu, goToLanding, isTransitioning } = useApp();
-  const swapRef = useCallback((el) => registerChrome('railSwap', el), [registerChrome]);
+  // The director fades the whole rail out under the cut and back in with the destination,
+  // so the rail never sits, unchanged, over a page that is coming apart.
+  const railRef = useCallback((el) => registerChrome('rail', el), [registerChrome]);
 
   const visible = stage === 'menu' || stage === 'section';
   const caption = current?.caption ?? null;
 
+  // The landing carries no rail — it IS home, so a HOME button there navigates nowhere.
+  // This used to render the controls on every stage and merely mark them aria-hidden,
+  // which left a live, clickable HOME sitting on the landing.
+  if (!visible) return null;
+
   return (
     <div
-      className="pointer-events-none fixed inset-0 z-[100]"
+      ref={railRef}
+      className="pointer-events-none fixed inset-0 z-100"
       style={{ padding: 'var(--screen-margin)' }}
-      aria-hidden={!visible}
     >
       <div className="flex h-full flex-col justify-between">
         <div className="flex items-start justify-between gap-[2em]">
+          {/* The two places anyone ever wants to get back to. The section index is
+              deliberately NOT here: it belongs to the menu, where it orders the list,
+              and repeating it beside the controls made the rail read as a breadcrumb. */}
           <div className="flex items-start gap-[2.2em]">
-            {/* The two places anyone ever wants to get back to. */}
             {stage === 'section' ? (
               <NavButton label="Menu" onClick={goToMenu} disabled={isTransitioning} icon />
             ) : null}
             <NavButton label="Home" onClick={goToLanding} disabled={isTransitioning} />
-
-            <div ref={swapRef} className="flex flex-col gap-[0.35em] pl-[0.4em]">
-              {visible && current ? (
-                <span
-                  data-flip-id={`idx:${current.id}`}
-                  className="text-caption tabular-nums tracking-[0.28em] text-blade-copper"
-                >
-                  {current.no}
-                </span>
-              ) : null}
-            </div>
           </div>
 
           <PresconLogo className="w-[clamp(3.4rem,4.6vw,6rem)] shrink-0" />

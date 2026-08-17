@@ -62,7 +62,7 @@ export const TOWER_ELEVATION = {
   src: '/assets/tower/tower-elevation.png',
   width: 920,
   height: 3840,
-  // The source is a raster on black; blend with mix-blend-mode: screen.
+  // Cut out with a real alpha channel — no blend mode, composites on any ground.
   aspectRatio: 0.239583,
 };
 

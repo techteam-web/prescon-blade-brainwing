@@ -326,21 +326,27 @@ export function Features() {
               />
             </div>
           ))}
-          {/* The renders are bright. The copy has to win on every slide, so this is a
-              flat darkening plus a left-weighted gradient, not a subtle vignette. */}
-          <div className="absolute inset-0 z-[5] bg-blade-black/55" />
+          {/* Four scrims used to stack here — a flat 55% darkening, a left gradient that
+              was still at 30% on the right edge, a vignette and the sheen — and together
+              they buried the render. On the darker slides the image was simply not there.
+
+              The copy still has to win, but it only occupies the left 74% of the frame,
+              so the darkening is now weighted rather than flat: heavy where the type is,
+              gone by the right third, where the render is the only thing on screen. */}
+          <div className="absolute inset-0 z-[5] bg-blade-black/20" />
           <div
             className="absolute inset-0 z-[5]"
             style={{
               background:
-                'linear-gradient(90deg, rgb(11 8 7 / 0.96) 0%, rgb(11 8 7 / 0.9) 38%, rgb(11 8 7 / 0.45) 72%, rgb(11 8 7 / 0.3) 100%)',
+                'linear-gradient(90deg, rgb(var(--scrim-rgb) / 0.9) 0%, rgb(var(--scrim-rgb) / 0.78) 30%, rgb(var(--scrim-rgb) / 0.34) 60%, rgb(var(--scrim-rgb) / 0) 88%)',
             }}
           />
+          {/* Seats the chrome, top and bottom. Nothing more than that. */}
           <div
             className="absolute inset-0 z-[5]"
             style={{
               background:
-                'linear-gradient(180deg, rgb(11 8 7 / 0.75) 0%, transparent 20%, transparent 74%, rgb(11 8 7 / 0.85) 100%)',
+                'linear-gradient(180deg, rgb(var(--scrim-rgb) / 0.6) 0%, transparent 17%, transparent 80%, rgb(var(--scrim-rgb) / 0.62) 100%)',
             }}
           />
           <div className="sheen-soft absolute inset-0 z-[5]" />

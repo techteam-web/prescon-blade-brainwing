@@ -7,6 +7,10 @@ import { useOverflowGuard } from '../hooks/useOverflowGuard';
 // Screen never sets its own opacity or transform: the transition director owns those,
 // and a component fighting it for the same property is the classic way an overlapping
 // swap goes wrong.
+//
+// The ambient wash rides on the section's own background rather than in a layer, so it
+// can never enter the stacking order and end up over content. Screens that fill
+// themselves with a render or the map simply paint over it.
 
 export function Screen({ id, className = '', children, padded = true }) {
   const ref = useRef(null);
@@ -16,7 +20,7 @@ export function Screen({ id, className = '', children, padded = true }) {
     <section
       ref={ref}
       data-screen-root={id}
-      className={`relative h-full w-full overflow-hidden ${
+      className={`ambient relative h-full w-full overflow-hidden ${
         padded ? 'screen-inset' : ''
       } ${className}`}
     >

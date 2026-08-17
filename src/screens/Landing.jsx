@@ -1,8 +1,8 @@
 import { Screen } from '../layout/Screen';
-import { Eyebrow, Control, RenderImage } from '../components/Primitives';
+import { Eyebrow, EnterPortal, RenderImage } from '../components/Primitives';
 import { MapPinIcon } from '../components/Icons';
 import { Wordmark } from '../components/Wordmark';
-import { LANDING, DISCLAIMER } from '../data/content';
+import { LANDING } from '../data/content';
 import { renderIdFor } from '../data/renderMap';
 import { useApp } from '../app/appContext';
 
@@ -58,18 +58,12 @@ export function Landing() {
             </span>
           </div>
 
-          <Control onClick={goToMenu} disabled={isTransitioning} data-enter className="mt-[1%]">
+          <EnterPortal onClick={goToMenu} disabled={isTransitioning} data-enter className="mt-[1%] self-start">
             {LANDING.enter}
-          </Control>
+          </EnterPortal>
         </div>
 
-        <div className="flex items-end justify-between gap-[6%]">
-          <p
-            className="max-w-[62%] text-blade-cream/45 max-md:max-w-none"
-            style={{ fontSize: 'clamp(0.5625rem, min(0.57vw, 1.014vh), 0.8125rem)', lineHeight: 1.35 }}
-          >
-            {DISCLAIMER}
-          </p>
+        <div className="flex items-end justify-end gap-[6%]">
           <span className="shrink-0 text-caption text-[#EEE5D2]/70">Artistic Impression</span>
         </div>
       </div>
