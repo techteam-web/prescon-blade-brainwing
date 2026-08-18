@@ -3,30 +3,25 @@ import { Screen } from '../../layout/Screen';
 import { SectionTitle } from './SectionShell';
 import { TowerElevation } from '../../features/plans/TowerElevation';
 import { ReraTable } from '../../features/plans/ReraTable';
-<<<<<<< HEAD
-import { FloorCompare } from '../../features/plans/FloorCompare';
-import { TOWER_ZONES, ZONE_BY_ID, MAX_COMPARE } from '../../data/towerZones';
-=======
-import { CompareDeck } from '../../features/plans/CompareDeck';
+
 import { TOWER_ZONES, ZONE_BY_ID } from '../../data/towerZones';
->>>>>>> origin/main
+
+import { CompareDeck } from '../../features/plans/CompareDeck';
+
+
 import { getPlate } from '../../data/floorPlates';
 import { getPlan, PLAN_ASSETS, TOWER_ELEVATION } from '../../data/planAssets';
 import { CONTENT } from '../../data/content';
 import { gsap, useGSAP, E } from '../../gsap/Gsapconfig';
 import { useIdleTask } from '../../hooks/useEventListener';
-<<<<<<< HEAD
-import { CloseIcon } from '../../components/Icons';
-=======
->>>>>>> origin/main
+
 import { useApp } from '../../app/appContext';
 
 // Tower left ~34%, plan panel right ~66%.
 //
-// Hover swaps the right panel with a 120ms debounce, so sweeping the pointer up the
-// tower does not thrash through nine plate swaps. Click locks the selection. Service and
-// amenity floors have no plate and swap to an amenity card instead — the panel is never
-// empty.
+// Hover only highlights the band and the label chip; the right panel swaps solely on
+// click, which locks the selection. Service and amenity floors have no plate and swap
+// to an amenity card instead — the panel is never empty.
 //
 // COMPARE MODE is the screen's second state, opened from the rail. The tower leaves its
 // column, centres on the page and grows; up to three floors are picked off it; the tower
@@ -34,7 +29,6 @@ import { useApp } from '../../app/appContext';
 // thing. The state machine lives in AppState (the control is in the rail, which knows
 // nothing about screens); everything else — the picks and all of the motion — is here.
 
-const DEBOUNCE = 120;
 const FIRST = TOWER_ZONES.find((z) => z.plan)?.id ?? TOWER_ZONES[0].id;
 const MAX_PICKS = 3;
 
@@ -112,9 +106,7 @@ function ComparePrompt({ innerRef, picks, onRemove, onCompare, onCancel }) {
           </span>
         </div>
 
-        <p className="text-caption leading-[1.4] text-blade-cream/70">
-          Choose up to three floors on the tower.
-        </p>
+      
 
         <ul className="flex min-h-[1.6em] flex-col gap-[0.3em]">
           {picks.map((id, i) => (
@@ -173,12 +165,10 @@ function ComparePrompt({ innerRef, picks, onRemove, onCompare, onCancel }) {
 /* ------------------------------------------------------------------- the screen */
 
 export function Plans() {
-  const { compareIds, compareOpen, setCompareOpen, toggleCompare, removeCompare } = useApp();
   const [hovered, setHovered] = useState(null);
   const [locked, setLocked] = useState(FIRST);
   const [shown, setShown] = useState(FIRST);
   const [picks, setPicks] = useState([]);
-  const timer = useRef(null);
   const frame = useRef(null);
   const tower = useRef(null);
   const title = useRef(null);
@@ -196,28 +186,16 @@ export function Plans() {
 
   usePreloadPlans();
 
-  const request = useCallback((id) => {
-    window.clearTimeout(timer.current);
-    if (!id) return;
-    timer.current = window.setTimeout(() => setShown(id), DEBOUNCE);
+  // Hover only highlights the band and the label chip — the panel on the right is a
+  // click-only choice, so sweeping the pointer up the tower never thrashes it.
+  const onHover = useCallback((id) => {
+    setHovered(id);
   }, []);
 
-  const onHover = useCallback(
-    (id) => {
-      setHovered(id);
-      request(id);
-    },
-    [request],
-  );
-
-  const onSelect = useCallback(
-    (id) => {
-      window.clearTimeout(timer.current);
-      setLocked(id);
-      setShown(id);
-    },
-    [],
-  );
+  const onSelect = useCallback((id) => {
+    setLocked(id);
+    setShown(id);
+  }, []);
 
   // In compare mode the same click toggles membership of the picked set instead.
   const onPick = useCallback((id) => {
@@ -477,11 +455,9 @@ export function Plans() {
 
   const chip = ZONE_BY_ID[hovered ?? locked];
   const chipPlate = chip?.plan ? getPlate(chip.plan) : null;
-<<<<<<< HEAD
-  const compareZones = TOWER_ZONES.filter((z) => compareIds.includes(z.id));
-=======
+
   const zoneList = useMemo(() => (comparing ? COMPARABLE : TOWER_ZONES), [comparing]);
->>>>>>> origin/main
+
 
   return (
     <Screen id="plans">
@@ -536,39 +512,6 @@ export function Plans() {
                 ) : null}
               </div>
             ) : null}
-
-            {/* The compare tray — floor plates picked via the "Compare" toggle on the
-                panel opposite. Sits over the tower's own lowest bands rather than
-                claiming a layout row of its own, so adding a floor never resizes it. */}
-            {compareZones.length > 0 ? (
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-center gap-[0.6em]">
-                {compareZones.map((zone) => (
-                  <span
-                    key={zone.id}
-                    className="pointer-events-auto flex items-center gap-[0.5em] border border-blade-ink bg-blade-black-2 px-[0.7em] py-[0.35em] text-caption uppercase tracking-[0.1em] text-blade-cream"
-                  >
-                    {zone.label}
-                    <button
-                      type="button"
-                      onClick={() => removeCompare(zone.id)}
-                      aria-label={`Remove ${zone.label} from compare`}
-                      className="text-blade-cream/50 transition-colors duration-200 hover:text-blade-copper"
-                    >
-                      <CloseIcon size="0.8em" />
-                    </button>
-                  </span>
-                ))}
-                {compareZones.length >= 2 ? (
-                  <button
-                    type="button"
-                    onClick={() => setCompareOpen(true)}
-                    className="pointer-events-auto border border-blade-copper px-[0.9em] py-[0.35em] text-caption uppercase tracking-[0.14em] text-blade-copper transition-colors duration-200 hover:bg-blade-copper hover:text-blade-black"
-                  >
-                    Compare ({compareZones.length})
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
           </div>
         </div>
 
@@ -591,30 +534,6 @@ export function Plans() {
                   <h2 className="text-subhead font-medium uppercase text-blade-cream">
                     {plate?.label ?? zone.label}
                   </h2>
-
-                  {plate ? (
-                    <button
-                      type="button"
-                      onClick={() => toggleCompare(zone.id)}
-                      aria-pressed={compareIds.includes(zone.id)}
-                      disabled={!compareIds.includes(zone.id) && compareIds.length >= MAX_COMPARE}
-                      className={`group flex shrink-0 items-center gap-[0.5em] text-caption uppercase tracking-[0.16em] transition-colors duration-200 disabled:pointer-events-none disabled:opacity-30 ${
-                        compareIds.includes(zone.id)
-                          ? 'text-blade-copper'
-                          : 'text-blade-cream/55 hover:text-blade-cream'
-                      }`}
-                    >
-                      <span
-                        aria-hidden="true"
-                        className={`inline-block size-[0.85em] border ${
-                          compareIds.includes(zone.id)
-                            ? 'border-blade-copper bg-blade-copper'
-                            : 'border-blade-cream/40'
-                        }`}
-                      />
-                      Compare
-                    </button>
-                  ) : null}
                 </div>
 
                 {plan ? (
@@ -645,18 +564,7 @@ export function Plans() {
         </div>
       </div>
 
-<<<<<<< HEAD
-      {compareOpen && compareZones.length >= 2 ? (
-        <FloorCompare
-          zones={compareZones}
-          onClose={() => setCompareOpen(false)}
-          onRemove={(id) => {
-            removeCompare(id);
-            if (compareZones.length - 1 < 2) setCompareOpen(false);
-          }}
-        />
-      ) : null}
-=======
+
       <ComparePrompt
         innerRef={prompt}
         picks={picks}
@@ -674,7 +582,7 @@ export function Plans() {
           onEdit={() => setCompare('picking')}
         />
       </div>
->>>>>>> origin/main
+
     </Screen>
   );
 }

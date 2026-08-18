@@ -196,15 +196,6 @@ export function Amenities() {
           <div className="blade-reveal-inner">{slot(index, 'in')}</div>
         </div>
 
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-10"
-          style={{
-            background:
-              'linear-gradient(180deg, rgb(var(--scrim-rgb) / 0.72) 0%, transparent 20%, transparent 70%, rgb(var(--scrim-rgb) / 0.84) 100%)',
-          }}
-        />
-
         <div className="screen-inset pointer-events-none absolute inset-0 z-20 grid grid-rows-[auto_1fr_auto]">
           <SectionTitle id="amenities" />
           <span />

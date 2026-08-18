@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { TOWER_ELEVATION } from '../../data/planAssets';
 import { TOWER_ZONES, TOWER_ZONES_H } from '../../data/towerZones';
+import { TOWER_HIGHLIGHT_VIEWBOX, ZONE_HIGHLIGHT } from '../../data/towerHighlights';
 import { gsap, useGSAP, E } from '../../gsap/Gsapconfig';
 
 // The tower sits in a box whose aspect-ratio is locked to the image's own, and the
@@ -27,21 +28,102 @@ import { gsap, useGSAP, E } from '../../gsap/Gsapconfig';
 const SHOW_ZONES =
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('zones');
 
-function Zone({ zone, state, onHover, onSelect, tabIndex, badge = null }) {
+// The traced-floor highlight (src/data/towerHighlights.js) only covers 1F–41F + the
+// arrival level — nothing below that (the basement) is in the source art, so those
+// zones fall back to a plain rectangular tint instead of drawing nothing.
+//
+// The fill polygons are also the hit target for pointer input, not just decoration:
+// the rectangular band below is a linear approximation of the floor lines and drifts
+// from them near the extremes (see towerZones.js), so hovering near a boundary could
+// light up the wrong, adjacent floor. Hit-testing the traced shape itself is exact by
+// construction — the cursor is always over the floor it highlights.
+function ZoneHighlight({ zoneId, state, onHover, onSelect, horizontal }) {
+  const ref = useRef(null);
+  const { contextSafe } = useGSAP({ scope: ref });
+  const polygons = ZONE_HIGHLIGHT[zoneId];
+
+  const paint = contextSafe((next) => {
+    const active = next !== 'idle';
+    gsap.to('[data-highlight-fill]', {
+      opacity: next === 'locked' ? 0.55 : active ? 0.38 : 0,
+      duration: 0.3,
+      ease: E.soft,
+    });
+    gsap.to('[data-highlight-edge]', {
+      opacity: next === 'locked' ? 1 : active ? 0.85 : 0,
+      duration: 0.35,
+      ease: E.soft,
+    });
+  });
+
+  useGSAP(
+    () => {
+      if (!ref.current) return;
+      paint(state);
+    },
+    { dependencies: [state], scope: ref },
+  );
+
+  if (!polygons?.length) return null;
+
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox={TOWER_HIGHLIGHT_VIEWBOX}
+      preserveAspectRatio="none"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      style={{ transform: horizontal ? 'rotate(-90deg)' : undefined }}
+    >
+      <g ref={ref}>
+        {polygons.map((points, i) => (
+          <polygon
+            key={i}
+            data-highlight-fill
+            points={points}
+            className="fill-blade-copper"
+            opacity="0"
+            style={{ pointerEvents: 'auto', cursor: 'pointer' }}
+            onPointerEnter={() => onHover(zoneId)}
+            onPointerLeave={() => onHover(null)}
+            onClick={() => onSelect(zoneId)}
+          />
+        ))}
+        {polygons.map((points, i) => (
+          <polygon
+            key={i}
+            data-highlight-edge
+            points={points}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="18"
+            className="text-blade-cream"
+            opacity="0"
+          />
+        ))}
+      </g>
+    </svg>
+  );
+}
+
+function Zone({ zone, state, onHover, onSelect, tabIndex, badge = null, horizontal }) {
   const ref = useRef(null);
   const { contextSafe } = useGSAP({ scope: ref });
   const { shape } = zone;
+  // The traced SVG highlight takes over both the visual fill/edge and pointer hit-testing
+  // for any zone it covers; the plain rectangle underneath is the fallback for what it
+  // doesn't (the basement), and stays the keyboard-focus target either way.
+  const hasTracedHighlight = Boolean(ZONE_HIGHLIGHT[zone.id]?.length);
 
   // Hairlines draw outward from centre, 0.35s, bladeSoft.
   const paint = contextSafe((next) => {
     const active = next !== 'idle';
     gsap.to('[data-zone-fill]', {
-      opacity: next === 'locked' ? 0.22 : active ? 0.14 : 0,
+      opacity: hasTracedHighlight ? 0 : next === 'locked' ? 0.22 : active ? 0.14 : 0,
       duration: 0.3,
       ease: E.soft,
     });
     gsap.to('[data-zone-edge]', {
-      scaleX: active ? 1 : 0,
+      scaleX: hasTracedHighlight ? 0 : active ? 1 : 0,
       opacity: next === 'locked' ? 1 : 0.7,
       duration: 0.35,
       ease: E.soft,
@@ -51,58 +133,71 @@ function Zone({ zone, state, onHover, onSelect, tabIndex, badge = null }) {
   useGSAP(() => paint(state), { dependencies: [state], scope: ref });
 
   return (
-    <button
-      ref={ref}
-      type="button"
-      data-zone={zone.id}
-      aria-label={`${zone.label}${zone.plan ? '' : ' — no floor plate'}`}
-      aria-pressed={state === 'locked'}
-      tabIndex={tabIndex}
-      onPointerEnter={() => onHover(zone.id)}
-      onPointerLeave={() => onHover(null)}
-      onFocus={() => onHover(zone.id)}
-      onClick={() => onSelect(zone.id)}
-      className="absolute"
-      style={{
-        left: `${shape.x}%`,
-        top: `${shape.y}%`,
-        width: `${shape.w}%`,
-        height: `${shape.h}%`,
-        // Touch targets stay reachable even where a single floor band is only a few px.
-        minHeight: '2px',
-        outline: SHOW_ZONES ? '1px solid #CA8E5B' : undefined,
-      }}
-    >
-      <span
-        data-zone-fill
-        aria-hidden="true"
-        className="absolute inset-0 bg-blade-copper opacity-0"
+    <>
+      <ZoneHighlight
+        zoneId={zone.id}
+        state={state}
+        onHover={onHover}
+        onSelect={onSelect}
+        horizontal={horizontal}
       />
-      <span
-        data-zone-edge
-        aria-hidden="true"
-        className="absolute inset-x-0 top-0 h-px origin-center scale-x-0 bg-blade-copper"
-      />
-      <span
-        data-zone-edge
-        aria-hidden="true"
-        className="absolute inset-x-0 bottom-0 h-px origin-center scale-x-0 bg-blade-copper"
-      />
-
-      {/* Compare mode only: the order this floor was picked in. Sits outside the band on
-          the left so it never covers the elevation, and counter-scales against
-          --tower-scale — it is inside the transformed tower, which grows to nearly 4x on
-          a phone, and a badge that grew with it would swallow the building. */}
-      {badge ? (
+      <button
+        ref={ref}
+        type="button"
+        data-zone={zone.id}
+        aria-label={`${zone.label}${zone.plan ? '' : ' — no floor plate'}`}
+        aria-pressed={state === 'locked'}
+        tabIndex={tabIndex}
+        onPointerEnter={hasTracedHighlight ? undefined : () => onHover(zone.id)}
+        onPointerLeave={hasTracedHighlight ? undefined : () => onHover(null)}
+        onFocus={() => onHover(zone.id)}
+        onClick={() => onSelect(zone.id)}
+        className="absolute"
+        style={{
+          left: `${shape.x}%`,
+          top: `${shape.y}%`,
+          width: `${shape.w}%`,
+          height: `${shape.h}%`,
+          // Touch targets stay reachable even where a single floor band is only a few px.
+          minHeight: '2px',
+          outline: SHOW_ZONES ? '1px solid #CA8E5B' : undefined,
+          // The traced polygon is the real pointer target once it exists — this rect
+          // would otherwise sit on top of it and re-introduce the mismatch. It remains
+          // reachable by keyboard (Tab + Enter/Space still fire its onClick/onFocus).
+          pointerEvents: hasTracedHighlight ? 'none' : 'auto',
+        }}
+      >
         <span
-          data-zone-badge
+          data-zone-fill
           aria-hidden="true"
-          className="zone-badge absolute right-[calc(100%+0.5em)] top-1/2 flex size-[1.55em] items-center justify-center bg-blade-copper text-[0.62em] font-bold tabular-nums text-blade-black"
-        >
-          {badge}
-        </span>
-      ) : null}
-    </button>
+          className="absolute inset-0 bg-blade-copper opacity-0"
+        />
+        <span
+          data-zone-edge
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-px origin-center scale-x-0 bg-blade-copper"
+        />
+        <span
+          data-zone-edge
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-px origin-center scale-x-0 bg-blade-copper"
+        />
+
+        {/* Compare mode only: the order this floor was picked in. Sits outside the band on
+            the left so it never covers the elevation, and counter-scales against
+            --tower-scale — it is inside the transformed tower, which grows to nearly 4x on
+            a phone, and a badge that grew with it would swallow the building. */}
+        {badge ? (
+          <span
+            data-zone-badge
+            aria-hidden="true"
+            className="zone-badge absolute right-[calc(100%+0.5em)] top-1/2 flex size-[1.55em] items-center justify-center bg-blade-copper text-[0.62em] font-bold tabular-nums text-blade-black"
+          >
+            {badge}
+          </span>
+        ) : null}
+      </button>
+    </>
   );
 }
 
@@ -155,6 +250,7 @@ export function TowerElevation({
                 state={stateOf(zone.id)}
                 onHover={onHover}
                 onSelect={onSelect}
+                horizontal={horizontal}
                 tabIndex={i === 0 ? 0 : -1}
                 badge={
                   selectedIds.indexOf(zone.id) >= 0 ? selectedIds.indexOf(zone.id) + 1 : null

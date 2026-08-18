@@ -64,6 +64,8 @@ export function CompareIcon(props) {
   return (
     <Icon {...props}>
       <path d="M6 20V11M12 20V4M18 20v-6" />
+        <rect x="3" y="3" width="12" height="12" />
+      <rect x="9" y="9" width="12" height="12" />
     </Icon>
   );
 }
@@ -76,14 +78,7 @@ export function FullscreenIcon(props) {
   );
 }
 
-export function CompareIcon(props) {
-  return (
-    <Icon {...props}>
-      <rect x="3" y="3" width="12" height="12" />
-      <rect x="9" y="9" width="12" height="12" />
-    </Icon>
-  );
-}
+
 
 export function CheckIcon(props) {
   return (

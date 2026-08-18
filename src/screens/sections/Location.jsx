@@ -38,35 +38,35 @@ function Directions({ route }) {
   if (!route) return null;
 
   return (
-    <div ref={box} className="shrink-0 border-t border-blade-ink/70 pt-[0.7em]">
+    <div ref={box} className="shrink-0 border-t border-blade-ink/70 pt-[0.75em]">
       <div className="flex items-baseline justify-between gap-[0.8em]">
-        <span className="min-w-0 truncate text-[0.68rem] font-medium uppercase tracking-[0.14em] text-blade-cream">
+        <span className="min-w-0 truncate text-[0.72rem] font-medium uppercase tracking-[0.14em] text-blade-cream">
           {route.label}
         </span>
         {route.state === 'ready' ? (
-          <span className="shrink-0 text-[0.68rem] font-medium tabular-nums text-blade-copper">
+          <span className="shrink-0 text-[0.72rem] font-medium tabular-nums text-blade-copper">
             {formatDistance(route.distance)}
           </span>
         ) : null}
       </div>
 
       {route.state === 'loading' ? (
-        <p className="pt-[0.4em] text-[0.6rem] text-blade-cream/55">Finding the route…</p>
+        <p className="pt-[0.4em] text-[0.64rem] text-blade-cream/55">Finding the route…</p>
       ) : null}
       {route.state === 'error' ? (
-        <p className="pt-[0.4em] text-[0.6rem] text-blade-cream/55">
+        <p className="pt-[0.4em] text-[0.64rem] text-blade-cream/55">
           Route unavailable right now.
         </p>
       ) : null}
 
       {route.state === 'ready' ? (
-        <ul className="grid grid-cols-4 gap-[0.4em] pt-[0.6em]">
+        <ul className="grid grid-cols-4 gap-[0.45em] pt-[0.65em]">
           {travelTimes(route).map((m) => (
-            <li key={m.id} className="flex min-w-0 flex-col gap-[0.15em]">
-              <span className="text-[0.55rem] uppercase tracking-[0.14em] text-blade-cream/50">
+            <li key={m.id} className="flex min-w-0 flex-col gap-[0.16em]">
+              <span className="text-[0.58rem] uppercase tracking-[0.14em] text-blade-cream/50">
                 {m.label}
               </span>
-              <span className="truncate text-[0.66rem] tabular-nums text-blade-cream">
+              <span className="truncate text-[0.7rem] tabular-nums text-blade-cream">
                 {m.time}
               </span>
             </li>
@@ -75,7 +75,7 @@ function Directions({ route }) {
       ) : null}
 
       {route.state === 'ready' ? (
-        <p className="pt-[0.5em] text-[0.52rem] leading-[1.3] text-blade-cream/40">
+        <p className="pt-[0.55em] text-[0.56rem] leading-[1.3] text-blade-cream/40">
           Driving time is routed. Metro, bus and walking are estimates from the road
           distance.
         </p>
@@ -121,7 +121,7 @@ export function Location() {
 
       <div
         ref={panel}
-        className="glass absolute z-10 top-[calc(var(--screen-margin)+var(--chrome-top))] left-[var(--screen-margin)] flex max-h-[64%] w-[clamp(15rem,19vw,20rem)] min-w-0 flex-col gap-[0.8em] overflow-hidden p-[1.1em] max-md:inset-x-0 max-md:bottom-0 max-md:top-auto max-md:max-h-[48%] max-md:w-auto max-md:rounded-none max-md:border-x-0 max-md:border-b-0 max-md:p-[1em] max-md:pb-[calc(var(--screen-margin)+var(--chrome-bottom))]"
+        className="glass absolute z-10 top-[calc(var(--screen-margin)+var(--chrome-top)+2.2em)] left-[var(--screen-margin)] flex max-h-[70%] w-[clamp(17rem,21vw,22rem)] min-w-0 flex-col gap-[0.9em] overflow-hidden p-[1.25em] max-md:inset-x-0 max-md:bottom-0 max-md:top-auto max-md:max-h-[50%] max-md:w-auto max-md:rounded-none max-md:border-x-0 max-md:border-b-0 max-md:p-[1.1em] max-md:pb-[calc(var(--screen-margin)+var(--chrome-bottom))]"
       >
         <div className="flex items-baseline justify-between gap-[1em] max-md:hidden">
           <SectionTitle id="location" />
@@ -130,7 +130,7 @@ export function Location() {
         <div
           role="group"
           aria-label="Filter landmarks"
-          className="flex shrink-0 flex-wrap gap-x-[0.8em] gap-y-[0.25em]"
+          className="flex shrink-0 flex-wrap gap-x-[0.9em] gap-y-[0.3em]"
         >
           {c.filters.map((f) => {
             const on = category === f.id;
@@ -140,7 +140,7 @@ export function Location() {
                 type="button"
                 aria-pressed={on}
                 onClick={() => setCategory(on ? null : f.id)}
-                className={`group/f relative pb-[0.25em] text-[0.58rem] uppercase tracking-[0.16em] ${
+                className={`group/f relative pb-[0.25em] text-[0.62rem] uppercase tracking-[0.16em] ${
                   on ? TONE[f.tone] : 'text-blade-cream/45'
                 }`}
               >
@@ -173,24 +173,24 @@ export function Location() {
                   onFocus={() => setHighlight(row.id)}
                   onBlur={() => setHighlight(null)}
                   aria-pressed={on}
-                  className="group/r grid w-full grid-cols-[auto_1fr_auto] items-baseline gap-[0.55em] border-t border-blade-ink/60 py-[0.36em] text-left"
+                  className="group/r grid w-full grid-cols-[auto_1fr_auto] items-baseline gap-[0.6em] border-t border-blade-ink/60 py-[0.4em] text-left"
                 >
                   <span
                     aria-hidden="true"
                     className={`mt-[0.4em] block h-px origin-left bg-blade-copper transition-[width,opacity] duration-300 ease-out ${
                       on
-                        ? 'w-[0.9em] opacity-100'
-                        : 'w-0 opacity-0 group-hover/r:w-[0.6em] group-hover/r:opacity-70'
+                        ? 'w-[1em] opacity-100'
+                        : 'w-0 opacity-0 group-hover/r:w-[0.65em] group-hover/r:opacity-70'
                     }`}
                   />
                   <span
-                    className={`min-w-0 truncate text-[0.68rem] transition-colors duration-300 ease-out ${
+                    className={`min-w-0 truncate text-[0.72rem] transition-colors duration-300 ease-out ${
                       on ? 'text-blade-cream' : 'text-blade-cream/75 group-hover/r:text-blade-cream'
                     }`}
                   >
                     {row.label}
                   </span>
-                  <span className="shrink-0 text-[0.6rem] tabular-nums text-blade-copper">
+                  <span className="shrink-0 text-[0.64rem] tabular-nums text-blade-copper">
                     {row.km.toFixed(1)}
                   </span>
                 </button>

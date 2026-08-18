@@ -195,13 +195,13 @@ export function Menu() {
             2. the page-6 copper sheen, at a strength that actually reads OVER a photo
             3. a left-weighted scrim, which is what the labels genuinely sit on
             4. a top/bottom vignette to seat the chrome */}
-        <div aria-hidden="true" className="absolute inset-0 z-[3] bg-blade-black/45" />
+        <div aria-hidden="true" className="absolute inset-0 z-[3] bg-blade-black/25" />
         <div
           aria-hidden="true"
           className="absolute inset-0 z-[3]"
           style={{
             background:
-              'radial-gradient(circle at 0% 0%, rgb(154 96 70 / 0.9) 0%, rgb(127 80 58 / 0.72) 10%, rgb(109 69 51 / 0.55) 18%, rgb(86 55 42 / 0.36) 30%, rgb(var(--scrim-rgb) / 0) 58%)',
+              'radial-gradient(circle at 0% 0%, rgb(154 96 70 / 0.6) 0%, rgb(127 80 58 / 0.48) 10%, rgb(109 69 51 / 0.36) 18%, rgb(86 55 42 / 0.22) 30%, rgb(var(--scrim-rgb) / 0) 58%)',
           }}
         />
         <div
@@ -209,7 +209,7 @@ export function Menu() {
           className="absolute inset-0 z-[3]"
           style={{
             background:
-              'linear-gradient(90deg, rgb(var(--scrim-rgb) / 0.9) 0%, rgb(var(--scrim-rgb) / 0.74) 26%, rgb(var(--scrim-rgb) / 0.3) 58%, rgb(var(--scrim-rgb) / 0.12) 100%)',
+              'linear-gradient(90deg, rgb(var(--scrim-rgb) / 0.62) 0%, rgb(var(--scrim-rgb) / 0.48) 26%, rgb(var(--scrim-rgb) / 0.2) 58%, rgb(var(--scrim-rgb) / 0.06) 100%)',
           }}
         />
         <div
@@ -217,7 +217,7 @@ export function Menu() {
           className="absolute inset-0 z-[3]"
           style={{
             background:
-              'linear-gradient(180deg, rgb(var(--scrim-rgb) / 0.72) 0%, transparent 16%, transparent 80%, rgb(var(--scrim-rgb) / 0.72) 100%)',
+              'linear-gradient(180deg, rgb(var(--scrim-rgb) / 0.45) 0%, transparent 16%, transparent 80%, rgb(var(--scrim-rgb) / 0.45) 100%)',
           }}
         />
       </div>

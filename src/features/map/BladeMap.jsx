@@ -5,6 +5,7 @@ import { PROJECT, LANDMARKS, ALWAYS_ON } from '../../data/landmarks';
 import { ROUTE_STYLES } from '../../data/routes';
 import { CORRIDORS } from '../../data/corridors';
 import { CONNECTIVITY_BY_ID } from '../../data/connectivity';
+import { TOWER_ELEVATION } from '../../data/planAssets';
 import { buildMapStyle } from './mapStyle';
 import { fetchRoute } from './routing';
 
@@ -185,8 +186,7 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
         projectEl.innerHTML =
           '<span class="blade-project__halo" data-halo></span>' +
           '<span class="blade-project__ring"></span>' +
-          '<span class="blade-project__shard"></span>' +
-          '<span class="blade-project__core"></span>' +
+          `<img class="blade-project__tower" src="${TOWER_ELEVATION.src}" alt="" />` +
           '<span class="blade-project__label">The Blade</span>';
         new maplibregl.Marker({ element: projectEl, anchor: 'bottom' })
           .setLngLat([PROJECT.lng, PROJECT.lat])

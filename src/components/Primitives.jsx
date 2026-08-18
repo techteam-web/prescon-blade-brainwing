@@ -205,17 +205,17 @@ export function EnterPortal({
       </span>
 
       <span data-portal-mark className="enter-portal-label flex items-center gap-[0.9em] text-blade-copper">
-<<<<<<< HEAD
+
         <span aria-hidden="true" className="enter-portal-tick" />
         <span aria-hidden="true" className="enter-portal-arrow">
           <ArrowIcon data-portal-arrow-a size="1.05em" className="enter-portal-arrow-icon" />
           <ArrowIcon data-portal-arrow-b size="1.05em" className="enter-portal-arrow-icon" />
         </span>
-=======
+
         {/* The tick is the first thing to go when there is no room for it. */}
         <span aria-hidden="true" className="enter-portal-tick max-sm:hidden" />
         {icon}
->>>>>>> origin/main
+
       </span>
 
       {/* The intro sequence draws this rule as the control arrives — keeping the marker
