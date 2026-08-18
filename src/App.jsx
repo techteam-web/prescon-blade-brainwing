@@ -4,6 +4,7 @@ import { BladeCurtain } from './components/BladeCurtain';
 import { TopRail } from './components/TopRail';
 import { FullscreenGate } from './components/FullscreenGate';
 import { KeyboardNav } from './app/KeyboardNav';
+import { RouteSync } from './app/RouteSync';
 
 // #frozen-layer holds everything the fullscreen gate blurs. The gate is its sibling,
 // never a descendant — see FullscreenGate.jsx.
@@ -17,6 +18,7 @@ export default function App() {
       </div>
       <FullscreenGate />
       <KeyboardNav />
+      <RouteSync />
     </AppStateProvider>
   );
 }

@@ -1,8 +1,8 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useApp } from '../app/appContext';
 import { PresconLogo } from './Wordmark';
-import { BackIcon } from './Icons';
-import { gsap, useGSAP, D, E } from '../gsap/Gsapconfig';
+import { BackIcon, CompareIcon, CheckIcon } from './Icons';
+import { gsap, useGSAP, D, E, prefersReducedMotion } from '../gsap/Gsapconfig';
 
 // Present on every screen except the gate and the landing.
 //
@@ -50,38 +50,116 @@ function NavButton({ label, onClick, disabled, icon = false }) {
   );
 }
 
+// The confirm flourish: a copper fill sweeps in left-to-right (echoing the hover-fill
+// already used on the per-floor Compare toggles in Plans.jsx), the icon flips to a
+// check, then it holds briefly before opening the compare panel and resetting.
+function CompareButton({ count, onConfirm }) {
+  const root = useRef(null);
+  const [phase, setPhase] = useState('idle'); // idle | running | done
+  const { contextSafe } = useGSAP({ scope: root });
+  const disabled = count < 2;
+
+  const run = contextSafe(() => {
+    if (disabled || phase !== 'idle') return;
+
+    if (prefersReducedMotion()) {
+      onConfirm();
+      return;
+    }
+
+    setPhase('running');
+    gsap.fromTo(
+      '[data-compare-fill]',
+      { scaleX: 0 },
+      {
+        scaleX: 1,
+        duration: D.micro * 1.6,
+        ease: E.out,
+        onComplete: () => {
+          setPhase('done');
+          onConfirm();
+          gsap.delayedCall(D.wipe, () => {
+            gsap.to('[data-compare-fill]', {
+              scaleX: 0,
+              duration: D.micro,
+              ease: E.in,
+              onComplete: () => setPhase('idle'),
+            });
+          });
+        },
+      },
+    );
+  });
+
+  const label = phase === 'done' ? 'Ready' : `Compare${count ? ` (${count})` : ''}`;
+
+  return (
+    <button
+      ref={root}
+      type="button"
+      onClick={run}
+      disabled={disabled || phase !== 'idle'}
+      aria-label={`Compare selected floors${count ? `, ${count} selected` : ''}`}
+      className="pointer-events-auto relative flex shrink-0 items-center gap-[0.5em] self-center overflow-hidden rounded-full border border-blade-copper px-[1.1em] py-[0.5em] text-caption uppercase tracking-[0.16em] text-blade-copper transition-opacity duration-200 disabled:opacity-30"
+    >
+      <span
+        data-compare-fill
+        aria-hidden="true"
+        className="absolute inset-0 origin-left scale-x-0 bg-blade-copper"
+      />
+      <span
+        className={`relative flex items-center gap-[0.5em] ${phase === 'done' ? 'text-blade-black' : ''}`}
+      >
+        {phase === 'done' ? <CheckIcon size="0.9em" /> : <CompareIcon size="0.9em" />}
+        {label}
+      </span>
+    </button>
+  );
+}
+
 export function TopRail() {
-  const { stage, current, registerChrome, goToMenu, goToLanding, isTransitioning } = useApp();
-  const swapRef = useCallback((el) => registerChrome('railSwap', el), [registerChrome]);
+  const {
+    stage,
+    section,
+    current,
+    registerChrome,
+    goToMenu,
+    goToLanding,
+    isTransitioning,
+    compareIds,
+    setCompareOpen,
+  } = useApp();
+  // The director fades the whole rail out under the cut and back in with the destination,
+  // so the rail never sits, unchanged, over a page that is coming apart.
+  const railRef = useCallback((el) => registerChrome('rail', el), [registerChrome]);
 
   const visible = stage === 'menu' || stage === 'section';
   const caption = current?.caption ?? null;
 
+  // The landing carries no rail — it IS home, so a HOME button there navigates nowhere.
+  // This used to render the controls on every stage and merely mark them aria-hidden,
+  // which left a live, clickable HOME sitting on the landing.
+  if (!visible) return null;
+
   return (
     <div
-      className="pointer-events-none fixed inset-0 z-[100]"
+      ref={railRef}
+      className="pointer-events-none fixed inset-0 z-100"
       style={{ padding: 'var(--screen-margin)' }}
-      aria-hidden={!visible}
     >
       <div className="flex h-full flex-col justify-between">
         <div className="flex items-start justify-between gap-[2em]">
+          {/* The two places anyone ever wants to get back to. The section index is
+              deliberately NOT here: it belongs to the menu, where it orders the list,
+              and repeating it beside the controls made the rail read as a breadcrumb. */}
           <div className="flex items-start gap-[2.2em]">
-            {/* The two places anyone ever wants to get back to. */}
             {stage === 'section' ? (
               <NavButton label="Menu" onClick={goToMenu} disabled={isTransitioning} icon />
             ) : null}
             <NavButton label="Home" onClick={goToLanding} disabled={isTransitioning} />
-
-            <div ref={swapRef} className="flex flex-col gap-[0.35em] pl-[0.4em]">
-              {visible && current ? (
-                <span
-                  data-flip-id={`idx:${current.id}`}
-                  className="text-caption tabular-nums tracking-[0.28em] text-blade-copper"
-                >
-                  {current.no}
-                </span>
-              ) : null}
-            </div>
+            {section === 'plans' ? (
+              <CompareButton count={compareIds.length} onConfirm={() => setCompareOpen(true)} />
+            ) : null}
           </div>
 
           <PresconLogo className="w-[clamp(3.4rem,4.6vw,6rem)] shrink-0" />

@@ -2,25 +2,23 @@ import { useCallback, useRef, useState } from 'react';
 import { Screen } from '../layout/Screen';
 import { Wordmark } from '../components/Wordmark';
 import { SECTIONS } from '../data/sections';
-import { renderIdFor } from '../data/renderMap';
+import { MENU_BACKDROPS } from '../data/gallery';
 import { getRender } from '../data/renders';
 import { useApp } from '../app/appContext';
 import { gsap, useGSAP, D, E } from '../gsap/Gsapconfig';
 
-// Left: the five sections as a numbered list. Right: a render that cross-fades to the
-// hovered section's mapped render.
+// The render is the whole page, not a picture in a box on the right.
 //
-// THE GLITCH THIS FIXES: the render used to be a single <img> keyed on the render id, so
-// React unmounted the old image and mounted a new one on every hover. There was no
-// cross-fade at all — just a hard swap with a decode gap, and rapid hovering stacked
-// half-finished tweens on elements that no longer existed. That is what left previous
-// images hanging around.
+// Two full-bleed layers that never unmount. A hover paints the incoming render into
+// whichever is at the back, then cross-fades the pair while the incoming one settles out
+// of a slow zoom. The pair is the only thing that ever animates, so nothing is left
+// behind — which is what used to make this screen feel broken.
 //
-// Now there are exactly TWO layers that never unmount. A hover paints the incoming
-// render into whichever layer is currently at the back, then cross-fades the pair. The
-// pair is the only thing that ever animates, so there is nothing to leave behind.
+// Over the render: the copper sheen from page 6, then a left-weighted scrim. Both are
+// needed. The sheen is the personality; the scrim is what guarantees the list stays
+// readable no matter how bright the render behind it happens to be.
 
-function MenuRow({ section, index, onEnter, onSelect, disabled }) {
+function MenuRow({ section, index, onEnter, onSelect, disabled, active }) {
   const row = useRef(null);
   const { contextSafe } = useGSAP({ scope: row });
 
@@ -29,10 +27,12 @@ function MenuRow({ section, index, onEnter, onSelect, disabled }) {
     // Without it, sweeping the list leaves every row finishing an animation it should
     // have abandoned — which is what read as the previous item still being there.
     const vars = { ease: E.soft, overwrite: 'auto' };
-    gsap.to('[data-menu-index]', { opacity: on ? 1 : 0.35, duration: 0.3, ...vars });
-    gsap.to('[data-menu-label]', { x: on ? 10 : 0, duration: D.micro, ...vars });
-    gsap.to('[data-row-rule]', { scaleX: on ? 1 : 0, duration: 0.42, ...vars });
-    gsap.to('[data-row-blade]', { scaleY: on ? 1 : 0, duration: 0.38, ...vars });
+    gsap.to('[data-menu-index]', { opacity: on ? 1 : 0.7, duration: 0.3, ...vars });
+    gsap.to('[data-menu-label]', { x: on ? 14 : 0, duration: D.micro, ...vars });
+    // The marker grows from the spine towards the label rather than running off under
+    // the render — it points AT the thing it belongs to and stops there.
+    gsap.to('[data-row-marker]', { scaleX: on ? 1 : 0, duration: 0.45, ...vars });
+    gsap.to('[data-row-glow]', { opacity: on ? 1 : 0, duration: 0.42, ...vars });
   });
 
   return (
@@ -42,6 +42,7 @@ function MenuRow({ section, index, onEnter, onSelect, disabled }) {
       data-menu-row
       data-section={section.id}
       disabled={disabled}
+      aria-current={active}
       onPointerEnter={() => {
         onEnter(section.id);
         hover(true);
@@ -53,36 +54,46 @@ function MenuRow({ section, index, onEnter, onSelect, disabled }) {
       }}
       onBlur={() => hover(false)}
       onClick={() => onSelect(section.id, index)}
-      className="group relative grid w-full grid-cols-[auto_auto_1fr] items-baseline gap-[1.1em] py-[0.7em] text-left"
+      className="group relative grid w-full grid-cols-[auto_auto_1fr] items-center gap-[1em] py-[0.62em] text-left"
     >
+      {/* A soft pool of shade that follows the hovered row, so the label never has to
+          compete with whatever is behind it. */}
+      <span
+        data-row-glow
+        data-overflow-ok
+        aria-hidden="true"
+        className="pointer-events-none absolute -inset-y-[0.1em] -left-[1.6em] right-[-2em] -z-10 opacity-0"
+        style={{
+          background:
+            'linear-gradient(90deg, rgb(var(--scrim-rgb) / 0.72) 0%, rgb(var(--scrim-rgb) / 0.5) 45%, transparent 100%)',
+        }}
+      />
+
       <span
         data-menu-index
         data-flip-id={`idx:${section.id}`}
-        className="text-caption tabular-nums tracking-[0.28em] text-blade-copper opacity-35"
+        className="text-caption tabular-nums tracking-[0.28em] text-blade-cream opacity-70"
+        style={{ textShadow: '0 1px 12px rgb(5 4 3 / 0.95), 0 0 4px rgb(5 4 3 / 0.9)' }}
       >
         {section.no}
       </span>
 
-      {/* The 12° divider between index and label — a state marker, not decoration. */}
-      <span
-        data-row-blade
-        aria-hidden="true"
-        className="block h-[1.5em] w-px origin-bottom scale-y-0 skew-blade self-center bg-blade-copper"
-      />
-
-      <span className="relative block min-w-0">
+      {/* The marker: a short 12° blade that grows out of the spine on hover. */}
+      <span className="block h-px w-[2.4em] overflow-visible">
         <span
-          data-menu-label
-          data-flip-id={`ttl:${section.id}`}
-          className="block truncate text-subhead font-medium uppercase text-blade-cream"
-        >
-          {section.label}
-        </span>
-        <span
-          data-row-rule
+          data-row-marker
           aria-hidden="true"
-          className="absolute -bottom-[0.32em] left-0 h-px w-full origin-left scale-x-0 bg-blade-copper"
+          className="block h-px w-full origin-left scale-x-0 skew-blade bg-blade-copper"
         />
+      </span>
+
+      <span
+        data-menu-label
+        data-flip-id={`ttl:${section.id}`}
+        className="block truncate text-subhead font-medium uppercase text-blade-cream"
+        style={{ textShadow: '0 1px 14px rgb(5 4 3 / 0.85), 0 0 3px rgb(5 4 3 / 0.7)' }}
+      >
+        {section.label}
       </span>
     </button>
   );
@@ -94,8 +105,8 @@ export function Menu() {
 
   const stack = useRef(null);
   const layers = useRef([]);
-  const front = useRef(0); // which of the two layers is currently on top
-  const shown = useRef(null); // the render id painted on the front layer
+  const front = useRef(0);
+  const shown = useRef(null);
 
   const menuRef = useCallback((el) => registerChrome('menuRoot', el), [registerChrome]);
   const setLayer = (i) => (el) => {
@@ -107,7 +118,7 @@ export function Menu() {
   const dress = (layer, render) => {
     const img = layer.querySelector('img');
     img.srcset = render.srcSet;
-    img.sizes = '58vw';
+    img.sizes = '100vw';
     img.src = render.src;
     img.alt = render.alt;
     layer.style.backgroundImage = `url(${render.lqip})`;
@@ -118,18 +129,13 @@ export function Menu() {
   // run per settled hover instead of one per pointer event.
   useGSAP(
     () => {
-      const renderId = renderIdFor(hovered) ?? renderIdFor('menu');
+      const renderId = MENU_BACKDROPS[hovered] ?? MENU_BACKDROPS[SECTIONS[0].id];
       const render = getRender(renderId);
       const [a, b] = layers.current;
       if (!render || !a || !b) return;
 
-      // First paint: seed the front layer with no animation, so the render is simply
-      // there while the menu itself is still arriving.
       if (shown.current === null) {
         dress(a, render);
-        // Paint the first render but leave it hidden: the transition director reveals
-        // [data-menu-visual], so the menu rebuilds itself on every arrival rather than
-        // being on screen before its own entrance has played.
         gsap.set(a, { autoAlpha: 1, zIndex: 2, scale: 1 });
         gsap.set(b, { autoAlpha: 0, zIndex: 1 });
         shown.current = renderId;
@@ -143,10 +149,12 @@ export function Menu() {
       dress(back, render);
 
       gsap.killTweensOf([back, top]);
-      gsap.set(back, { zIndex: 2, autoAlpha: 0, scale: 1.04 });
+      gsap.set(back, { zIndex: 2, autoAlpha: 0, scale: 1.08 });
       gsap.set(top, { zIndex: 1 });
-      gsap.to(back, { autoAlpha: 1, scale: 1, duration: 0.6, ease: E.out, overwrite: 'auto' });
-      gsap.to(top, { autoAlpha: 0, duration: 0.6, ease: E.out, overwrite: 'auto' });
+      // The incoming render settles out of a slow zoom, the way the Features backdrops do.
+      gsap.to(back, { autoAlpha: 1, duration: 0.7, ease: E.out, overwrite: 'auto' });
+      gsap.to(back, { scale: 1, duration: 2.4, ease: E.out, overwrite: 'auto' });
+      gsap.to(top, { autoAlpha: 0, duration: 0.7, ease: E.out, overwrite: 'auto' });
 
       front.current = 1 - front.current;
       shown.current = renderId;
@@ -154,26 +162,74 @@ export function Menu() {
     {
       dependencies: [hovered],
       scope: stack,
-      // React 19 StrictMode runs mount → cleanup → mount, and the cleanup reverts the
-      // inline styles the seed paint just set. Without re-arming, the second pass sees
-      // `shown` already populated, skips, and leaves both layers at opacity 0.
       revertOnUpdate: false,
     },
   );
 
-  useGSAP(() => () => {
-    shown.current = null;
-    front.current = 0;
-  }, { scope: stack });
+  useGSAP(
+    () => () => {
+      shown.current = null;
+      front.current = 0;
+    },
+    { scope: stack },
+  );
 
   return (
-    <Screen id="menu" padded={false} className="sheen">
-      <div className="screen-inset grid h-full min-h-0 grid-cols-[42fr_58fr] max-md:grid-cols-1">
-        <div ref={menuRef} className="relative z-10 flex min-h-0 flex-col justify-center">
-          <Wordmark data-menu-brand className="absolute top-0 left-0 w-[clamp(6rem,8vw,10rem)]" />
+    <Screen id="menu" padded={false}>
+      {/* Full bleed, behind everything. */}
+      <div ref={stack} data-menu-visual className="absolute inset-0">
+        {[0, 1].map((i) => (
+          <div
+            key={i}
+            ref={setLayer(i)}
+            data-overflow-ok
+            aria-hidden="true"
+            className="absolute inset-0 overflow-hidden bg-cover bg-center opacity-0"
+          >
+            <img alt="" decoding="async" className="h-full w-full object-cover" />
+          </div>
+        ))}
 
-          <div className="relative flex min-h-0 gap-[1.6em]">
-            {/* The vertical copper rule beside the list, full list height. */}
+        {/* Four layers, in this order, and all of them are doing work:
+            1. a flat darkening, so no render can ever be bright enough to lose the list
+            2. the page-6 copper sheen, at a strength that actually reads OVER a photo
+            3. a left-weighted scrim, which is what the labels genuinely sit on
+            4. a top/bottom vignette to seat the chrome */}
+        <div aria-hidden="true" className="absolute inset-0 z-[3] bg-blade-black/45" />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 z-[3]"
+          style={{
+            background:
+              'radial-gradient(circle at 0% 0%, rgb(154 96 70 / 0.9) 0%, rgb(127 80 58 / 0.72) 10%, rgb(109 69 51 / 0.55) 18%, rgb(86 55 42 / 0.36) 30%, rgb(var(--scrim-rgb) / 0) 58%)',
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 z-[3]"
+          style={{
+            background:
+              'linear-gradient(90deg, rgb(var(--scrim-rgb) / 0.9) 0%, rgb(var(--scrim-rgb) / 0.74) 26%, rgb(var(--scrim-rgb) / 0.3) 58%, rgb(var(--scrim-rgb) / 0.12) 100%)',
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 z-[3]"
+          style={{
+            background:
+              'linear-gradient(180deg, rgb(var(--scrim-rgb) / 0.72) 0%, transparent 16%, transparent 80%, rgb(var(--scrim-rgb) / 0.72) 100%)',
+          }}
+        />
+      </div>
+
+      <div className="screen-inset relative z-10 grid h-full min-h-0 grid-cols-[minmax(0,42%)_1fr] max-md:grid-cols-1">
+        <div ref={menuRef} className="relative flex min-h-0 flex-col justify-center">
+          <Wordmark
+            data-menu-brand
+            className="absolute top-0 left-0 w-[clamp(6rem,8vw,10rem)]"
+          />
+
+          <div className="relative flex min-h-0 gap-[1.4em]">
             <span data-menu-rule aria-hidden="true" className="w-px shrink-0 origin-top bg-blade-copper" />
             <nav className="flex min-h-0 min-w-0 flex-1 flex-col justify-center">
               {SECTIONS.map((section, i) => (
@@ -181,6 +237,7 @@ export function Menu() {
                   key={section.id}
                   section={section}
                   index={i}
+                  active={hovered === section.id}
                   onEnter={onEnter}
                   onSelect={(id, idx) => goTo(id, { index: idx })}
                   disabled={isTransitioning}
@@ -189,33 +246,10 @@ export function Menu() {
             </nav>
           </div>
         </div>
-
-        <div
-          ref={stack}
-          data-menu-visual
-          className="relative min-h-0 min-w-0 max-md:absolute max-md:inset-0"
-        >
-          {[0, 1].map((i) => (
-            <div
-              key={i}
-              ref={setLayer(i)}
-              data-overflow-ok
-              aria-hidden="true"
-              className="absolute inset-0 bg-cover bg-center opacity-0 max-md:opacity-20"
-            >
-              <img alt="" decoding="async" className="h-full w-full object-cover" />
-            </div>
-          ))}
-          {/* On mobile the render sits behind the list with the scrim over it. */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 hidden max-md:block"
-            style={{ background: 'var(--scrim-left)' }}
-          />
-        </div>
+        <span />
       </div>
 
-      <span className="absolute bottom-[var(--screen-margin)] right-[var(--screen-margin)] text-caption text-[#EEE5D2]/70">
+      <span className="absolute bottom-[var(--screen-margin)] right-[var(--screen-margin)] z-10 text-caption text-[#EEE5D2]/70">
         Artistic Impression
       </span>
       <span className="sr-only" aria-live="polite">

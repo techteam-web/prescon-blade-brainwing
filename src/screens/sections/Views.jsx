@@ -127,7 +127,7 @@ export function Views() {
           className="pointer-events-none absolute inset-0 z-10"
           style={{
             background:
-              'linear-gradient(180deg, rgb(11 8 7 / 0.72) 0%, transparent 24%, transparent 62%, rgb(11 8 7 / 0.8) 100%)',
+              'linear-gradient(180deg, rgb(var(--scrim-rgb) / 0.72) 0%, transparent 24%, transparent 62%, rgb(var(--scrim-rgb) / 0.8) 100%)',
           }}
         />
 

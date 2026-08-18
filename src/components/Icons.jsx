@@ -1,7 +1,7 @@
 // Icons appear only where functional: map pin, close, back, fullscreen, arrow. One set,
 // 1.25px stroke, never filled, never coloured. Nothing decorative goes in this file.
 
-function Icon({ children, className = '', size = '1em' }) {
+function Icon({ children, className = '', size = '1em', ...rest }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -14,6 +14,7 @@ function Icon({ children, className = '', size = '1em' }) {
       strokeLinejoin="miter"
       aria-hidden="true"
       className={className}
+      {...rest}
     >
       {children}
     </svg>
@@ -57,6 +58,23 @@ export function FullscreenIcon(props) {
   return (
     <Icon {...props}>
       <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+    </Icon>
+  );
+}
+
+export function CompareIcon(props) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="3" width="12" height="12" />
+      <rect x="9" y="9" width="12" height="12" />
+    </Icon>
+  );
+}
+
+export function CheckIcon(props) {
+  return (
+    <Icon {...props}>
+      <path d="M4 12.5l5 5L20 6" />
     </Icon>
   );
 }

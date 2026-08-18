@@ -2,23 +2,33 @@ import { useCallback, useRef, useState } from 'react';
 import { Screen } from '../../layout/Screen';
 import { SectionTitle } from './SectionShell';
 import { ArrowIcon } from '../../components/Icons';
-import { RENDERS } from '../../data/renders';
-import { gsap, useGSAP, Observer, E } from '../../gsap/Gsapconfig';
+import { getRender } from '../../data/renders';
+import { AMENITY_GALLERY } from '../../data/gallery';
+import { gsap, useGSAP, Observer, E, durationScale } from '../../gsap/Gsapconfig';
 
-// Every render in the project, one at a time, and almost no words.
+// A curated running order, not "everything in renders.js" — see src/data/gallery.js.
+const RENDERS = AMENITY_GALLERY.map(getRender).filter(Boolean);
+
+// Every image is shown WHOLE. object-contain, always — on a phone held upright, on a
+// laptop, on a 4K screen, for a portrait render or a landscape one. Cropping was the
+// wrong call: these are the client's renders and the composition is the point.
 //
-// Orientation decides the treatment:
-//   landscape → object-cover, full bleed. The image IS the screen.
-//   portrait / square → object-contain, full height, on the copper sheen. Cropping a
-//     tall render to a 16:9 screen throws away the thing that makes it tall.
+// What fills the rest of the frame is the render's own 24px LQIP, blown up. It is a
+// colour field taken from the image itself, so it reads as the room's light spilling
+// past the frame — and unlike the full-resolution copy it used to blur, it costs a
+// data-URI decode rather than a full-viewport Gaussian.
 //
-// The gallery wraps in both directions, so the arrows never dead-end.
-const LANDSCAPE = 1.2;
-const isWide = (r) => r.width / r.height >= LANDSCAPE;
+// The change is a blade reveal: a 12° mask sweeps the frame and the next render is
+// already behind it. See .blade-reveal in base.css for why this is transform-only —
+// the previous version animated clip-path over a live blur, and re-rasterised the
+// whole viewport every frame.
+
+const SWEEP = 1.05; // the mask crossing, and the lock that guards it
 
 export function Amenities() {
-  const [index, setIndex] = useState(0);
-  const [dir, setDir] = useState(1);
+  // `prev` is the outgoing slot. Exactly two renders are ever mounted, never twelve.
+  const [view, setView] = useState({ index: 0, prev: null, dir: 1, token: 0 });
+  const { index, prev, dir, token } = view;
   const root = useRef(null);
   const busy = useRef(false);
   const total = RENDERS.length;
@@ -26,25 +36,30 @@ export function Amenities() {
 
   const move = useCallback(
     (delta) => {
-      if (busy.current) return;
+      if (busy.current || !delta) return;
       busy.current = true;
-      setDir(delta);
-      // Wrap: last → first, first → last.
-      setIndex((i) => (i + delta + total) % total);
-      gsap.delayedCall(0.8, () => {
-        busy.current = false;
-      });
+      setView((v) => ({
+        index: (v.index + delta + total) % total, // wraps both ways
+        prev: v.index,
+        dir: delta > 0 ? 1 : -1,
+        token: v.token + 1,
+      }));
     },
     [total],
   );
 
+  // Swipe, and the arrow keys. lockAxis keeps a vertical flick from being read as a
+  // page change, which on a phone is most of what "it goes everywhere" was.
   useGSAP(
     () => {
       const o = Observer.create({
         target: root.current,
         type: 'touch,pointer',
-        dragMinimum: 40,
-        tolerance: 60,
+        dragMinimum: 24,
+        tolerance: 12,
+        lockAxis: true,
+        preventDefault: true,
+        allowClicks: true,
         onLeft: () => move(1),
         onRight: () => move(-1),
       });
@@ -53,48 +68,114 @@ export function Amenities() {
     { dependencies: [move], scope: root },
   );
 
-  // One frame in, one frame out. killTweensOf first so running the gallery fast can
-  // never leave two frames fighting over the stage.
+  // Keep the neighbours decoded. A reveal that has to wait on an image decode is the
+  // one stall the compositor cannot absorb.
+  useGSAP(
+    () => {
+      for (const step of [1, -1, 2]) {
+        const r = RENDERS[(index + step + total) % total];
+        if (!r) continue;
+        const img = new Image();
+        img.src = r.src;
+        if (img.decode) img.decode().catch(() => {});
+      }
+    },
+    { dependencies: [index], scope: root },
+  );
+
   useGSAP(
     () => {
       const el = root.current;
       if (!el) return;
-      for (const frame of el.querySelectorAll('[data-frame]')) {
-        const i = Number(frame.dataset.frame);
-        const on = i === index;
-        const media = frame.querySelector('[data-media]');
-        gsap.killTweensOf([frame, media]);
+      const mask = el.querySelector('[data-mask]');
+      const incoming = el.querySelector('[data-slot="in"] [data-sharp]');
+      const outgoing = el.querySelector('[data-slot="out"]');
+      if (!mask) return;
 
-        if (on) {
-          gsap.set(frame, { zIndex: 2, autoAlpha: 1 });
-          gsap.set(media, {
-            clipPath: dir > 0 ? 'inset(0 0 0 100%)' : 'inset(0 100% 0 0)',
-            scale: 1.08,
-            xPercent: dir > 0 ? 3 : -3,
-          });
-          gsap.to(media, {
-            clipPath: 'inset(0 0% 0 0%)',
-            scale: 1,
-            xPercent: 0,
-            duration: 1.25,
-            ease: E.out,
-            overwrite: 'auto',
-          });
-        } else {
-          gsap.set(frame, { zIndex: 1 });
-          gsap.to(frame, { autoAlpha: 0, duration: 0.55, ease: E.in, overwrite: 'auto' });
-          gsap.to(media, { scale: 1.05, duration: 0.9, ease: E.out, overwrite: 'auto' });
-        }
+      const d = SWEEP * durationScale();
+      const from = dir > 0 ? 120 : -120;
+
+      // Everything below animates transform or opacity only, so the whole sweep runs on
+      // the compositor and nothing in the frame is painted twice.
+      gsap.set(mask, { '--reveal': from });
+      gsap.set(incoming, { scale: 1.06, xPercent: dir > 0 ? 1.6 : -1.6 });
+
+      const tl = gsap.timeline({
+        onComplete: () => {
+          busy.current = false;
+          // Drop the outgoing slot once it is genuinely finished with.
+          setView((v) => (v.prev === null ? v : { ...v, prev: null }));
+        },
+      });
+
+      tl.to(mask, { '--reveal': 0, duration: d, ease: E.out }, 0).to(
+        incoming,
+        { scale: 1, xPercent: 0, duration: d * 1.35, ease: E.out },
+        0,
+      );
+
+      if (outgoing) {
+        // The outgoing render settles back rather than simply being covered.
+        tl.to(
+          outgoing,
+          { scale: 0.975, xPercent: dir > 0 ? -1.4 : 1.4, duration: d * 1.1, ease: E.out },
+          0,
+        ).to(outgoing, { autoAlpha: 0, duration: d * 0.5, ease: E.in }, d * 0.55);
       }
+
+      return () => {
+        tl.kill();
+        busy.current = false;
+      };
     },
-    { dependencies: [index, dir], scope: root },
+    { dependencies: [token], scope: root },
   );
+
+  const slot = (i, role) => {
+    const render = RENDERS[i];
+    return (
+      <div
+        key={render.id}
+        data-slot={role}
+        data-overflow-ok
+        className={`absolute inset-0 ${role === 'in' ? 'z-[3]' : 'z-[2]'}`}
+      >
+        {/* The render's own LQIP, blown up — the colour of the room, not letterboxing.
+            Deepened and saturated hard: a 24px thumbnail blown up averages towards mud,
+            and on a bright render that mud reads as flat grey card either side of the
+            image. Pushed down and warmed, the same pixels read as the room's own light
+            falling off past the frame, which is the whole point of it being there. */}
+        <img
+          data-overflow-ok
+          src={render.lqip}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full scale-[1.14] object-cover blur-[26px] brightness-[0.42] saturate-[1.7]"
+        />
+        <div aria-hidden="true" className="sheen-soft absolute inset-0" />
+        <div aria-hidden="true" className="absolute inset-0 bg-blade-black/25" />
+
+        <img
+          data-sharp
+          src={render.src}
+          srcSet={render.srcSet}
+          sizes="100vw"
+          width={render.width}
+          height={render.height}
+          alt={render.alt}
+          decoding="async"
+          loading={i === 0 ? 'eager' : 'lazy'}
+          className="absolute inset-0 h-full w-full object-contain"
+        />
+      </div>
+    );
+  };
 
   return (
     <Screen id="amenities" padded={false}>
       <div
         ref={root}
-        className="relative h-full w-full"
+        className="relative h-full w-full touch-none select-none"
         tabIndex={0}
         role="group"
         aria-label="Renders gallery"
@@ -106,42 +187,21 @@ export function Amenities() {
           e.stopPropagation();
         }}
       >
-        {RENDERS.map((render, i) => {
-          const wide = isWide(render);
-          return (
-            <figure
-              key={render.id}
-              data-frame={i}
-              aria-hidden={i !== index}
-              // Inactive frames start hidden in CSS, before GSAP runs at all — otherwise
-              // the first paint stacks every render on top of the next.
-              className={`absolute inset-0 m-0 ${i === index ? '' : 'invisible opacity-0'} ${
-                wide ? '' : 'sheen'
-              }`}
-            >
-              <img
-                data-media
-                data-overflow-ok
-                src={render.src}
-                srcSet={render.srcSet}
-                sizes="100vw"
-                width={render.width}
-                height={render.height}
-                alt={render.alt}
-                decoding="async"
-                loading={i === 0 ? 'eager' : 'lazy'}
-                className={`h-full w-full ${wide ? 'object-cover' : 'object-contain'}`}
-              />
-            </figure>
-          );
-        })}
+        {/* The outgoing render sits plainly in the frame. */}
+        {prev !== null && prev !== index && slot(prev, 'out')}
+
+        {/* The incoming one is behind a 12° mask that sweeps across to uncover it. */}
+        <div data-mask className="blade-reveal z-[4]">
+          <span aria-hidden="true" className={`blade-wipe-edge ${dir > 0 ? 'left-0' : 'right-0'}`} />
+          <div className="blade-reveal-inner">{slot(index, 'in')}</div>
+        </div>
 
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 z-10"
           style={{
             background:
-              'linear-gradient(180deg, rgb(11 8 7 / 0.7) 0%, transparent 22%, transparent 68%, rgb(11 8 7 / 0.82) 100%)',
+              'linear-gradient(180deg, rgb(var(--scrim-rgb) / 0.72) 0%, transparent 20%, transparent 70%, rgb(var(--scrim-rgb) / 0.84) 100%)',
           }}
         />
 
@@ -149,15 +209,16 @@ export function Amenities() {
           <SectionTitle id="amenities" />
           <span />
 
-          <div className="flex items-end justify-between gap-[2em]">
-            {/* A tick per render — position at a glance, no wall of text. */}
+          <div className="flex items-end justify-between gap-[2em] max-md:justify-end">
             <ol className="pointer-events-auto flex items-end gap-[0.45em] max-md:hidden">
               {RENDERS.map((r, i) => (
                 <li key={r.id}>
                   <button
                     type="button"
                     onClick={() => {
-                      if (i !== index && !busy.current) move(((i - index + total) % total) <= total / 2 ? i - index : i - index - total);
+                      if (i === index || busy.current) return;
+                      const fwd = (i - index + total) % total;
+                      move(fwd <= total / 2 ? fwd : fwd - total);
                     }}
                     aria-label={`Render ${i + 1} of ${total}`}
                     aria-current={i === index}
@@ -180,36 +241,18 @@ export function Amenities() {
               <span className="text-caption tabular-nums tracking-[0.3em] text-blade-cream/75">
                 {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
               </span>
-              <button
-                type="button"
-                onClick={() => move(-1)}
-                aria-label="Previous render"
-                className="group/n text-blade-cream"
-              >
-                <ArrowIcon
-                  size="1.6em"
-                  className="rotate-180 transition-transform duration-300 ease-out group-hover/n:-translate-x-[5px]"
-                />
+              <button type="button" onClick={() => move(-1)} aria-label="Previous render" className="group/n text-blade-cream">
+                <ArrowIcon size="1.6em" className="rotate-180 transition-transform duration-300 ease-out group-hover/n:-translate-x-[5px]" />
               </button>
-              <button
-                type="button"
-                onClick={() => move(1)}
-                aria-label="Next render"
-                className="group/n text-blade-cream"
-              >
-                <ArrowIcon
-                  size="1.6em"
-                  className="transition-transform duration-300 ease-out group-hover/n:translate-x-[5px]"
-                />
+              <button type="button" onClick={() => move(1)} aria-label="Next render" className="group/n text-blade-cream">
+                <ArrowIcon size="1.6em" className="transition-transform duration-300 ease-out group-hover/n:translate-x-[5px]" />
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <span className="sr-only" aria-live="polite">
-        {`Render ${index + 1} of ${total}`}
-      </span>
+      <span className="sr-only" aria-live="polite">{`Render ${index + 1} of ${total}`}</span>
       <span className="sr-only">{active.alt}</span>
     </Screen>
   );

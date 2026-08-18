@@ -4,6 +4,7 @@ import { Control } from './Primitives';
 import { CloseIcon } from './Icons';
 import { GATE } from '../data/content';
 import { useApp } from '../app/appContext';
+import { INITIAL_TARGET } from '../app/routes';
 import { useFullscreen } from '../hooks/useFullscreen';
 import { gsap, useGSAP, E } from '../gsap/Gsapconfig';
 
@@ -15,7 +16,7 @@ import { gsap, useGSAP, E } from '../gsap/Gsapconfig';
 // interactive even while every GSAP animation in the app is paused.
 
 export function FullscreenGate() {
-  const { stage, goToLanding, setPaused } = useApp();
+  const { stage, goToLanding, navigate: go, setPaused } = useApp();
   const root = useRef(null);
 
   const { mode, request, showNote, dismissNote } = useFullscreen({
@@ -44,15 +45,24 @@ export function FullscreenGate() {
 
   const onEnter = async () => {
     await request();
-    // The first grant starts the intro; a later one simply returns to where we were.
-    if (first) goToLanding();
+    if (!first) return; // a later grant just returns to where we were
+    // Honour a deep link. Someone who opened /location asked for the map, not the
+    // landing — and the landing's intro would take the navigation lock for four
+    // seconds, so this has to be the first move rather than a follow-up.
+    const t = INITIAL_TARGET;
+    if (t && t.stage !== 'landing') go(t.section ? t.section : { stage: t.stage });
+    else goToLanding();
   };
 
   if (mode === 'fallback') {
     if (first) {
       // The API is unavailable. Do not trap the user behind an unsatisfiable prompt —
-      // fall through to a locked 100dvh layout immediately.
-      queueMicrotask(goToLanding);
+      // fall through to a locked 100dvh layout immediately, on the requested page.
+      queueMicrotask(() => {
+        const t = INITIAL_TARGET;
+        if (t && t.stage !== 'landing') go(t.section ? t.section : { stage: t.stage });
+        else goToLanding();
+      });
     }
     return showNote ? (
       <div className="glass fixed bottom-[var(--screen-margin)] left-1/2 z-[200] flex -translate-x-1/2 items-center gap-[1.2em] px-[1.4em] py-[0.8em]">

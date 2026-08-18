@@ -23,6 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 
+# Secrets. The map falls back to keyless OpenFreeMap tiles when no key is present, so
+# the app builds and runs without any of these — but a real key must never be committed.
+.env
+.env.*
+!.env.example
+
 # Asset-pipeline scratch: full-page PDF rasters, staged sources, crop contact sheets.
 # Everything under public/assets/ IS committed — the app must build without the
 # original 127 MB render folder or the 46 MB source PDF.

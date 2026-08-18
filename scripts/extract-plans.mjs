@@ -181,13 +181,54 @@ async function main() {
   }
 
   // ---- Tower elevation ---------------------------------------------------------
-  // Page 10's tower is a raster render composited on black, not vector art, so
-  // transparency is not recoverable. It ships on its black backing and is blended
-  // into --color-blade-black with mix-blend-mode: screen.
+  // Page 10's tower is a raster render composited on black, not vector art, so there is
+  // no transparency to recover directly. But "composited on black" is itself the
+  // information: a pixel's brightness IS its coverage. Alpha is the brightest channel and
+  // the colour is unpremultiplied back out of it, which reconstructs a true cut-out.
+  //
+  // The alternative — shipping it on its black backing and hiding that with
+  // mix-blend-mode: screen over a matched backplate — only holds while the page ground is
+  // also near-black. It broke the moment the ground warmed, as a hard black rectangle.
   const towerRect = px(TOWER_CLIP);
   const towerDest = join(TOWER_DIR, 'tower-elevation.png');
-  await sharp(join(TMP, `p${TOWER_PAGE}.png`), { limitInputPixels: false })
+  const { data: towerRaw, info: towerInfo } = await sharp(join(TMP, `p${TOWER_PAGE}.png`), {
+    limitInputPixels: false,
+  })
     .extract(towerRect)
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  // The backing is not pure black — it is the page's near-black, and measurably so. Treat
+  // brightness as coverage only ABOVE that floor, or the whole backing picks up a few
+  // percent of alpha and paints a faint rectangle wherever the page is lighter than the
+  // page it was cut from. The floor is read off the image's own border ring rather than
+  // hardcoded, so a re-crop or a re-export cannot silently invalidate it.
+  const { width: tw, height: th } = towerInfo;
+  const maxAt = (x, y) => {
+    const i = (y * tw + x) * 3;
+    return Math.max(towerRaw[i], towerRaw[i + 1], towerRaw[i + 2]);
+  };
+  const ring = [];
+  for (let x = 0; x < tw; x++) ring.push(maxAt(x, 0), maxAt(x, th - 1));
+  for (let y = 0; y < th; y++) ring.push(maxAt(0, y), maxAt(tw - 1, y));
+  ring.sort((a, b) => a - b);
+  const floor = ring[Math.floor(ring.length * 0.9)]; // 90th pct: ignores any ink touching an edge
+  const bg = [0, 1, 2].map((k) => towerRaw[k]); // the corner pixel is the backing colour
+
+  const towerRGBA = Buffer.alloc(tw * th * 4);
+  for (let i = 0, j = 0; i < towerRaw.length; i += 3, j += 4) {
+    const c = [towerRaw[i], towerRaw[i + 1], towerRaw[i + 2]];
+    const a = Math.min(1, Math.max(0, (Math.max(c[0], c[1], c[2]) - floor) / (255 - floor)));
+    if (a <= 0) continue; // buffer is already zeroed
+    for (let k = 0; k < 3; k++) {
+      towerRGBA[j + k] = Math.min(255, Math.max(0, Math.round((c[k] - bg[k] * (1 - a)) / a)));
+    }
+    towerRGBA[j + 3] = Math.round(a * 255);
+  }
+  console.log(`    tower alpha: backing ${bg.join(',')} floor ${floor}`);
+
+  await sharp(towerRGBA, { raw: { width: tw, height: th, channels: 4 } })
     .png({ compressionLevel: 9 })
     .toFile(towerDest);
 
@@ -207,7 +248,7 @@ export const TOWER_ELEVATION = {
   src: '/assets/tower/tower-elevation.png',
   width: ${towerRect.width},
   height: ${towerRect.height},
-  // The source is a raster on black; blend with mix-blend-mode: screen.
+  // Cut out with a real alpha channel — no blend mode, composites on any ground.
   aspectRatio: ${(towerRect.width / towerRect.height).toFixed(6)},
 };
 

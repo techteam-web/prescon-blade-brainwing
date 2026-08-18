@@ -5,10 +5,10 @@ import { useApp } from '../app/appContext';
 // animated only by the director — which is why these elements live here rather than
 // inside any screen.
 //
-// The curtain is oversized (inset -12vh -12vw) so the 12° skew can never expose a
-// corner. If it ever drops frames on an iPad Pro, reduce SHARDS to 5 before touching
-// any duration.
-const SHARDS = 7;
+// There is exactly one page transition in this app: the cut. Its parts are the two
+// halves and the seam between them. The halves are empty here and are filled at
+// build time with clones of whichever screen is being sliced — see `theCut` in
+// src/gsap/TransitionDirector.js.
 
 export function BladeCurtain() {
   const { registerChrome } = useApp();
@@ -17,18 +17,18 @@ export function BladeCurtain() {
 
   return (
     <div className="pointer-events-none fixed inset-0 z-90" aria-hidden="true">
-      {/* T1 — the blade sweep. */}
-      <div ref={ref('curtain')} className="blade-curtain">
-        {Array.from({ length: SHARDS }, (_, i) => (
-          <div key={i} data-shard className="blade-shard" />
-        ))}
+      {/* THE CUT. Two clipped halves of one page, and the lit seam between them. */}
+      <div ref={ref('split')} className="blade-split">
+        <div ref={ref('splitL')} className="blade-split-half" data-half="l" />
+        <div ref={ref('splitR')} className="blade-split-half" data-half="r" />
+        <div ref={ref('splitSeam')} className="blade-split-seam">
+          <span ref={ref('splitGlow')} className="blade-split-seam-glow" />
+          <span className="blade-split-seam-core" />
+        </div>
       </div>
 
-      {/* T2 — the panel that rises from below, its top edge skewed to 12° so it arrives
-          as a blade edge, carrying a copper line that fades as it lands. */}
-      <div ref={ref('risePanel')} className="blade-rise" />
-
-      {/* T6 — the line that draws from centre, skews to 12°, and strikes. */}
+      {/* The intro strike: a line that draws from the centre, tilts to the blade angle
+          and cuts. Runs once, on entry. */}
       <div ref={ref('introLine')} className="blade-intro-line" />
     </div>
   );

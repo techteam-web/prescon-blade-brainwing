@@ -122,11 +122,9 @@ export function useTransition({ stage: initialStage = 'gate' } = {}) {
         renderList: [...v.renderList, entry(to.stage, to.section, token)],
       }));
 
-      // One-way mirror for dev deep-linking. replaceState: no history entry, no
-      // hashchange, no back-button trap. The hash never drives navigation.
-      if (to.section) history.replaceState(null, '', `#${to.section}`);
-      else history.replaceState(null, '', location.pathname + location.search);
-
+      // The URL is React Router's job — see src/app/RouteSync.jsx. The state machine
+      // stays the source of truth for what is on screen; the router mirrors it, and
+      // hands back the browser's back button and shareable deep links.
       return true;
     },
     [view.stage, view.section],

@@ -36,8 +36,13 @@ function Figure({ value, decimals }) {
   return <span ref={el} className="tabular-nums" />;
 }
 
-export function ReraTable({ plate, className = '' }) {
-  const [unit, setUnit] = useState('sqft');
+// `unit`/`onUnitChange` let a caller drive the sq.ft/sq.m switch from outside (the
+// compare view syncs it across every column); left undefined, the table manages it
+// itself, as it always has on the main Floor Plans panel.
+export function ReraTable({ plate, className = '', unit: unitProp, onUnitChange }) {
+  const [unitState, setUnitState] = useState('sqft');
+  const unit = unitProp ?? unitState;
+  const setUnit = onUnitChange ?? setUnitState;
   const labels = CONTENT.plans.units;
   const decimals = unit === 'sqm' ? 2 : 0;
 

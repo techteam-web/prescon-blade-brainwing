@@ -3,14 +3,21 @@
 
 @theme {
   /* ---------------------------------------------------------------- palette */
-  /* Blade core */
-  --color-blade-black: #0b0807; /* primary bg — warm near-black, NOT #000 */
-  --color-blade-black-2: #0f0b09; /* raised surface */
-  --color-blade-ink: #2d2725; /* hairlines, borders on dark */
+  /* Blade core.
+     The ground used to be #0b0807 — so close to pure black that the whole application
+     read as unlit rather than as an evening interior. It is now a warm bark on the same
+     copper hue line, roughly twice as light. Nothing else about the system changed: the
+     contrast ratios all still clear AA, and the copper reads warmer against it, not
+     weaker. The original near-black survives as `void`, for the few places that genuinely
+     want the bottom of the range — the surround behind a render, and the curtain. */
+  --color-blade-black: #1a1310; /* primary bg — warm bark */
+  --color-blade-black-2: #241a15; /* raised surface */
+  --color-blade-void: #0b0807; /* true dark — image surrounds and transition furniture */
+  --color-blade-ink: #3a302b; /* hairlines, borders on dark */
   --color-blade-copper: #ca8e5b; /* PRIMARY ACCENT */
   --color-blade-cream: #f0e7d3; /* primary text on dark — NOT #fff */
   --color-blade-ivory: #f7efe9; /* light surface — plan canvas */
-  --color-blade-terracotta: #9a6046; /* muted — LARGE TEXT ONLY (3.93:1) */
+  --color-blade-terracotta: #9a6046; /* muted — LARGE TEXT ONLY (3.61:1 on the ground) */
   --color-blade-rose: #e59d89; /* field labels, meta */
   --color-blade-cocoa: #5b382a; /* text on ivory */
 
@@ -46,10 +53,20 @@
   --text-caption: clamp(0.6875rem, min(0.68vw, 1.209vh), 1rem);
   --text-eyebrow: clamp(0.625rem, min(0.62vw, 1.102vh), 0.875rem);
 
-  /* ------------------------------------------------------------ the 12° blade */
-  /* The wordmark's diagonal stroke cuts between the L and the A at 12° off vertical.
-     Every diagonal in this application is 12°. No other angle exists. */
-  --blade-angle: 12deg;
+  /* --------------------------------------------------------- the blade angle */
+  /* MEASURED, not authored. The wordmark's diagonal stroke — the slash that cuts
+     between the L and the A — is a straight sliver in src/assets/brand/wordmark.svg
+     running (449.202, 582.577) → (410.948, 697.023) in user space:
+
+         Δx = 38.254   Δy = 114.446   atan(Δx / Δy) = 18.49°
+
+     The A's own counter confirms it: its inner triangle rises 35.804 over a 11.973
+     run — 18.49° to three places. The token used to say 12°, which is why every
+     diagonal in the app, and the intro strike in particular, never quite lined up
+     with the mark it was supposed to be quoting.
+
+     Every diagonal in this application is this angle. No other angle exists. */
+  --blade-angle: 18.49deg;
 
   /* ------------------------------------------------------------- breakpoints */
   --breakpoint-md: 768px;
@@ -63,6 +80,12 @@
 
 /* Values that are not Tailwind token namespaces but are read by components. */
 :root {
+  /* Every scrim over a render is mixed from this, never from black. A neutral scrim
+     greys out a warm dusk render and is most of why the deck read as muddy; the same
+     opacity in warm bark leaves the copper in the image intact. Defined once as bare
+     channels so each scrim can pick its own alpha. */
+  --scrim-rgb: 26 19 16;
+
   /* Frosted glass. Permitted on exactly three surfaces: the top rail, the Floor Plans
      label chip, and the Address left panel. Nowhere else. It must read as a subtle
      material, never as an effect. */
@@ -78,11 +101,11 @@
   --sheen: radial-gradient(
     circle at 0% 0%,
     #9a6046 0%,
-    #7f503a 8%,
-    #6d4533 13%,
-    #56372a 21%,
-    #2d1e18 43%,
-    #0b0807 60%
+    #7f503a 9%,
+    #6d4533 15%,
+    #56372a 24%,
+    #34231c 46%,
+    #1a1310 68%
   );
 
   /* Features carries the same idea at a fraction of the strength — enough for a
@@ -92,14 +115,31 @@
     rgb(154 96 70 / 0.34) 0%,
     rgb(109 69 51 / 0.22) 13%,
     rgb(86 55 42 / 0.14) 24%,
-    rgb(11 8 7 / 0) 52%
+    rgb(var(--scrim-rgb) / 0) 52%
   );
+
+  /* The whisper. Screens that carry real information still get no sheen — the content is
+     the subject there — but they no longer sit on a flat field either: a warm lift at the
+     top-left and a cocoa settle at the bottom-right, both far below the level at which
+     they would read as a gradient. It is the difference between a lit room and a void. */
+  --ambient:
+    radial-gradient(
+      120% 100% at 0% 0%,
+      rgb(154 96 70 / 0.16) 0%,
+      rgb(109 69 51 / 0.07) 26%,
+      rgb(var(--scrim-rgb) / 0) 58%
+    ),
+    radial-gradient(
+      90% 80% at 100% 100%,
+      rgb(91 56 42 / 0.14) 0%,
+      rgb(var(--scrim-rgb) / 0) 55%
+    );
 
   /* The landing scrim, per §7.2. */
   --scrim-left: linear-gradient(
     90deg,
-    rgb(11 8 7 / 0.92) 0%,
-    rgb(11 8 7 / 0.78) 38%,
+    rgb(var(--scrim-rgb) / 0.92) 0%,
+    rgb(var(--scrim-rgb) / 0.78) 38%,
     transparent 72%
   );
 

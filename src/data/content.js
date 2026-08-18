@@ -4,13 +4,6 @@
 // document. Do not paraphrase, do not invent marketing copy, do not add lorem. A slot
 // with no content stays structurally empty with a // TODO: client content marker.
 
-export const DISCLAIMER =
-  'This presentation has been prepared by Prescon Group solely for informational and ' +
-  'discussion purposes in relation to Prescon Blade, a proposed commercial development ' +
-  'at Worli, Mumbai. This document does not constitute an offer, invitation, ' +
-  'solicitation, or commitment of any kind, and shall not be construed as a prospectus, ' +
-  'advertisement, or public offering under any applicable law.';
-
 export const LANDING = {
   eyebrow: 'VISION DOCUMENT',
   headline: ['SCULPTED FOR', 'THE DISTINGUISHED,', 'THE INFLUENTIAL,', 'THE POWERFUL.'],

@@ -69,3 +69,21 @@ export function useIdleTask(task, deps = []) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 }
+
+// Run an effect when a value changes, skipping the first render. Used to mirror app
+// state out to the URL — also not an animation, so it belongs here with the other
+// non-animation subscriptions rather than in a feature file.
+export function useOnChange(value, fn) {
+  const saved = useRef(fn);
+  useEffect(() => {
+    saved.current = fn;
+  });
+
+  const prev = useRef(value);
+  useEffect(() => {
+    if (Object.is(prev.current, value)) return;
+    const from = prev.current;
+    prev.current = value;
+    saved.current?.(value, from);
+  }, [value]);
+}

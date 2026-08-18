@@ -1,11 +1,32 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTransition } from '../gsap/useTransition';
 import { AppContext } from './appContext';
 import { SECTIONS, SECTION_BY_ID, sectionIndex } from '../data/sections';
+import { MAX_COMPARE } from '../data/towerZones';
 
 export function AppStateProvider({ children }) {
   const t = useTransition({ stage: 'gate' });
   const { view, navigate } = t;
+
+  // Floor-compare selection. Lives here rather than inside the Plans screen because the
+  // top rail's Compare control (visible while on Plans) needs to read and act on it, and
+  // the rail sits outside whichever screen is currently mounted.
+  const [compareIds, setCompareIds] = useState([]);
+  const [compareOpen, setCompareOpen] = useState(false);
+
+  const toggleCompare = useCallback((id) => {
+    setCompareIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((x) => x !== id)
+        : prev.length >= MAX_COMPARE
+          ? prev
+          : [...prev, id],
+    );
+  }, []);
+
+  const removeCompare = useCallback((id) => {
+    setCompareIds((prev) => prev.filter((x) => x !== id));
+  }, []);
 
   const value = useMemo(() => {
     const current = view.section ? SECTION_BY_ID[view.section] : null;
@@ -17,6 +38,12 @@ export function AppStateProvider({ children }) {
       prevSection: view.prevSection,
       current,
       renderList: view.renderList,
+
+      compareIds,
+      compareOpen,
+      setCompareOpen,
+      toggleCompare,
+      removeCompare,
 
       goTo: (sectionId, opts) => navigate(sectionId, opts),
       goToMenu: () => navigate({ stage: 'menu' }),
@@ -31,7 +58,7 @@ export function AppStateProvider({ children }) {
         return next ? navigate(next.id) : false;
       },
     };
-  }, [t, view, navigate]);
+  }, [t, view, navigate, compareIds, compareOpen, toggleCompare, removeCompare]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

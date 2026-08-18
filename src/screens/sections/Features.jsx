@@ -5,7 +5,8 @@ import { Eyebrow, CountUp } from '../../components/Primitives';
 import { ArrowIcon } from '../../components/Icons';
 import { FEATURE_SLIDES } from '../../data/content';
 import { gsap, useGSAP, E } from '../../gsap/Gsapconfig';
-import { RENDERS } from '../../data/renders';
+import { getRender } from '../../data/renders';
+import { FEATURE_BACKDROPS } from '../../data/gallery';
 
 // A deck. One idea per slide, advanced by click, arrow keys or the rail.
 //
@@ -16,10 +17,11 @@ import { RENDERS } from '../../data/renders';
 // wipe, `data-rise` for a lifted fade), so one timeline animates every slide type and
 // there is no per-slide animation code to drift out of sync.
 
-// Each slide gets a render behind it, cycled through the set so the deck never repeats
-// two in a row. The image is part of the slide, not decoration: it wipes in with the
-// copy and drifts for the whole time the slide is up.
-const BACKDROP = FEATURE_SLIDES.map((_, i) => RENDERS[i % RENDERS.length]);
+// One backdrop per slide, chosen per slide rather than cycled — see src/data/gallery.js.
+// Every one is landscape: a portrait render behind a full-width slide crops to nothing.
+// The image is part of the slide, not decoration; it wipes in with the copy and drifts
+// for as long as the slide is up.
+const BACKDROP = FEATURE_BACKDROPS.map(getRender);
 
 const TONE = {
   cream: 'text-blade-cream',
@@ -324,21 +326,27 @@ export function Features() {
               />
             </div>
           ))}
-          {/* The renders are bright. The copy has to win on every slide, so this is a
-              flat darkening plus a left-weighted gradient, not a subtle vignette. */}
-          <div className="absolute inset-0 z-[5] bg-blade-black/55" />
+          {/* Four scrims used to stack here — a flat 55% darkening, a left gradient that
+              was still at 30% on the right edge, a vignette and the sheen — and together
+              they buried the render. On the darker slides the image was simply not there.
+
+              The copy still has to win, but it only occupies the left 74% of the frame,
+              so the darkening is now weighted rather than flat: heavy where the type is,
+              gone by the right third, where the render is the only thing on screen. */}
+          <div className="absolute inset-0 z-[5] bg-blade-black/20" />
           <div
             className="absolute inset-0 z-[5]"
             style={{
               background:
-                'linear-gradient(90deg, rgb(11 8 7 / 0.96) 0%, rgb(11 8 7 / 0.9) 38%, rgb(11 8 7 / 0.45) 72%, rgb(11 8 7 / 0.3) 100%)',
+                'linear-gradient(90deg, rgb(var(--scrim-rgb) / 0.9) 0%, rgb(var(--scrim-rgb) / 0.78) 30%, rgb(var(--scrim-rgb) / 0.34) 60%, rgb(var(--scrim-rgb) / 0) 88%)',
             }}
           />
+          {/* Seats the chrome, top and bottom. Nothing more than that. */}
           <div
             className="absolute inset-0 z-[5]"
             style={{
               background:
-                'linear-gradient(180deg, rgb(11 8 7 / 0.75) 0%, transparent 20%, transparent 74%, rgb(11 8 7 / 0.85) 100%)',
+                'linear-gradient(180deg, rgb(var(--scrim-rgb) / 0.6) 0%, transparent 17%, transparent 80%, rgb(var(--scrim-rgb) / 0.62) 100%)',
             }}
           />
           <div className="sheen-soft absolute inset-0 z-[5]" />

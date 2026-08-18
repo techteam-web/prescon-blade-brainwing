@@ -5,7 +5,7 @@ export const RENDERS = [
   {
     "id": "render-01",
     "src": "/assets/renders/render-01-2560.webp",
-    "srcSet": "/assets/renders/render-01-1600.webp 1600w, /assets/renders/render-01-2560.webp 2560w, /assets/renders/render-01-3840.webp 3840w",
+    "srcSet": "/assets/renders/render-01-1280.webp 1280w, /assets/renders/render-01-1920.webp 1920w, /assets/renders/render-01-2560.webp 2560w",
     "width": 5000,
     "height": 2813,
     "lqip": "data:image/webp;base64,UklGRlwAAABXRUJQVlA4IFAAAADQAwCdASoYAA0APu1iqk2ppaQiMAgBMB2JZACdLwAB0QPM6mZpl/gA/oMTaKta1MDCJ+/Pwbciv+OQBc4eLy/92jkG/b799XZQvh9FXVBAAA==",
@@ -14,7 +14,7 @@ export const RENDERS = [
   {
     "id": "render-02",
     "src": "/assets/renders/render-02-2560.webp",
-    "srcSet": "/assets/renders/render-02-1600.webp 1600w, /assets/renders/render-02-2560.webp 2560w, /assets/renders/render-02-3840.webp 3840w",
+    "srcSet": "/assets/renders/render-02-1280.webp 1280w, /assets/renders/render-02-1920.webp 1920w, /assets/renders/render-02-2560.webp 2560w",
     "width": 7556,
     "height": 6750,
     "lqip": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAADwBACdASoYABUAPu1iqk2ppaQiMBgMATAdiWMAxvQQ7Bp9zSvOFvzptGv+0kcioxAA/lCxmeGeIgymTVhrYb4lypS6yEFKIKvTXNDMVavpRm1c2o7c4AAA",
@@ -23,7 +23,7 @@ export const RENDERS = [
   {
     "id": "render-03",
     "src": "/assets/renders/render-03-2560.webp",
-    "srcSet": "/assets/renders/render-03-1600.webp 1600w, /assets/renders/render-03-2560.webp 2560w, /assets/renders/render-03-3840.webp 3840w",
+    "srcSet": "/assets/renders/render-03-1280.webp 1280w, /assets/renders/render-03-1920.webp 1920w, /assets/renders/render-03-2560.webp 2560w",
     "width": 4800,
     "height": 6000,
     "lqip": "data:image/webp;base64,UklGRooAAABXRUJQVlA4IH4AAABQBQCdASoYAB4APu1mqk4ppaQiMAgBMB2JQBYj2YBnywzCh3YcmfImqzvZZSH8omSMyMgA/uzXWOwjI0nNokkyjYuPZZjvNMB5QhrpTEx1RP6kRZ+gAkwm+dCUWd3pNObuA5dRailJuOjvNgegl4wisyL2i/p+3ucqxqcAAAA=",
@@ -32,7 +32,7 @@ export const RENDERS = [
   {
     "id": "render-04",
     "src": "/assets/renders/render-04-2560.webp",
-    "srcSet": "/assets/renders/render-04-1600.webp 1600w, /assets/renders/render-04-2560.webp 2560w, /assets/renders/render-04-3840.webp 3840w",
+    "srcSet": "/assets/renders/render-04-1280.webp 1280w, /assets/renders/render-04-1920.webp 1920w, /assets/renders/render-04-2560.webp 2560w",
     "width": 5000,
     "height": 2419,
     "lqip": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAACwAwCdASoYAAwAPu1orU2ppqSiMAgBMB2JYwCdAGijL3iF9reoAAD+7pC3e/zRTeEQYmB9C/E+mKpRuTYnsmvVayVGpnWxJHb9HxMEgAA=",
@@ -41,7 +41,7 @@ export const RENDERS = [
   {
     "id": "render-05",
     "src": "/assets/renders/render-05-2560.webp",
-    "srcSet": "/assets/renders/render-05-1600.webp 1600w, /assets/renders/render-05-2560.webp 2560w, /assets/renders/render-05-3840.webp 3840w",
+    "srcSet": "/assets/renders/render-05-1280.webp 1280w, /assets/renders/render-05-1920.webp 1920w, /assets/renders/render-05-2560.webp 2560w",
     "width": 6000,
     "height": 3375,
     "lqip": "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAADQAwCdASoYAA0APu1iqU2ppaOiMAgBMB2JQBOj+AAy/HE0Yr3fhgAA/rYmczoe/kXJWgp2mbFvVJLM5V2mm2xh7Y9pLi0qleJd7pvfwPPoAAAA",
@@ -50,7 +50,7 @@ export const RENDERS = [
   {
     "id": "render-06",
     "src": "/assets/renders/render-06-2560.webp",
-    "srcSet": "/assets/renders/render-06-1600.webp 1600w, /assets/renders/render-06-2560.webp 2560w, /assets/renders/render-06-3840.webp 3840w",
+    "srcSet": "/assets/renders/render-06-1280.webp 1280w, /assets/renders/render-06-1920.webp 1920w, /assets/renders/render-06-2560.webp 2560w",
     "width": 4295,
     "height": 3072,
     "lqip": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAwBACdASoYABEAPu1mqk2ppaQiMAgBMB2JZQC7IUwC8X0xebP+yHKC1gAA/hD8mZ6cAItbXvIwS7P8B6KDSEVxkh4KKt8dlcufGdr54wy8Zucb5WZuCK2EAYwAAA==",
@@ -59,7 +59,7 @@ export const RENDERS = [
   {
     "id": "render-07",
     "src": "/assets/renders/render-07-2560.webp",
-    "srcSet": "/assets/renders/render-07-1600.webp 1600w, /assets/renders/render-07-2560.webp 2560w, /assets/renders/render-07-3840.webp 3840w",
+    "srcSet": "/assets/renders/render-07-1280.webp 1280w, /assets/renders/render-07-1920.webp 1920w, /assets/renders/render-07-2560.webp 2560w",
     "width": 4295,
     "height": 3072,
     "lqip": "data:image/webp;base64,UklGRmYAAABXRUJQVlA4IFoAAADwAwCdASoYABEAPu1iqU2ppaQiMAgBMB2JZQC7ACDDGirMQ/8Lqc2AAP4Q/XCHT+Qp8uozpP0j7Qpua0Lyr6eacycusHgzcN5eVqug6ufgdJXOLjmtoam4lAA=",
@@ -68,7 +68,7 @@ export const RENDERS = [
   {
     "id": "render-08",
     "src": "/assets/renders/render-08-2560.webp",
-    "srcSet": "/assets/renders/render-08-1600.webp 1600w, /assets/renders/render-08-2560.webp 2560w, /assets/renders/render-08-3840.webp 3840w",
+    "srcSet": "/assets/renders/render-08-1280.webp 1280w, /assets/renders/render-08-1920.webp 1920w, /assets/renders/render-08-2560.webp 2560w",
     "width": 4295,
     "height": 3072,
     "lqip": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAADQAwCdASoYABEAPu1iqU2ppaOiMAgBMB2JZQCdABgpkC93XCBC91gA/p7FXHMm16tlWr0RmIcOFNNy+eax7K3AtL89AvVd6rxIfpvzMAA=",
@@ -77,10 +77,118 @@ export const RENDERS = [
   {
     "id": "render-09",
     "src": "/assets/renders/render-09-2560.webp",
-    "srcSet": "/assets/renders/render-09-1600.webp 1600w, /assets/renders/render-09-2560.webp 2560w, /assets/renders/render-09-3840.webp 3840w",
+    "srcSet": "/assets/renders/render-09-1280.webp 1280w, /assets/renders/render-09-1920.webp 1920w, /assets/renders/render-09-2560.webp 2560w",
     "width": 9761,
     "height": 5491,
     "lqip": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAACwAwCdASoYAA0APu1mqk2ppaQiMAgBMB2JYgCw7CHXK5PfdGsiYAD+7o5+jY49NB3tmEeyPYeX+/+F1QBwH1Rlpmr9mApbDxl4AA==",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "blade-01",
+    "src": "/assets/renders/blade-01-2560.webp",
+    "srcSet": "/assets/renders/blade-01-1280.webp 1280w, /assets/renders/blade-01-1920.webp 1920w, /assets/renders/blade-01-2560.webp 2560w",
+    "width": 15000,
+    "height": 9336,
+    "lqip": "data:image/webp;base64,UklGRpIAAABXRUJQVlA4WAoAAAAQAAAAFwAADgAAQUxQSBgAAAABF9D/iAiQBZgMLYnQIt4bQET/JwDnTT1WUDggVAAAADAEAJ0BKhgADwA+7WKpTamlpCIwCAEwHYlmAJ0yhHAAKb3M20iBPDNWQAD+2k9Fzrcv6uCS/ZdNnS2b5wH5U1cLEefxQrWomobYFrusHjW9BxoAAA==",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "blade-02",
+    "src": "/assets/renders/blade-02-2560.webp",
+    "srcSet": "/assets/renders/blade-02-1280.webp 1280w, /assets/renders/blade-02-1920.webp 1920w, /assets/renders/blade-02-2560.webp 2560w",
+    "width": 16493,
+    "height": 12108,
+    "lqip": "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAABwAwCdASoYABIAPuVeo02pJSMiMAwBIByJZQC/7Cm7xwmCowAA/u7kIdlciLDag6iQuJlnYXLTBBaaw22IyohZFmZoXXWZujpcmRAvQDJRswAA",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "blade-03",
+    "src": "/assets/renders/blade-03-2560.webp",
+    "srcSet": "/assets/renders/blade-03-1280.webp 1280w, /assets/renders/blade-03-1920.webp 1920w, /assets/renders/blade-03-2560.webp 2560w",
+    "width": 7708,
+    "height": 3508,
+    "lqip": "data:image/webp;base64,UklGRoAAAABXRUJQVlA4WAoAAAAQAAAAFwAACgAAQUxQSBIAAAABD9D/iAgIBAgnVu07iOh/chNWUDggSAAAANADAJ0BKhgACwA+7WaqTamlpCIwCAEwHYljAJ0AHhmO5eRkPQbjpAD+7L2JjqyWCbYJJZPYc2zMrlvC0J3B+shL2c/BQZRgAA==",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "blade-04",
+    "src": "/assets/renders/blade-04-2560.webp",
+    "srcSet": "/assets/renders/blade-04-1280.webp 1280w, /assets/renders/blade-04-1920.webp 1920w, /assets/renders/blade-04-2560.webp 2560w",
+    "width": 14998,
+    "height": 11249,
+    "lqip": "data:image/webp;base64,UklGRpoAAABXRUJQVlA4WAoAAAAQAAAAFwAAEQAAQUxQSBgAAAABF9D/iAiQBZgMLYnQIt4bQET/JwDnXz1WUDggXAAAADAFAJ0BKhgAEgA+7WSpTamlpCIwGAwBMB2JZQC+SAz3QmUSyGiANhnD8RO9LkotVSIAAP7w363wnmf+UstBBx2PRwvxfayYqeg1wZa0oOLp8NSVkDk3tWKEbxAA",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "blade-05",
+    "src": "/assets/renders/blade-05-2560.webp",
+    "srcSet": "/assets/renders/blade-05-1280.webp 1280w, /assets/renders/blade-05-1920.webp 1920w, /assets/renders/blade-05-2560.webp 2560w",
+    "width": 3072,
+    "height": 2048,
+    "lqip": "data:image/webp;base64,UklGRkoAAABXRUJQVlA4ID4AAABwAwCdASoYABAAPu1kq04ppaQiMAgBMB2JYwCdADBR2x7q82QA/u8P1tQgKxaz4RdpyO0cPsKzti3NxuUwAA==",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "blade-06",
+    "src": "/assets/renders/blade-06-2560.webp",
+    "srcSet": "/assets/renders/blade-06-1280.webp 1280w, /assets/renders/blade-06-1920.webp 1920w, /assets/renders/blade-06-2560.webp 2560w",
+    "width": 3072,
+    "height": 2048,
+    "lqip": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAAAQBACdASoYABAAPu1orU6ppiSiMAgBMB2JYwCdMoADTtMRz4eP7LYzgAD+6/RUEXeKgQwSsKytUwGysAL4qKdvsUZ7//LAAAA=",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "blade-07",
+    "src": "/assets/renders/blade-07-2560.webp",
+    "srcSet": "/assets/renders/blade-07-1280.webp 1280w, /assets/renders/blade-07-1920.webp 1920w, /assets/renders/blade-07-2560.webp 2560w",
+    "width": 5326,
+    "height": 4800,
+    "lqip": "data:image/webp;base64,UklGRnwAAABXRUJQVlA4IHAAAADQBACdASoYABYAPu1ur1IppiQiqAgBMB2JQBYj2hgnKuWaQGpwCZB2lRSQQDKlTAD+jR7dN1kX2chACv60klPpDJOeFdLKPTEga+NHnGXpM+nM+IWj7ZnJQW3Vya0AM/1KH/mVdJPhHxHIq7z3gAAA",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "blade-08",
+    "src": "/assets/renders/blade-08-2560.webp",
+    "srcSet": "/assets/renders/blade-08-1280.webp 1280w, /assets/renders/blade-08-1920.webp 1920w, /assets/renders/blade-08-2560.webp 2560w",
+    "width": 15000,
+    "height": 14920,
+    "lqip": "data:image/webp;base64,UklGRqoAAABXRUJQVlA4WAoAAAAQAAAAFwAAFwAAQUxQSBkAAAABF9D/iAiQCViIpoRoEs/rj+j/BIh+F3YBAFZQOCBqAAAA0AQAnQEqGAAYAD7tXK1NqaSkojAYDAEwHYlAE6ABicpaN8UA/otl0O+sed2+95gA/unHJi/BdtbumHSHaZfdbqkruhDWSlep4TXw9IEaTxZ91rwu/MfrKv8G2AE7wd6ttil3BoIdykgAAA==",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "blade-09",
+    "src": "/assets/renders/blade-09-2560.webp",
+    "srcSet": "/assets/renders/blade-09-1280.webp 1280w, /assets/renders/blade-09-1920.webp 1920w, /assets/renders/blade-09-2560.webp 2560w",
+    "width": 14732,
+    "height": 14999,
+    "lqip": "data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAAAQBQCdASoYABgAPuVepk2pJSOiN/VYASAciWUAyNQQ3aiuvfBJOThHJiXgNT+QeqQAAP7Z3DNZ+iZkBsRdB/GSJTWH29QxOq5XjmGdvUac22xHHxafLkdJG/2sx3YD1gA=",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "blade-10",
+    "src": "/assets/renders/blade-10-2560.webp",
+    "srcSet": "/assets/renders/blade-10-1280.webp 1280w, /assets/renders/blade-10-1920.webp 1920w, /assets/renders/blade-10-2560.webp 2560w",
+    "width": 8472,
+    "height": 5600,
+    "lqip": "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAAAwBACdASoYABAAPu1kqk4ppaQiMAgBMB2JZgCdMoSA2CnH1Y09YTJ4x8AA/ujJrME/JBDD5C5ccfkc9vOtNn2/ZvxKy9aAnRZKCB0Uw0y0qAAA",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "blade-11",
+    "src": "/assets/renders/blade-11-2560.webp",
+    "srcSet": "/assets/renders/blade-11-1280.webp 1280w, /assets/renders/blade-11-1920.webp 1920w, /assets/renders/blade-11-2560.webp 2560w",
+    "width": 5280,
+    "height": 2970,
+    "lqip": "data:image/webp;base64,UklGRlAAAABXRUJQVlA4IEQAAACQAwCdASoYAA0APu1orU2ppqSiMAgBMB2JQBOgBDi+C04y+ISgAP7LDpGpeL31zDWBDW9Ae7I1+p7K0sTr7awhjcAAAA==",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "blade-12",
+    "src": "/assets/renders/blade-12-2560.webp",
+    "srcSet": "/assets/renders/blade-12-1280.webp 1280w, /assets/renders/blade-12-1920.webp 1920w, /assets/renders/blade-12-2560.webp 2560w",
+    "width": 3500,
+    "height": 2917,
+    "lqip": "data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAACQBACdASoYABQAPu1srVCppiQiqAqpMB2JYwDA3Ac7zwddsL9EEsbsvc5w+wAA3VJ49hXpC/sdX1wtPZlNtePRvUswIAAzuMcHf48CE8e/ji1XIilgAA==",
     "alt": "The Blade by Prescon — artistic impression"
   }
 ];

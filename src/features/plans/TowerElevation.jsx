@@ -16,9 +16,12 @@ import { gsap, useGSAP, E } from '../../gsap/Gsapconfig';
 // With the ratio locked and no fitting, the image and the zone overlay are the same
 // rectangle by construction, which is the property the calibration depends on.
 //
-// The source is a raster composited on black, not vector, so transparency is not
-// recoverable. `mix-blend-mode: screen` over a matched backplate blends its black into
-// blade-black instead of showing a hard rectangle.
+// The source is a raster composited on black, not vector. It used to be screen-blended
+// over a matched backplate to hide that, which worked only for as long as the page ground
+// was also near-black — the moment the ground warmed, the backplate read as a hard black
+// rectangle. It now carries a real alpha channel instead, derived from the source's own
+// luminance and unpremultiplied (scripts/extract-plans.mjs), so it composites correctly on
+// any ground and needs no blend mode at all.
 //
 // Load any screen using this with ?zones to outline every zone in copper for calibration.
 const SHOW_ZONES =
@@ -110,18 +113,8 @@ export function TowerElevation({
     <div className={`relative flex h-full w-full items-center justify-center ${className}`}>
       <div
         className="relative h-full"
-        style={{
-          aspectRatio: String(ratio),
-          maxWidth: '100%',
-          // `isolation` pins the blend group to exactly [backplate, image]. Without it
-          // the group climbs to whichever ancestor happens to establish a stacking
-          // context, which differs per screen — and on Lifestyle that resolved to a
-          // backdrop that screened the tower away to nothing.
-          isolation: 'isolate',
-        }}
+        style={{ aspectRatio: String(ratio), maxWidth: '100%' }}
       >
-        {/* Backplate: the source's black, so `screen` has nothing to lift. */}
-        <div aria-hidden="true" className="absolute inset-0 bg-blade-black" />
         <img
           src={TOWER_ELEVATION.src}
           width={TOWER_ELEVATION.width}

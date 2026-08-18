@@ -147,6 +147,10 @@ export const TOWER_ZONES = [
 
 export const ZONE_BY_ID = Object.fromEntries(TOWER_ZONES.map((z) => [z.id, z]));
 
+// Floor plates only — the compare view has nothing to show for a service or amenity
+// floor. Three is the most the compare panel's columns stay legible at.
+export const MAX_COMPARE = 3;
+
 // The md breakpoint lays the tower out as a horizontal band across the top. Authored as
 // its own x-percentage map rather than derived by rotation: reading order runs ground
 // (left) to crown (right), which is the reverse of the vertical stack.
