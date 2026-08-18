@@ -341,9 +341,23 @@
     );
   }
 
+  /* The top-rail variant. Same control, tightened so it sits beside MENU and HOME. */
+  .enter-portal--sm {
+    gap: 0.9em;
+    padding: 0.62em 1.1em;
+  }
+
+  /* Compare mode's selection badge. It lives inside the tower, which GSAP scales, so it
+     undoes that scale from --tower-scale — set on the tower by the same tween. */
+  .zone-badge {
+    transform: translateY(-50%) scale(calc(1 / var(--tower-scale, 1)));
+    transform-origin: right center;
+  }
+
   .enter-portal-label {
     position: relative;
     z-index: 1;
+    white-space: nowrap;
   }
 
   /* The blade tick: a short stroke at the mark's own angle, then the arrow. */

@@ -54,6 +54,20 @@ export function BackIcon(props) {
   );
 }
 
+// Three plates at three sizes. The only icon in the app that names a mode rather than a
+// direction, which is why it is the one control that carries a frame.
+//
+// It was two outlined rectangles first. At the 12px the top rail renders it, two small
+// empty boxes are indistinguishable from missing glyphs — it read as tofu. Three strokes
+// of different lengths read as a comparison at any size.
+export function CompareIcon(props) {
+  return (
+    <Icon {...props}>
+      <path d="M6 20V11M12 20V4M18 20v-6" />
+    </Icon>
+  );
+}
+
 export function FullscreenIcon(props) {
   return (
     <Icon {...props}>

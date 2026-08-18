@@ -27,7 +27,7 @@ import { gsap, useGSAP, E } from '../../gsap/Gsapconfig';
 const SHOW_ZONES =
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('zones');
 
-function Zone({ zone, state, onHover, onSelect, tabIndex }) {
+function Zone({ zone, state, onHover, onSelect, tabIndex, badge = null }) {
   const ref = useRef(null);
   const { contextSafe } = useGSAP({ scope: ref });
   const { shape } = zone;
@@ -88,6 +88,20 @@ function Zone({ zone, state, onHover, onSelect, tabIndex }) {
         aria-hidden="true"
         className="absolute inset-x-0 bottom-0 h-px origin-center scale-x-0 bg-blade-copper"
       />
+
+      {/* Compare mode only: the order this floor was picked in. Sits outside the band on
+          the left so it never covers the elevation, and counter-scales against
+          --tower-scale — it is inside the transformed tower, which grows to nearly 4x on
+          a phone, and a badge that grew with it would swallow the building. */}
+      {badge ? (
+        <span
+          data-zone-badge
+          aria-hidden="true"
+          className="zone-badge absolute right-[calc(100%+0.5em)] top-1/2 flex size-[1.55em] items-center justify-center bg-blade-copper text-[0.62em] font-bold tabular-nums text-blade-black"
+        >
+          {badge}
+        </span>
+      ) : null}
     </button>
   );
 }
@@ -100,6 +114,7 @@ export function TowerElevation({
   zones,
   horizontal = false,
   interactive = true,
+  selectedIds = [],
   className = '',
 }) {
   const list = zones ?? (horizontal ? TOWER_ZONES_H : TOWER_ZONES);
@@ -107,7 +122,14 @@ export function TowerElevation({
     ? TOWER_ELEVATION.height / TOWER_ELEVATION.width
     : TOWER_ELEVATION.width / TOWER_ELEVATION.height;
 
-  const stateOf = (id) => (lockedId === id ? 'locked' : hoveredId === id ? 'hover' : 'idle');
+  // A picked floor reads as locked. Compare mode can hold three at once, which is the
+  // only reason this is a list and not the single `lockedId` the screen normally uses.
+  const stateOf = (id) =>
+    lockedId === id || selectedIds.includes(id)
+      ? 'locked'
+      : hoveredId === id
+        ? 'hover'
+        : 'idle';
 
   return (
     <div className={`relative flex h-full w-full items-center justify-center ${className}`}>
@@ -134,6 +156,9 @@ export function TowerElevation({
                 onHover={onHover}
                 onSelect={onSelect}
                 tabIndex={i === 0 ? 0 : -1}
+                badge={
+                  selectedIds.indexOf(zone.id) >= 0 ? selectedIds.indexOf(zone.id) + 1 : null
+                }
               />
             ))
           : null}

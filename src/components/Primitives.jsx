@@ -91,7 +91,18 @@ export function Control({ children, onClick, className = '', disabled = false, .
 // at the blade angle and the type inverts to the ground colour.
 //
 // It stays inside the system: copper, cream, one angle, no radius, no glow.
-export function EnterPortal({ children, onClick, className = '', disabled = false, ...rest }) {
+//
+// `size="sm"` is the top-rail variant — same control, same three gestures, tightened so
+// it sits beside MENU and HOME without shouting over them.
+export function EnterPortal({
+  children,
+  onClick,
+  className = '',
+  disabled = false,
+  size = 'md',
+  icon = <ArrowIcon size="1.05em" />,
+  ...rest
+}) {
   const root = useRef(null);
 
   useGSAP(
@@ -178,7 +189,9 @@ export function EnterPortal({ children, onClick, className = '', disabled = fals
       onFocus={enter}
       onBlur={leave}
       disabled={disabled}
-      className={`enter-portal group disabled:opacity-40 ${className}`}
+      className={`enter-portal group disabled:opacity-40 ${
+        size === 'sm' ? 'enter-portal--sm' : ''
+      } ${className}`}
       {...rest}
     >
       <span aria-hidden="true" className="enter-portal-fill">
@@ -192,11 +205,17 @@ export function EnterPortal({ children, onClick, className = '', disabled = fals
       </span>
 
       <span data-portal-mark className="enter-portal-label flex items-center gap-[0.9em] text-blade-copper">
+<<<<<<< HEAD
         <span aria-hidden="true" className="enter-portal-tick" />
         <span aria-hidden="true" className="enter-portal-arrow">
           <ArrowIcon data-portal-arrow-a size="1.05em" className="enter-portal-arrow-icon" />
           <ArrowIcon data-portal-arrow-b size="1.05em" className="enter-portal-arrow-icon" />
         </span>
+=======
+        {/* The tick is the first thing to go when there is no room for it. */}
+        <span aria-hidden="true" className="enter-portal-tick max-sm:hidden" />
+        {icon}
+>>>>>>> origin/main
       </span>
 
       {/* The intro sequence draws this rule as the control arrives — keeping the marker
