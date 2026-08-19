@@ -5,10 +5,10 @@
 // marketing requirement). `null` means the screen carries no render or map.
 
 export const SECTIONS = [
-  { id: 'views', no: '01', label: 'Views', caption: 'Artistic Impression' },
-  { id: 'amenities', no: '02', label: 'Amenities', caption: 'Representative Image' },
+  { id: 'views', no: '01', label: 'Views', caption: null},
+  { id: 'amenities', no: '02', label: 'Amenities', caption: null},
   { id: 'plans', no: '03', label: 'Floor Plans', caption: null },
-  { id: 'location', no: '04', label: 'Location', caption: 'Map not to scale' },
+  { id: 'location', no: '04', label: 'Location', caption: null},
   { id: 'features', no: '05', label: 'Features', caption: null },
 ];
 

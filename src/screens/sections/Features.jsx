@@ -13,9 +13,10 @@ import { FEATURE_BACKDROPS } from '../../data/gallery';
 // This screen carries the sheen at reduced strength — enough for a personality, not
 // enough to compete with the slide.
 //
-// Every slide is composed from the same set of marked parts (`data-line` for a masked
-// wipe, `data-rise` for a lifted fade), so one timeline animates every slide type and
-// there is no per-slide animation code to drift out of sync.
+// Every slide is composed from the same set of marked parts (`data-line` for the
+// headline/eyebrow, `data-rise` for the body) and both rise up the y axis from
+// opacity 0 to 1, so one timeline animates every slide type and there is no
+// per-slide animation code to drift out of sync.
 
 // One backdrop per slide, chosen per slide rather than cycled — see src/data/gallery.js.
 // Every one is landscape: a portrait render behind a full-width slide crops to nothing.
@@ -65,7 +66,7 @@ function SlideBody({ slide }) {
                 )}
                 <Eyebrow>{col.eyebrow}</Eyebrow>
                 <span className="text-body font-medium text-blade-cream">{col.subtitle}</span>
-                <p className="text-caption text-blade-cream/70">{col.body}</p>
+                <p className="text-[calc(var(--text-caption)*1.03)] text-blade-cream/70 3xl:text-[calc(var(--text-caption)*1.05)]">{col.body}</p>
               </div>
             ))}
           </div>
@@ -93,7 +94,7 @@ function SlideBody({ slide }) {
           </div>
         </>
       );
-
+//font for 4 page
     case 'grid':
       return (
         <div data-rise className="grid grid-cols-4 gap-[2em] max-lg:grid-cols-2">
@@ -102,10 +103,10 @@ function SlideBody({ slide }) {
               {i > 0 && (
                 <span aria-hidden="true" className="absolute -left-[1em] top-0 h-full w-px bg-blade-ink max-lg:hidden" />
               )}
-              <h2 className="text-caption font-bold uppercase tracking-[0.24em] text-blade-copper">{col.heading}</h2>
+              <h2 className="text-[calc(var(--text-caption)*1.02)] font-bold uppercase tracking-[0.24em] text-blade-copper 4xl:text-[1.275rem]">{col.heading}</h2>
               <ul className="flex flex-col">
                 {col.items.map((item) => (
-                  <li key={item} className="border-t border-blade-ink py-[0.45em] text-caption text-blade-cream/85">
+                  <li key={item} className="border-t border-blade-ink py-[0.45em] text-[calc(var(--text-caption)*1.051)] text-blade-cream/85 3xl:text-[calc(var(--text-caption)*1.091)] 4xl:text-[1.275rem]">
                     {item}
                   </li>
                 ))}
@@ -120,10 +121,10 @@ function SlideBody({ slide }) {
         <dl data-rise className="grid grid-cols-[minmax(0,15em)_1fr] content-start gap-x-[2.4em] max-md:grid-cols-1">
           {slide.rows.map((row) => (
             <div key={row.label} className="contents">
-              <dt className="border-t border-blade-ink py-[0.5em] text-caption uppercase tracking-[0.16em] text-blade-rose">
+              <dt className="border-t border-blade-ink py-[0.5em] text-caption uppercase tracking-[0.16em] text-blade-rose 4xl:text-xl">
                 {row.label}
               </dt>
-              <dd className="border-t border-blade-ink py-[0.5em] text-caption text-blade-cream max-md:border-t-0 max-md:pt-0">
+              <dd className="border-t border-blade-ink py-[0.5em] text-[calc(var(--text-caption)*1.01)] text-blade-cream max-md:border-t-0 max-md:pt-0 4xl:text-xl">
                 {row.value}
               </dd>
             </div>
@@ -143,7 +144,8 @@ function SlideBody({ slide }) {
             {[slide.items.slice(0, half), slide.items.slice(half)].map((col, ci) => (
               <ul key={ci} className="flex min-w-0 flex-col">
                 {col.map((m) => (
-                  <li key={m} className="border-t border-blade-ink py-[0.5em] text-caption text-blade-cream/80">
+    //font size for features sustanability
+                  <li key={m} className="border-t border-blade-ink py-[0.5em] text-[calc(var(--text-caption)*1.03)] text-blade-cream/80 3xl:text-[calc(var(--text-caption)*1.04)] 4xl:text-[1.475rem]">
                     {m}
                   </li>
                 ))}
@@ -216,12 +218,37 @@ export function Features() {
   const busy = useRef(false);
   const slide = FEATURE_SLIDES[index];
 
+  // The arrow keys below only fire while this element has focus, and nothing put focus
+  // here otherwise — a mouse click did on a desktop that happened to land inside the
+  // frame, but a laptop that only ever used the keyboard (or arrived via the rail /
+  // section nav) left focus wherever it was, so ArrowLeft/Right silently did nothing.
+  // A stable ref callback focuses it exactly once, the moment this screen mounts.
+  const focusRoot = useCallback((el) => {
+    root.current = el;
+    el?.focus({ preventScroll: true });
+  }, []);
+
+  // The outgoing slide's text fades out and lifts slightly before the index changes —
+  // otherwise React would swap the copy instantly and the "disappear" would never be
+  // seen. Only once that exit finishes does setIndex mount the next slide, which the
+  // useGSAP effect below picks up and fades in from below.
   const go = useCallback((next, delta) => {
     if (busy.current) return;
     busy.current = true;
     setDir(delta);
-    setIndex(next);
-    gsap.delayedCall(0.85, () => {
+
+    const el = root.current;
+    const lines = el ? el.querySelectorAll('[data-line] > *') : [];
+    const rises = el ? el.querySelectorAll('[data-rise]') : [];
+    const rule = el?.querySelector('[data-slide-rule]');
+    const exiting = [...lines, ...rises];
+
+    gsap.killTweensOf([...exiting, rule].filter(Boolean));
+    const exit = gsap.timeline({ onComplete: () => setIndex(next) });
+    exit.to(exiting, { y: -20, autoAlpha: 0, duration: 0.32, stagger: 0.015, ease: E.in, overwrite: 'auto' }, 0);
+    if (rule) exit.to(rule, { autoAlpha: 0, duration: 0.28, ease: E.in, overwrite: 'auto' }, 0);
+
+    gsap.delayedCall(1.2, () => {
       busy.current = false;
     });
   }, []);
@@ -236,9 +263,9 @@ export function Features() {
   );
 
   // One timeline, every slide: the backdrop wipes through a 12° edge and starts a slow
-  // drift, the heading lines climb out of their masks, the rule draws, and the body parts
-  // lift in behind it. killTweensOf first, so running the deck fast never leaves two
-  // slides animating over each other.
+  // drift, the heading lines rise up from below while fading in, the rule draws, and the
+  // body parts follow the same rise-and-fade behind it. killTweensOf first, so running
+  // the deck fast never leaves two slides animating over each other.
   useGSAP(
     () => {
       const el = root.current;
@@ -277,15 +304,15 @@ export function Features() {
         }
       }
 
-      gsap.set(lines, { yPercent: dir > 0 ? 118 : -118, rotate: dir > 0 ? 1.2 : -1.2 });
-      gsap.set(rises, { y: 38, autoAlpha: 0 });
-      gsap.set(rule, { scaleX: 0, transformOrigin: dir > 0 ? 'left center' : 'right center' });
+      gsap.set(lines, { y: 60, autoAlpha: 0 });
+      gsap.set(rises, { y: 60, autoAlpha: 0 });
+      gsap.set(rule, { scaleX: 0, autoAlpha: 1, transformOrigin: dir > 0 ? 'left center' : 'right center' });
 
       gsap
         .timeline({ defaults: { overwrite: 'auto' } })
-        .to(lines, { yPercent: 0, rotate: 0, duration: 1.05, stagger: 0.075, ease: E.out }, 0.12)
-        .to(rule, { scaleX: 1, duration: 0.9, ease: E.out }, 0.34)
-        .to(rises, { y: 0, autoAlpha: 1, duration: 0.9, stagger: 0.065, ease: E.out }, 0.42);
+        .to(lines, { y: 0, autoAlpha: 1, duration: 1, stagger: 0.12, ease: 'power2.out' }, 0.2)
+        .to(rule, { scaleX: 1, duration: 0.9, ease: 'power2.out' }, 0.6)
+        .to(rises, { y: 0, autoAlpha: 1, duration: 1.4, stagger: 0.1, ease: 'power2.out' }, 0.75);
     },
     { dependencies: [index, dir], scope: root },
   );
@@ -293,7 +320,7 @@ export function Features() {
   return (
     <Screen id="features" padded={false}>
       <div
-        ref={root}
+        ref={focusRoot}
         className="screen-inset relative grid h-full min-h-0 grid-rows-[auto_1fr_auto] gap-[1.6em]"
         tabIndex={0}
         role="group"
@@ -330,15 +357,16 @@ export function Features() {
               was still at 30% on the right edge, a vignette and the sheen — and together
               they buried the render. On the darker slides the image was simply not there.
 
-              The copy still has to win, but it only occupies the left 74% of the frame,
-              so the darkening is now weighted rather than flat: heavy where the type is,
-              gone by the right third, where the render is the only thing on screen. */}
+              The left-to-right gradient below is now a whisper (5% at its darkest,
+              fading out by the right third) rather than a real darkening: the render is
+              meant to read clearly through the copy, at the cost of some of the copy's
+              own contrast on a bright slide. */}
           <div className="absolute inset-0 z-[5] bg-blade-black/20" />
           <div
             className="absolute inset-0 z-[5]"
             style={{
               background:
-                'linear-gradient(90deg, rgb(var(--scrim-rgb) / 0.9) 0%, rgb(var(--scrim-rgb) / 0.78) 30%, rgb(var(--scrim-rgb) / 0.34) 60%, rgb(var(--scrim-rgb) / 0) 88%)',
+                'linear-gradient(90deg, rgb(var(--scrim-rgb) / 0.9) 0%, rgb(var(--scrim-rgb) / 0.78) 30%, rgb(var(--scrim-rgb) / 0.35) 60%, rgb(var(--scrim-rgb) / 0) 88%)',
             }}
           />
           {/* Seats the chrome, top and bottom. Nothing more than that. */}
@@ -356,18 +384,14 @@ export function Features() {
 
         <div className="flex min-h-0 flex-col justify-center gap-[1.1em] overflow-hidden">
           <div className="flex max-w-[74%] flex-col gap-[0.5em] max-lg:max-w-none">
-            <span className="block overflow-hidden">
-              <span data-line className="block">
-                <span className="block text-caption uppercase tracking-[0.34em] text-blade-copper">
-                  {slide.eyebrow}
-                </span>
+            <span data-line className="block">
+              <span className="block text-caption uppercase tracking-[0.34em] text-blade-copper">
+                {slide.eyebrow}
               </span>
             </span>
             {slide.headline.map((l) => (
-              <span key={l} className="block overflow-hidden">
-                <span data-line className="block">
-                  <span className="block text-headline uppercase text-blade-cream max-md:text-subhead">{l}</span>
-                </span>
+              <span key={l} data-line className="block">
+                <span className="block text-headline uppercase text-blade-cream max-md:text-subhead">{l}</span>
               </span>
             ))}
             <span data-slide-rule aria-hidden="true" className="mt-[0.3em] block h-px w-[32%] bg-blade-copper" />

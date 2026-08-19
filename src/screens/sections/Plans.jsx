@@ -490,28 +490,33 @@ export function Plans() {
               zones={zoneList}
               onHover={onHover}
               onSelect={comparing ? onPick : onSelect}
+              overlay={
+                // The label chip — one of the three permitted glass surfaces. Compare
+                // mode hides it: the prompt is already naming every floor that matters.
+                // Anchored just outside the drawn tower's own edge (not the wider
+                // column around it) so the gap stays the same at every breakpoint —
+                // see the comment in TowerElevation.
+                chip && !comparing ? (
+                  <div
+                    className="glass pointer-events-none absolute left-full flex flex-col gap-[0.2em] px-[0.9em] py-[0.5em]"
+                    style={{
+                      top: `${chip.shape.y + chip.shape.h / 2}%`,
+                      transform: 'translateY(-50%)',
+                      marginLeft: '0.6em',
+                    }}
+                  >
+                    <span className="whitespace-nowrap text-caption font-medium text-blade-cream">
+                      {chip.label}
+                    </span>
+                    {chipPlate ? (
+                      <span className="whitespace-nowrap text-caption tabular-nums text-blade-copper">
+                        {chipPlate.total.toLocaleString('en-IN')} sq.ft RERA carpet
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null
+              }
             />
-
-            {/* The label chip — one of the three permitted glass surfaces. Compare mode
-                hides it: the prompt is already naming every floor that matters. */}
-            {chip && !comparing ? (
-              <div
-                className="glass pointer-events-none absolute right-0 flex flex-col gap-[0.2em] px-[0.9em] py-[0.5em]"
-                style={{
-                  top: `${chip.shape.y + chip.shape.h / 2}%`,
-                  transform: 'translateY(-50%)',
-                }}
-              >
-                <span className="whitespace-nowrap text-caption font-medium text-blade-cream">
-                  {chip.label}
-                </span>
-                {chipPlate ? (
-                  <span className="whitespace-nowrap text-caption tabular-nums text-blade-copper">
-                    {chipPlate.total.toLocaleString('en-IN')} sq.ft RERA carpet
-                  </span>
-                ) : null}
-              </div>
-            ) : null}
           </div>
         </div>
 

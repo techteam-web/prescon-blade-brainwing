@@ -28,9 +28,9 @@ import { gsap, useGSAP, E } from '../../gsap/Gsapconfig';
 const SHOW_ZONES =
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('zones');
 
-// The traced-floor highlight (src/data/towerHighlights.js) only covers 1F–41F + the
-// arrival level — nothing below that (the basement) is in the source art, so those
-// zones fall back to a plain rectangular tint instead of drawing nothing.
+// The traced highlight (src/data/towerHighlights.js) covers every zone from the crown
+// down through the basement's services & parking wedge — each is either a straight-edged
+// floor polygon or (basement) a hand-traced curved path, both rendered as <path>.
 //
 // The fill polygons are also the hit target for pointer input, not just decoration:
 // the rectangular band below is a linear approximation of the floor lines and drifts
@@ -40,7 +40,7 @@ const SHOW_ZONES =
 function ZoneHighlight({ zoneId, state, onHover, onSelect, horizontal }) {
   const ref = useRef(null);
   const { contextSafe } = useGSAP({ scope: ref });
-  const polygons = ZONE_HIGHLIGHT[zoneId];
+  const shapes = ZONE_HIGHLIGHT[zoneId];
 
   const paint = contextSafe((next) => {
     const active = next !== 'idle';
@@ -64,7 +64,7 @@ function ZoneHighlight({ zoneId, state, onHover, onSelect, horizontal }) {
     { dependencies: [state], scope: ref },
   );
 
-  if (!polygons?.length) return null;
+  if (!shapes?.length) return null;
 
   return (
     <svg
@@ -75,11 +75,11 @@ function ZoneHighlight({ zoneId, state, onHover, onSelect, horizontal }) {
       style={{ transform: horizontal ? 'rotate(-90deg)' : undefined }}
     >
       <g ref={ref}>
-        {polygons.map((points, i) => (
-          <polygon
+        {shapes.map((d, i) => (
+          <path
             key={i}
             data-highlight-fill
-            points={points}
+            d={d}
             className="fill-blade-copper"
             opacity="0"
             style={{ pointerEvents: 'auto', cursor: 'pointer' }}
@@ -88,11 +88,11 @@ function ZoneHighlight({ zoneId, state, onHover, onSelect, horizontal }) {
             onClick={() => onSelect(zoneId)}
           />
         ))}
-        {polygons.map((points, i) => (
-          <polygon
+        {shapes.map((d, i) => (
+          <path
             key={i}
             data-highlight-edge
-            points={points}
+            d={d}
             fill="none"
             stroke="currentColor"
             strokeWidth="18"
@@ -110,8 +110,8 @@ function Zone({ zone, state, onHover, onSelect, tabIndex, badge = null, horizont
   const { contextSafe } = useGSAP({ scope: ref });
   const { shape } = zone;
   // The traced SVG highlight takes over both the visual fill/edge and pointer hit-testing
-  // for any zone it covers; the plain rectangle underneath is the fallback for what it
-  // doesn't (the basement), and stays the keyboard-focus target either way.
+  // for every zone now; the plain rectangle underneath stays mounted only as the
+  // keyboard-focus target.
   const hasTracedHighlight = Boolean(ZONE_HIGHLIGHT[zone.id]?.length);
 
   // Hairlines draw outward from centre, 0.35s, bladeSoft.
@@ -211,6 +211,7 @@ export function TowerElevation({
   interactive = true,
   selectedIds = [],
   className = '',
+  overlay = null,
 }) {
   const list = zones ?? (horizontal ? TOWER_ZONES_H : TOWER_ZONES);
   const ratio = horizontal
@@ -258,6 +259,15 @@ export function TowerElevation({
               />
             ))
           : null}
+
+        {/* Anchored to THIS box, not the outer column: the column is wider than the
+            drawn image whenever height is the constraining dimension, and that gap's
+            size drifts with viewport aspect (it isn't a fixed fraction), so a caller
+            positioning against the column's own edge sits at a different distance from
+            the tower at every breakpoint — flush against it at some, far from it at
+            others. This box is the image's own rectangle by construction (see above),
+            so anchoring here keeps the offset identical everywhere. */}
+        {overlay}
       </div>
     </div>
   );

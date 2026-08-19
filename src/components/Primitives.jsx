@@ -122,11 +122,9 @@ export function EnterPortal({
         },
       );
       // Self-healing rest state for the pieces the hover handler drives — StrictMode's
-      // mount → cleanup → mount never runs the hover leave state, so the arrow relay and
-      // the hit-sheen need their own reset here rather than trusting a prior pointer event.
+      // mount → cleanup → mount never runs the hover leave state, so the hit-sheen
+      // needs its own reset here rather than trusting a prior pointer event.
       gsap.set(q('[data-portal-sheen-hit]'), { xPercent: -130, autoAlpha: 0 });
-      gsap.set(q('[data-portal-arrow-a]'), { xPercent: 0, autoAlpha: 1 });
-      gsap.set(q('[data-portal-arrow-b]'), { xPercent: -100, autoAlpha: 0 });
     },
     { scope: root },
   );
@@ -146,24 +144,6 @@ export function EnterPortal({
     gsap.to('[data-portal-mark]', {
       color: on ? 'var(--color-blade-black)' : 'var(--color-blade-copper)',
       ...vars,
-    });
-    // The arrow relay: the resting arrow exits right as its twin enters from the same
-    // spot the fill wipes from, so the two motions read as one gesture. A short delay on
-    // the incoming arrow keeps them from crossing mid-frame.
-    gsap.to('[data-portal-arrow-a]', {
-      xPercent: on ? 100 : 0,
-      autoAlpha: on ? 0 : 1,
-      duration: 0.38,
-      ease: E.out,
-      overwrite: 'auto',
-    });
-    gsap.to('[data-portal-arrow-b]', {
-      xPercent: on ? 0 : -100,
-      autoAlpha: on ? 1 : 0,
-      duration: 0.38,
-      delay: on ? 0.05 : 0,
-      ease: E.out,
-      overwrite: 'auto',
     });
     // A second, faster sheen fired on contact — the ambient loop keeps drawing the eye
     // when idle, this one answers the cursor directly.
@@ -205,17 +185,7 @@ export function EnterPortal({
       </span>
 
       <span data-portal-mark className="enter-portal-label flex items-center gap-[0.9em] text-blade-copper">
-
-        <span aria-hidden="true" className="enter-portal-tick" />
-        <span aria-hidden="true" className="enter-portal-arrow">
-          <ArrowIcon data-portal-arrow-a size="1.05em" className="enter-portal-arrow-icon" />
-          <ArrowIcon data-portal-arrow-b size="1.05em" className="enter-portal-arrow-icon" />
-        </span>
-
-        {/* The tick is the first thing to go when there is no room for it. */}
-        <span aria-hidden="true" className="enter-portal-tick max-sm:hidden" />
         {icon}
-
       </span>
 
       {/* The intro sequence draws this rule as the control arrives — keeping the marker

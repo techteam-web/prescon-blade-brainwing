@@ -63,9 +63,7 @@ export function Landing() {
           </EnterPortal>
         </div>
 
-        <div className="flex items-end justify-end gap-[6%]">
-          <span className="shrink-0 text-caption text-[#EEE5D2]/70">Artistic Impression</span>
-        </div>
+      
       </div>
     </Screen>
   );

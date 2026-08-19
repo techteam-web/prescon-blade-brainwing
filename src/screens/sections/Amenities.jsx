@@ -34,6 +34,16 @@ export function Amenities() {
   const total = RENDERS.length;
   const active = RENDERS[index];
 
+  // The arrow keys below only fire while this element has focus, and nothing put focus
+  // here otherwise — a mouse click did on a desktop that happened to land inside the
+  // frame, but a laptop that only ever used the keyboard (or arrived via the rail /
+  // section nav) left focus wherever it was, so ArrowLeft/Right silently did nothing.
+  // A stable ref callback focuses it exactly once, the moment this screen mounts.
+  const focusRoot = useCallback((el) => {
+    root.current = el;
+    el?.focus({ preventScroll: true });
+  }, []);
+
   const move = useCallback(
     (delta) => {
       if (busy.current || !delta) return;
@@ -174,7 +184,7 @@ export function Amenities() {
   return (
     <Screen id="amenities" padded={false}>
       <div
-        ref={root}
+        ref={focusRoot}
         className="relative h-full w-full touch-none select-none"
         tabIndex={0}
         role="group"

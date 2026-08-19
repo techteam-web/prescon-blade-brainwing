@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react';
 import { useApp } from '../app/appContext';
 import { PresconLogo } from './Wordmark';
 
-import { BackIcon, CompareIcon } from './Icons';
+import { BackIcon } from './Icons';
 import { gsap, useGSAP, D, E } from '../gsap/Gsapconfig';
 
 
@@ -110,7 +110,6 @@ return (
           {stage === 'section' && section === 'plans' ? (
             <EnterPortal
               size="sm"
-              icon={<CompareIcon size="1.15em" />}
               disabled={isTransitioning || compare === 'closing'}
               onClick={() =>
                 setCompare(compare === 'off' ? 'picking' : 'closing')

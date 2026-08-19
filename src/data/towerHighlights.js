@@ -52,15 +52,32 @@ const FLOOR_POLYGON = {
   ground: '201.69 9098.84 2027.22 9797.29 2323.74 9765.82 2511.12 9623.45 2560.57 9623.31 2560.57 9876.48 2501.13 9906.98 2323.74 10023.93 2047.22 10154.23 201.69 9363.25 201.69 9098.84',
 };
 
+// The basement (-1F/-3F services & parking) sits below the last full floor slab in the
+// source art and isn't a flat band like the floors above — it's drawn as the tapered
+// wedge under the ground gallery, so it's a hand-traced curve (the SVG's final,
+// unlabeled `path`) rather than one more straight-edged polygon.
+const BASEMENT_PATH =
+  'M64.78,9432.65v572.87l1891.41,945.7c24.88,10.37,68.96,24.98,125.37,23.95,50.19-.92,89.68-13.85,113.57-23.77l449.91-250.92v-671.48l-405.27,229.9c-39.67,12.61-94.46,25.6-160.56,28.37-70.95,2.97-130.23-6.88-172.32-17.22l-1842.12-837.39Z';
+
 const range = (hi, lo) => {
   const out = [];
   for (let f = hi; f >= lo; f -= 1) out.push(f);
   return out;
 };
 
+// A closed straight-edged polygon expressed as a path `d`, so every zone — floors and
+// the curved basement alike — renders through the same <path> element.
+const pointsToPath = (points) => {
+  const nums = points.trim().split(/\s+/).map(Number);
+  let d = '';
+  for (let i = 0; i < nums.length; i += 2) {
+    d += `${i === 0 ? 'M' : 'L'}${nums[i]},${nums[i + 1]} `;
+  }
+  return `${d.trim()} Z`;
+};
+
 // Maps each TOWER_ZONES id to the floor(s) it spans (see src/data/towerZones.js),
-// resolved to the traced polygons above. A zone with no entry here (basement — below
-// the traced art) falls back to its plain rectangular band.
+// resolved to the traced shapes above.
 const ZONE_FLOORS = {
   crown: [41],
   'f36-40': range(40, 36),
@@ -85,6 +102,7 @@ const ZONE_FLOORS = {
 export const ZONE_HIGHLIGHT = Object.fromEntries(
   Object.entries(ZONE_FLOORS).map(([id, floors]) => [
     id,
-    floors.map((f) => FLOOR_POLYGON[f]).filter(Boolean),
+    floors.map((f) => FLOOR_POLYGON[f]).filter(Boolean).map(pointsToPath),
   ]),
 );
+ZONE_HIGHLIGHT.basement = [BASEMENT_PATH];

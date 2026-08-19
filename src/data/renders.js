@@ -20,6 +20,15 @@ export const RENDERS = [
     "lqip": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAADwBACdASoYABUAPu1iqk2ppaQiMBgMATAdiWMAxvQQ7Bp9zSvOFvzptGv+0kcioxAA/lCxmeGeIgymTVhrYb4lypS6yEFKIKvTXNDMVavpRm1c2o7c4AAA",
     "alt": "The Blade by Prescon — artistic impression"
   },
+   {
+    "id": "render-022",
+    "src": "/assets/renders/render-04-2560.webp",
+    "srcSet": "/assets/renders/render-04-2560.webp 1280w, /assets/renders/render-04-2560.webp 1920w, public/assets/renders/render-04-2560.webp 2560w",
+    "width": 7556,
+    "height": 6750,
+    "lqip": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAADwBACdASoYABUAPu1iqk2ppaQiMBgMATAdiWMAxvQQ7Bp9zSvOFvzptGv+0kcioxAA/lCxmeGeIgymTVhrYb4lypS6yEFKIKvTXNDMVavpRm1c2o7c4AAA",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
   {
     "id": "render-03",
     "src": "/assets/renders/render-03-2560.webp",

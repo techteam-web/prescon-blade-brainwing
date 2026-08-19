@@ -156,10 +156,12 @@ export function Location() {
           })}
         </div>
 
-        {/* The one scroll container in the app, and it is a control surface. */}
+        {/* The one scroll container in the app, and it is a control surface. Scrollbar
+            hidden — it still scrolls by wheel/touch/drag, but no track/thumb clutters
+            the glass panel. */}
         <ul
           data-overflow-ok
-          className="-mr-[0.5em] flex min-h-0 flex-1 flex-col overflow-y-auto pr-[0.5em]"
+          className="scrollbar-none -mr-[0.5em] flex min-h-0 flex-1 flex-col overflow-y-auto pr-[0.5em]"
         >
           {rows.map((row) => {
             const on = focus === row.id;

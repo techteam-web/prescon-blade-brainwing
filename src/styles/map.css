@@ -54,8 +54,8 @@
    ring, a pulsing halo, and its own always-on label. */
 .blade-project {
   position: relative;
-  width: 40px;
-  height: 100px;
+  width: 56px;
+  height: 140px;
   pointer-events: none;
 }
 
@@ -65,10 +65,10 @@
 .blade-project__tower {
   position: absolute;
   left: 50%;
-  bottom: 2px;
-  width: 24px;
-  height: 74px;
-  margin-left: -12px;
+  bottom: 3px;
+  width: 34px;
+  height: 104px;
+  margin-left: -17px;
   object-fit: contain;
   opacity: 1;
   filter: drop-shadow(0 0 6px rgb(5 4 3 / 0.9)) drop-shadow(0 0 2px rgb(5 4 3 / 0.9));
@@ -77,10 +77,10 @@
 .blade-project__ring {
   position: absolute;
   left: 50%;
-  bottom: -6px;
-  width: 26px;
-  height: 26px;
-  margin-left: -13px;
+  bottom: -8px;
+  width: 36px;
+  height: 36px;
+  margin-left: -18px;
   border: 1px solid var(--color-blade-copper);
   border-radius: 50%;
 }
@@ -88,10 +88,10 @@
 .blade-project__halo {
   position: absolute;
   left: 50%;
-  bottom: -10px;
-  width: 34px;
-  height: 34px;
-  margin-left: -17px;
+  bottom: -13px;
+  width: 46px;
+  height: 46px;
+  margin-left: -23px;
   border: 1px solid var(--color-blade-copper);
   border-radius: 50%;
   opacity: 0;
@@ -100,7 +100,7 @@
 .blade-project__label {
   position: absolute;
   left: 50%;
-  top: -6px;
+  top: -8px;
   transform: translateX(-50%);
   white-space: nowrap;
   font-family: var(--font-display);

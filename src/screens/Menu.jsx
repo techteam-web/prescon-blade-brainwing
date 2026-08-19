@@ -249,9 +249,7 @@ export function Menu() {
         <span />
       </div>
 
-      <span className="absolute bottom-[var(--screen-margin)] right-[var(--screen-margin)] z-10 text-caption text-[#EEE5D2]/70">
-        Artistic Impression
-      </span>
+  
       <span className="sr-only" aria-live="polite">
         {SECTIONS.find((s) => s.id === hovered)?.label}
       </span>

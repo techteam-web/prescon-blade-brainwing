@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node \"C:\\\\Users\\\\TechTeam\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-TechTeam-Downloads-Aniket-prescon-blade-brainwing\\\\80f3be78-26f3-4c07-b14f-4e22246f8cf1\\\\scratchpad\\\\check-features-anim.js\")",
+      "Bash(node -e \"require.resolve\\('playwright'\\)\")",
+      "Bash(NODE_PATH=\"$\\(pwd\\)/node_modules\" node \"C:\\\\Users\\\\TechTeam\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-TechTeam-Downloads-Aniket-prescon-blade-brainwing\\\\80f3be78-26f3-4c07-b14f-4e22246f8cf1\\\\scratchpad\\\\check-features-anim.js\")",
+      "Bash(NODE_PATH=\"$\\(pwd\\)/node_modules\" node \"C:\\\\Users\\\\TechTeam\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-TechTeam-Downloads-Aniket-prescon-blade-brainwing\\\\80f3be78-26f3-4c07-b14f-4e22246f8cf1\\\\scratchpad\\\\check-location.js\")"
+    ]
+  }
+}

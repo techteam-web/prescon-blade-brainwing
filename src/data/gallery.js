@@ -27,7 +27,7 @@ export const AMENITY_GALLERY = [
 // portrait render behind a full-width slide crops to nothing.
 export const FEATURE_BACKDROPS = [
   'render-01', // The Vision
-  'blade-01', // Design & Façade — the fin detail at sunset
+  'render-022', // Design & Façade — the fin detail at sunset
   'blade-10', // Lifestyle Floors — aerial dusk
   'render-05', // Why The Blade
   'render-02', // Salient Features

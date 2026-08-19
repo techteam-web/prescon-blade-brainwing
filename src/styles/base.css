@@ -359,16 +359,6 @@
     z-index: 1;
     white-space: nowrap;
   }
-
-  /* The blade tick: a short stroke at the mark's own angle, then the arrow. */
-  .enter-portal-tick {
-    display: block;
-    width: 1px;
-    height: 1.5em;
-    transform: skewX(calc(-1 * var(--blade-angle)));
-    background: currentColor;
-    opacity: 0.55;
-  }
 }
 
 @layer utilities {
@@ -405,6 +395,16 @@
   }
   .skew-blade-r {
     transform: skewX(var(--blade-angle));
+  }
+
+  /* Scrolls, but the track/thumb never draws — for panels like the Location landmarks
+     list where the scroll affordance would clutter a glass surface. */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }
 
