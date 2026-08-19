@@ -5,11 +5,6 @@ import { PresconLogo } from './Wordmark';
 import { BackIcon } from './Icons';
 import { gsap, useGSAP, D, E } from '../gsap/Gsapconfig';
 
-
-import { EnterPortal } from './Primitives';
-
-
-
 // Present on every screen except the gate and the landing.
 //
 // Navigation lives TOP-LEFT, where the eye goes to get back. The Prescon lockup stays
@@ -59,15 +54,11 @@ function NavButton({ label, onClick, disabled, icon = false }) {
 export function TopRail() {
   const {
     stage,
-    section,
     current,
     registerChrome,
     goToMenu,
     goToLanding,
     isTransitioning,
-
-    compare,
-    setCompare,
   } = useApp();
   // The director fades the whole rail out under the cut and back in with the destination,
   // so the rail never sits, unchanged, over a page that is coming apart.
@@ -106,19 +97,6 @@ return (
             onClick={goToLanding}
             disabled={isTransitioning}
           />
-
-          {stage === 'section' && section === 'plans' ? (
-            <EnterPortal
-              size="sm"
-              disabled={isTransitioning || compare === 'closing'}
-              onClick={() =>
-                setCompare(compare === 'off' ? 'picking' : 'closing')
-              }
-              className="pointer-events-auto -mt-[0.55em] shrink-0"
-            >
-              {compare === 'off' ? 'Comparison' : 'Exit Compare'}
-            </EnterPortal>
-          ) : null}
         </div>
 
         <PresconLogo className="w-[clamp(3.4rem,4.6vw,6rem)] shrink-0" />
