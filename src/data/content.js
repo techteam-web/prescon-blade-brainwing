@@ -23,17 +23,35 @@ export const CONTENT = {
   /* ------------------------------------------------------------------- 01 views */
   views: {
     headline: ['THE VIEW FROM', 'EVERY ALTITUDE'],
-    body:
-      'Twenty-six office floors, each with its own horizon. Select a level to look out ' +
-      'from it.',
-    hint: 'Drag to look around · ↑ ↓ to change floor',
-    empty: 'Panorama pending — drone capture scheduled for this level.',
+    body: 'One view, three moods. Watch the city turn from day to evening to night.',
+    hint: 'Drag to look around · ↑ ↓ to change view',
+    empty: 'Panorama pending — drone capture scheduled for this view.',
   },
 
-  /* --------------------------------------------------------------- 02 amenities */
+  /* ----------------------------------------------------------------- 02 profile */
+  profile: {
+    headline: ['BUSINESS-LIFE,', 'FINELY COMPOSED.'],
+    body:
+      'Most towers stack offices. The Blade by Prescon arranges them with greater ' +
+      'intent. It introduces four distinct lifestyle experiences at different ' +
+      'altitudes, each one giving the day a finer rhythm.',
+    floors: [
+      { level: '41F', height: '+165m', label: 'The Crown' },
+      { level: '13F', height: '+50m', label: "The Members' Lounge" },
+      { level: '12F', height: '+47m', label: 'The Upper Retreat' },
+      { level: 'GL', height: '0m', label: 'The Arrival Gallery' },
+    ],
+    ranges: [
+      { code: '15F–40F', label: 'Office Floors' },
+      { code: '1F–11F', label: 'Parking Levels' },
+      { code: '-1F/-3F', label: 'Services & Parking' },
+    ],
+  },
+
+  /* --------------------------------------------------------------- 03 amenities */
   // The four lifestyle experiences, verbatim. Each is a render with its own heading;
   // the page is a gallery, navigated by arrow keys or the on-screen controls.
-  amenities: [
+  gallery: [
     {
       id: 'arrival',
       index: 'The Arrival Gallery',
@@ -109,6 +127,34 @@ export const CONTENT = {
       { id: 'hospitality', label: 'Hospitality', tone: 'copper' },
       { id: 'commerce', label: 'Commerce', tone: 'terracotta' },
       { id: 'enterprise', label: 'Enterprise', tone: 'rose' },
+      { id: 'connectivity', label: 'Connectivity', tone: 'rose' },
+    ],
+  },
+
+  /* ------------------------------------------------------------------- 08 group */
+  // TODO: client content. Everything below is a placeholder — it is NOT verbatim from
+  // the vision document, which breaks LAW 4 above on purpose because the menu row
+  // ('Prescon Group') had no screen behind it at all. Replace every figure, date and
+  // project name with verified copy before this reaches a client.
+  group: {
+    eyebrow: 'About the Developer',
+    headline: ['BUILT ON SITE WORK,', 'NOT SLIDE DECKS.'],
+    body:
+      'Prescon Group began as a construction outfit before it was ever a developer — ' +
+      'which is why every project still starts on site, not in a boardroom. That ' +
+      'discipline now spans residential towers, mixed-use addresses and ground-up ' +
+      'redevelopment across Mumbai, each one held to one standard: structural honesty ' +
+      'first, design second, marketing last. The Blade continues that line.',
+    stats: [
+      { id: 'years', to: 25, suffix: '+', label: 'Years in Development' },
+      { id: 'projects', to: 40, suffix: '+', label: 'Projects Delivered' },
+      { id: 'area', to: 12, suffix: 'M+', label: 'Sq. Ft. Developed' },
+      { id: 'cities', to: 3, suffix: '', label: 'Cities, One Standard' },
+    ],
+    pillars: [
+      { eyebrow: 'Structural Integrity', body: 'Engineering decided before elevations are drawn — never the other way round.' },
+      { eyebrow: 'Design Discipline', body: 'Every material and line answers to the building, not to the trend cycle.' },
+      { eyebrow: 'On-Time Delivery', body: 'Handover dates are commitments made at launch, not adjusted at the end.' },
     ],
   },
 };
@@ -118,23 +164,6 @@ export const CONTENT = {
 // Every string is verbatim from the vision document — this deck is where the material
 // that used to be spread across eight separate screens now lives.
 export const FEATURE_SLIDES = [
-  {
-    id: 'vision',
-    kind: 'statement',
-    eyebrow: 'The Vision',
-    headline: ['INTRODUCING', 'THE FINEST EDGE OF', 'MODERN BUSINESS'],
-    body:
-      'At the epicentre of Worli, The Blade by Prescon rises as a Grade A icon for the ' +
-      "city's more discerning order of business. With a level of hospitality rarely seen " +
-      'in a local business address, it is crafted for boards, family offices and global ' +
-      'capital that quietly shape Mumbai.',
-    footnote: 'INSPIRED BY ICONIC DESIGNS',
-    items: [
-      { name: 'Flatiron', meta: 'New York, 1902' },
-      { name: 'The Shard', meta: 'London, 2012' },
-      { name: 'The Cheesegrater', meta: 'London, 2014' },
-    ],
-  },
   {
     id: 'design',
     kind: 'columns',
@@ -152,65 +181,9 @@ export const FEATURE_SLIDES = [
     ],
   },
   {
-    id: 'lifestyle',
-    kind: 'stack',
-    eyebrow: 'Lifestyle Floors',
-    headline: ['BUSINESS-LIFE, FINELY COMPOSED.'],
-    body:
-      'Most towers stack offices. The Blade by Prescon arranges them with greater intent. ' +
-      'It introduces four distinct lifestyle experiences at different altitudes, each one ' +
-      'giving the day a finer rhythm.',
-    floors: [
-      { id: 'crown', code: '41F', height: '+165m', name: 'The Crown', tone: 'cream' },
-      { id: 'lounge', code: '13F', height: '+50m', name: "The Members' Lounge", tone: 'copper' },
-      { id: 'retreat', code: '12F', height: '+47m', name: 'The Upper Retreat', tone: 'terracotta' },
-      { id: 'arrival', code: 'GL', height: '0m', name: 'The Arrival Gallery', tone: 'rose' },
-    ],
-  },
-  {
-    id: 'strengths',
-    kind: 'grid',
-    eyebrow: 'Why The Blade',
-    headline: ['A CUT ABOVE,', 'IN EVERY DISCIPLINE.'],
-    grid: [
-      {
-        heading: 'Architecture',
-        items: ['Bespoke Grade A Tower', 'Sharp, High-Visibility Silhouette', 'Low-E DGU Facade', 'Metal-clad Columns', 'Iconic Crown'],
-      },
-      {
-        heading: 'Workplace',
-        items: ['Flat Slab, Columnless, Bare-Shell Floor Plates', 'Complete Flexibility in Planning', 'Zone-Wise Elevator Planning for minimal wait time', '2 Service Elevators incl. Fire Evacuation'],
-      },
-      {
-        heading: 'Infrastructure',
-        items: ['Superlative parking ratio at 1:590 with ramp access', '4.2 m floor to floor height', '3 tier security', '100% Power Backup', 'High-Speed Passenger Elevators'],
-      },
-      {
-        heading: 'Lifestyle',
-        items: ['An Uber Luxury Arrival Experience', 'A Landscaped Social Lifestyle Floor', 'A Fully Serviced Members’ Business Lounge', 'A Rooftop Hospitality Space'],
-      },
-    ],
-  },
-  {
-    id: 'salient',
-    kind: 'rows',
-    eyebrow: 'Salient Features',
-    headline: ['THE BUILDING,', 'IN NUMBERS.'],
-    rows: [
-      { label: 'Building structure', value: '3B + Gr.+ 1st to 11th parking podiums + 12th & 13th recreational / Amenity floors + 14th Service floor + 15th to 40th typical office floors incl 28th Service floor + 41st (part) Office / F&B floor.' },
-      { label: 'Handover condition', value: 'Bareshell.' },
-      { label: 'Total development', value: 'Around 5.60 Lacs Sq.ft.' },
-      { label: 'Typical floor area (RERA carpet)', value: 'Low rise ~38,000 Sq.Ft. · Mid rise ~1,32,000 Sq.Ft. · High rise ~76,000 Sq.Ft.' },
-      { label: 'Car park', value: '02 Basements + 11 podiums.' },
-      { label: 'Common floors', value: 'Grand entrance lobby on Ground & 2 Amenity floors (12th & 13th level).' },
-      { label: 'Total building height', value: '178 m AMSL to top elevation.' },
-      { label: 'Slab to slab', value: 'Entrance Lobby 7.20 m · Office Levels 4.2 m.' },
-    ],
-  },
-  {
     id: 'systems',
     kind: 'rows',
-    eyebrow: 'Specifications',
+    eyebrow: 'Tech Specs',
     headline: ['ENGINEERED', 'TO GRADE A.'],
     rows: [
       { label: 'Façade glazing', value: 'Low-E Double Glazed unit (DGU).' },
@@ -259,26 +232,6 @@ export const FEATURE_SLIDES = [
       { name: 'STS Consultants LLP', role: 'Structural Consultant', credentials: ['Poonawala SEZ Biotech Park, Pune', 'Rustomjee Panorama, Juhu'] },
       { name: 'Roots Designs', role: 'Landscape Architect', credentials: ['Barclays, Pune', 'Infosys, Bhubaneshwar'] },
       { name: 'Kaizen Design Solutions Pvt. Ltd.', role: 'Green Consultant', credentials: ['20 Opera – Nussar House, Mumbai', 'Kalpataru Paramount, Thane'] },
-    ],
-  },
-  {
-    id: 'developer',
-    kind: 'stats',
-    eyebrow: 'The Developer',
-    headline: ['PRESCON.', 'BEYOND THE ORDINARY.'],
-    body:
-      'Prescon has built its reputation on a more thoughtful way of creating places of ' +
-      'value. Across asset classes and geographies, our work is marked by design, ' +
-      'reliability and a clear sense of distinction.',
-    stats: [
-      { id: 'legacy', to: 4, prefix: 'Legacy spanning over ', suffix: ' decades' },
-      { id: 'projects', to: 21, prefix: '', suffix: ' projects completed' },
-      { id: 'families', to: 3000, prefix: 'Trusted by over ', suffix: ' families' },
-      { id: 'area', to: 5.1, decimals: 1, prefix: '', suffix: ' million sq. ft. saleable area' },
-    ],
-    works: [
-      { label: 'Waterfront development', value: 'Prescon Midtown Bay, Mahim, Mumbai' },
-      { label: 'Landmark Township', value: 'including Prescon Amanha, Goa' },
     ],
   },
 ];

@@ -7,8 +7,9 @@ import { Flip } from 'gsap/Flip';
 import { CustomEase } from 'gsap/CustomEase';
 import { SplitText } from 'gsap/SplitText';
 import { Observer } from 'gsap/Observer';
+import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
 
-gsap.registerPlugin(useGSAP, Flip, CustomEase, SplitText, Observer);
+gsap.registerPlugin(useGSAP, Flip, CustomEase, SplitText, Observer, DrawSVGPlugin);
 
 // Only three eases exist in this app. Every one has a long decelerating tail — that is
 // the whole difference between "expensive" and "poppy".
@@ -44,4 +45,4 @@ const NARROW =
 
 export const durationScale = () => (NARROW?.matches ? 0.75 : 1);
 
-export { gsap, useGSAP, Flip, CustomEase, SplitText, Observer };
+export { gsap, useGSAP, Flip, CustomEase, SplitText, Observer, DrawSVGPlugin };

@@ -10,6 +10,15 @@
   /* MapLibre stacks its canvas and marker layers; isolating keeps them from painting
      over the glass panel. */
   isolation: isolate;
+  /* Markers are plain absolutely-positioned DOM elements, not canvas content, so nothing
+     clips them to the map box on its own. The project marker's label floats a fixed
+     distance above its anchor (see .blade-project__label below) and grows taller still
+     as the camera zooms in — free pan/zoom means a visitor can easily bring the tower's
+     anchor close to the top edge, at which point that label sailed straight out of the
+     map and over the fixed top-rail chrome (the Prescon/Blade lockup, MENU/HOME) sitting
+     above it. Clipping here keeps every marker inside the map's own box, the same as any
+     map's canvas already is. */
+  overflow: hidden;
 }
 
 .blade-map canvas {
@@ -57,6 +66,10 @@
   width: 56px;
   height: 140px;
   pointer-events: none;
+  /* The one number that sets how far the tower's base floats above the ring — read by
+     both the tower and the label below, so tuning the gap here never leaves the label
+     out of sync. */
+  --tower-base-bottom: 15px;
 }
 
 /* The tower's own elevation drawing, standing on the ring in place of the old abstract
@@ -71,11 +84,18 @@
 .blade-project__tower {
   position: absolute;
   left: 50%;
-  bottom: 3px;
-  width: 34px;
+  bottom: var(--tower-base-bottom);
+  width: 35.9375px;
   aspect-ratio: 920 / 3840;
   height: auto;
-  transform: translateX(-50%);
+  min-height: 150px;
+  /* --tower-scale is written on the marker element from the map's 'zoom' handler
+     (BladeMap.jsx) — 1 at the HOME zoom, growing as the camera moves in. Scaling from
+     `bottom center` keeps the base pinned to the ring at any scale; a fixed pixel
+     marker never grows with the camera on its own, so without this the tower reads as
+     shrinking relative to the roads and buildings scaling up around it. */
+  transform: translateX(-50%) scale(var(--tower-scale, 1));
+  transform-origin: bottom center;
   object-fit: contain;
   opacity: 1;
   filter: drop-shadow(0 0 6px rgb(5 4 3 / 0.9)) drop-shadow(0 0 2px rgb(5 4 3 / 0.9));
@@ -84,7 +104,7 @@
 .blade-project__ring {
   position: absolute;
   left: 50%;
-  bottom: -8px;
+  bottom: -5px;
   width: 36px;
   height: 36px;
   margin-left: -18px;
@@ -107,16 +127,21 @@
 .blade-project__label {
   position: absolute;
   left: 50%;
-  top: -8px;
+  /* Tracks the tower's own scaled height (--tower-base-bottom + 150px natural height ×
+     --tower-scale + an 8px clearance) so the label stays pinned above the tower instead
+     of drifting under it as the base offset is tuned or zoom grows the tower past its
+     HOME size. */
+  bottom: calc(var(--tower-base-bottom, 0px) + 150px * var(--tower-scale, 1) + 8px);
+  width: 145px;
+  /* The marker box (.blade-project) is only 56px wide, and the global `img { max-width:
+     100% }` reset resolves against that containing block — without this override the
+     label was silently clamped to 56px no matter what width was set here. */
+  max-width: none;
+  aspect-ratio: 798 / 257;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgb(5 4 3 / 0.95));
   transform: translateX(-50%);
-  white-space: nowrap;
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-blade-cream);
-  text-shadow: 0 0 8px rgb(5 4 3 / 0.95);
 }
 
 .blade-marker {
@@ -125,26 +150,56 @@
   height: 44px;
 }
 
-.blade-marker__shard {
-  position: absolute;
-  left: 50%;
-  bottom: 5px;
-  width: 2px;
-  height: 34px;
-  margin-left: -1px;
-  background: var(--color-blade-copper);
-  transform: skewX(calc(-1 * var(--blade-angle)));
-  transform-origin: bottom center;
-}
-
 .blade-marker__dot {
   position: absolute;
   left: 50%;
   bottom: 0;
-  width: 5px;
-  height: 5px;
-  margin-left: -2.5px;
-  background: var(--color-blade-copper);
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  border-radius: 50%;
+  /* Cream, not copper: the route lines under it are already copper, so a
+     copper dot on a copper line all but vanished. Cream is the app's other
+     high-contrast tone and reads clearly against both the dark map and the
+     route itself. */
+  background: var(--color-blade-cream);
+  box-shadow: 0 0 6px rgb(240 231 211 / 0.7);
+}
+
+/* Same breathing pulse + outward particles as the landmark dots (see
+   .blade-landmark__dot), so the dropped destination pin reads as the same
+   family of marker instead of the old skewed shard-and-dot pin. */
+.blade-marker__dot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--color-blade-cream);
+  opacity: 0.6;
+  animation: blade-landmark-pulse 2.4s ease-out infinite;
+}
+
+.blade-marker__particle {
+  position: absolute;
+  left: 50%;
+  bottom: 4.5px;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  border-radius: 50%;
+  background: var(--color-blade-cream);
+  opacity: 0;
+  --dist: 15px;
+  transform: rotate(var(--a, 0deg)) translateX(0);
+  animation: blade-landmark-particle 1.8s ease-out infinite;
+}
+
+.blade-marker__particle:nth-of-type(2) {
+  animation-delay: 0.6s;
+}
+
+.blade-marker__particle:nth-of-type(3) {
+  animation-delay: 1.2s;
 }
 
 .blade-marker__halo {
@@ -159,45 +214,164 @@
   opacity: 0;
 }
 
+/* The pin dropped at whatever place a clicked route ends at — the route line alone
+   never said where it ended, only the side panel did. Reuses the pulsing dot from
+   .blade-marker and the page-6 label style from .blade-place, faded in with the route
+   itself rather than gated behind hover like the landmark dots. */
+.blade-dest {
+  position: relative;
+  width: 24px;
+  height: 44px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease-out;
+}
+
+.blade-dest[data-visible='true'] {
+  opacity: 1;
+}
+
+.blade-dest .blade-place {
+  position: absolute;
+  /* Cleared past the dot's own pulse halo (peaks at ~3.4x its 9px size) and its
+     particles' 15px throw, so neither ever crosses the label. */
+  left: 24px;
+  bottom: -2px;
+}
+
 .blade-landmark {
   position: relative;
   width: 7px;
   height: 7px;
 }
 
+/* A solid dot standing in for the old hairline ring, constantly breathing an
+   outward pulse and shedding a few particles that drift out along the ring
+   and fade — the "signal" read the vision doc's page-6 chips lacked as static
+   rings. Pseudo-elements carry the pulse and shard-launch animations so the
+   dot itself never needs its own transform, keeping hover/dim opacity free
+   to animate independently. */
 .blade-landmark__dot {
   display: block;
+  position: relative;
   box-sizing: border-box;
-  width: 7px;
-  height: 7px;
-  border: 1px solid var(--color-blade-copper);
+  width: 5px;
+  height: 5px;
+  margin: 1px;
   border-radius: 50%;
-  background: transparent;
+  background: var(--color-blade-copper);
   transition: opacity 0.4s linear;
+}
+
+.blade-landmark__dot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--color-blade-copper);
+  opacity: 0.6;
+  animation: blade-landmark-pulse 2.4s ease-out infinite;
+}
+
+.blade-landmark__particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 2px;
+  margin: -1px 0 0 -1px;
+  border-radius: 50%;
+  background: var(--color-blade-copper);
+  opacity: 0;
+  transform: rotate(var(--a, 0deg)) translateX(0);
+  animation: blade-landmark-particle 1.8s ease-out infinite;
+}
+
+.blade-landmark__particle:nth-of-type(2) {
+  animation-delay: 0.6s;
+}
+
+.blade-landmark__particle:nth-of-type(3) {
+  animation-delay: 1.2s;
+}
+
+@keyframes blade-landmark-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(3.4);
+    opacity: 0;
+  }
+}
+
+@keyframes blade-landmark-particle {
+  0% {
+    transform: rotate(var(--a, 0deg)) translateX(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: rotate(var(--a, 0deg)) translateX(var(--dist, 10px));
+    opacity: 0;
+  }
 }
 
 .blade-landmark__label {
   position: absolute;
-  left: 11px;
-  top: -5px;
+  /* --label-dx/--label-dy: per-marker nudge, set inline from landmarks.js. Only the
+     roads cluster uses them (see the comment on 'roads' there) — every other label
+     defaults to 0 and sits exactly where it always has. */
+  left: calc(13px + var(--label-dx, 0px));
+  top: calc(-2px + var(--label-dy, 0px));
   white-space: nowrap;
   font-size: 11px;
   letter-spacing: 0.06em;
   color: var(--color-blade-cream);
   opacity: 0;
   pointer-events: none;
-  padding-left: 6px;
-  border-left: 1px solid var(--color-blade-copper);
   transition: opacity 0.3s linear;
 }
 
 .blade-landmark:hover .blade-landmark__label,
-.blade-landmark[data-active='true'] .blade-landmark__label {
+.blade-landmark[data-active='true'] .blade-landmark__label,
+.blade-landmark[data-labelled='true'] .blade-landmark__label {
   opacity: 1;
 }
 
 .blade-landmark[data-dim='true'] .blade-landmark__dot {
-  opacity: 0.15;
+  opacity: 0;
+}
+
+.blade-landmark[data-dim='true'] .blade-landmark__dot::before,
+.blade-landmark[data-dim='true'] .blade-landmark__particle {
+  animation-play-state: paused;
+  opacity: 0;
+}
+
+/* Worli Naka: always named, bold, never waiting on hover — see BladeMap.jsx. */
+.blade-landmark--emphasis .blade-landmark__dot {
+  width: 7px;
+  height: 7px;
+}
+
+.blade-landmark--emphasis .blade-landmark__label {
+  opacity: 1;
+  font-weight: 400;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-shadow: 0 1px 3px rgb(5 4 3 / 0.9), 0 0 8px rgb(5 4 3 / 0.6);
+}
+
+/* labelSide: 'left' in src/data/landmarks.js — the label reads to the left of the dot
+   instead of the default right, mirroring position and alignment. */
+.blade-landmark--label-left .blade-landmark__label {
+  left: auto;
+  right: calc(13px + var(--label-dx, 0px));
+  text-align: right;
 }
 
 /* The distance chips from page 6: a copper hairline ring on the dark ground, the number

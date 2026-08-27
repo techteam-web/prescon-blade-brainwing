@@ -84,6 +84,24 @@
     border: var(--glass-border);
   }
 
+  /* The warm variant of the above — same material, the brownish copper/bark gradient
+     instead of a neutral tint. Backs bare cream type that would otherwise sit directly
+     on a bright full-bleed render: the top rail's MENU/HOME cluster, and a section's
+     title line on screens like Amenities/Gallery that carry no scrim under it. */
+  .chip {
+    background: var(--chip-bg);
+    backdrop-filter: var(--chip-blur);
+    -webkit-backdrop-filter: var(--chip-blur);
+    border: var(--chip-border);
+  }
+
+  /* The Amenities title chip only — the lit copper gradient from the nav buttons instead
+     of the frosted --chip-bg, so the title reads as the same accent surface as HOME/MENU. */
+  .chip-copper {
+    background: var(--copper-gradient);
+    border: var(--chip-border);
+  }
+
   /* Eyebrows: ALL CAPS, wide tracking, copper. */
   .eyebrow {
     font-size: var(--text-eyebrow);
@@ -293,14 +311,50 @@
      part that does the work — a light that travels the frame on a slow loop, so the
      control is never completely still and the eye is drawn to it unprompted. */
   .enter-portal {
+    --cut: 1.6em;
+    --stroke: 0.6px;
     position: relative;
     display: inline-flex;
     align-items: center;
     gap: 1.35em;
     padding: 1.05em 1.9em;
     overflow: hidden;
-    border: 1px solid rgb(202 142 91 / 0.45);
     isolation: isolate;
+    border: 1px solid rgb(202 142 91 / 0.45);
+    background: transparent;
+    /* Same cut as the nav buttons (top-right sharp, bottom-right chamfered on a
+       full-height diagonal) — one shape across every EnterPortal size, not a rectangle
+       here and a cut corner there. `--cut` scales per size below. */
+    clip-path: polygon(0 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%);
+  }
+
+  /* The real `border` above draws the top, left and bottom edges fine — clip-path only
+     clips it on the one edge that isn't axis-aligned, the diagonal, which vanished
+     entirely. This redraws just that edge: a thin copper strip clipped to a polygon
+     built from the exact same --cut the button's own clip-path uses, so it tracks the
+     cut at any button width with no separate measurement. Kept as a background layer
+     rather than a real border so the interior stays genuinely transparent — no glass,
+     no fill, the render or the page shows straight through, same as before. */
+  .enter-portal-edge {
+    position: absolute;
+    inset: -1px;
+    z-index: 2;
+    background: rgb(202 142 91 / 0.85);
+    clip-path: polygon(
+      calc(100% - var(--cut) - var(--stroke)) 100%,
+      calc(100% - var(--stroke)) 0,
+      calc(100% + var(--stroke)) 0,
+      calc(100% - var(--cut) + var(--stroke)) 100%
+    );
+  }
+
+  /* Transparent by default — the interior stays a genuine window onto whatever's
+     behind the button. The nav (sm) variant below is the one exception, carrying dark
+     glass so it stays legible over bright hero photography. */
+  .enter-portal-panel {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
   }
 
   /* The fill, in two boxes on purpose. The outer one holds the blade skew and is never
@@ -341,10 +395,36 @@
     );
   }
 
-  /* The top-rail variant. Same control, tightened so it sits beside MENU and HOME. */
+  /* The top-rail variant. Same control, same cut (see --cut on .enter-portal above) —
+     just smaller. Unlike the landing CTA, this one keeps its dark glass: a plain
+     transparent outline washed out over bright hero photography (Amenities, Views), so
+     .enter-portal-panel carries a soft gradient plus a backdrop blur here, reading at
+     the same contrast over a bright render as it does over the void. */
   .enter-portal--sm {
-    gap: 0.9em;
-    padding: 0.62em 1.1em;
+    --cut: 1.1em;
+    gap: 0.7em;
+    padding: 0.68em 1.3em;
+  }
+
+  .enter-portal--sm .enter-portal-panel {
+    background: linear-gradient(180deg, rgb(36 26 21 / 0.6), rgb(11 8 7 / 0.55));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow:
+      inset 0 1px 0 rgb(240 231 211 / 0.08),
+      0 4px 16px rgb(11 8 7 / 0.3);
+    /* MENU/HOME remount on every stage change (TopRail only renders them while
+       'menu'/'section' is active), and backdrop-filter doesn't composite on an
+       element's very first paint — it shows flat/dull for a frame, then the blur pops
+       in. Forcing the layer onto the GPU up front is what actually removes that
+       first-frame flash, not just requesting the effect sooner. */
+    will-change: backdrop-filter, transform;
+  }
+
+  .enter-portal--sm .enter-portal-fill {
+    left: 0;
+    right: 0;
+    transform: none;
   }
 
   /* Compare mode's selection badge. It lives inside the tower, which GSAP scales, so it

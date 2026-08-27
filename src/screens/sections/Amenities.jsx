@@ -3,11 +3,25 @@ import { Screen } from '../../layout/Screen';
 import { SectionTitle } from './SectionShell';
 import { ArrowIcon } from '../../components/Icons';
 import { getRender } from '../../data/renders';
-import { AMENITY_GALLERY } from '../../data/gallery';
+import { AMENITY_GALLERY, AMENITY_PANEL_BY_RENDER } from '../../data/gallery';
+import { CONTENT } from '../../data/content';
 import { gsap, useGSAP, Observer, E, durationScale } from '../../gsap/Gsapconfig';
 
 // A curated running order, not "everything in renders.js" — see src/data/gallery.js.
-const RENDERS = AMENITY_GALLERY.map(getRender).filter(Boolean);
+// Each entry carries its render plus, where AMENITY_PANEL_BY_RENDER maps one, the
+// client's own copy for that floor (headline, level, body, bullet list) — see
+// CONTENT.gallery in src/data/content.js. Renders with no mapped copy (the exteriors)
+// get `panel: null` and stay the plain full-bleed slide.
+const ITEMS = AMENITY_GALLERY.map((id) => {
+  const render = getRender(id);
+  if (!render) return null;
+  const panelId = AMENITY_PANEL_BY_RENDER[id];
+  const panel = panelId ? CONTENT.gallery.find((g) => g.id === panelId) ?? null : null;
+  return { render, panel };
+}).filter(Boolean);
+
+const RENDERS = ITEMS.map((it) => it.render);
+const PANELS = ITEMS.map((it) => it.panel);
 
 // Every image is shown WHOLE. object-contain, always — on a phone held upright, on a
 // laptop, on a 4K screen, for a portrait render or a landscape one. Cropping was the
@@ -93,6 +107,30 @@ export function Amenities() {
     { dependencies: [index], scope: root },
   );
 
+  // The panel's copy rises in on its own timeline on top of the wipe below — the wipe
+  // carries the whole slide (image and panel together, see `slide()`), then these lines
+  // stagger up within it. Scoped to the incoming slot only: during the brief overlap
+  // before `prev` is cleared, the outgoing slide's own panel is still in the DOM too.
+  useGSAP(
+    () => {
+      const el = root.current;
+      if (!el) return;
+      const nodes = el.querySelectorAll('[data-slot="in"] [data-panel-anim]');
+      if (!nodes.length) return;
+      gsap.set(nodes, { y: 26, autoAlpha: 0 });
+      gsap.to(nodes, {
+        y: 0,
+        autoAlpha: 1,
+        duration: 0.9,
+        stagger: 0.08,
+        delay: 0.15,
+        ease: E.out,
+        overwrite: 'auto',
+      });
+    },
+    { dependencies: [index], scope: root },
+  );
+
   useGSAP(
     () => {
       const el = root.current;
@@ -141,42 +179,92 @@ export function Amenities() {
     { dependencies: [token], scope: root },
   );
 
-  const slot = (i, role) => {
+  // One slide is the image AND its panel together, so the blade wipe — applied once,
+  // around this whole thing, see `data-mask` below — carries both across the frame as a
+  // single sweep rather than wiping the image while the panel just cuts to new copy.
+  const slide = (i, role) => {
     const render = RENDERS[i];
+    const panel = PANELS[i];
     return (
       <div
         key={render.id}
         data-slot={role}
         data-overflow-ok
-        className={`absolute inset-0 ${role === 'in' ? 'z-[3]' : 'z-[2]'}`}
+        className={`absolute inset-0 flex max-md:flex-col ${role === 'in' ? 'z-[3]' : 'z-[2]'}`}
       >
-        {/* The render's own LQIP, blown up — the colour of the room, not letterboxing.
-            Deepened and saturated hard: a 24px thumbnail blown up averages towards mud,
-            and on a bright render that mud reads as flat grey card either side of the
-            image. Pushed down and warmed, the same pixels read as the room's own light
-            falling off past the frame, which is the whole point of it being there. */}
-        <img
-          data-overflow-ok
-          src={render.lqip}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full scale-[1.14] object-cover blur-[26px] brightness-[0.42] saturate-[1.7]"
-        />
-        <div aria-hidden="true" className="sheen-soft absolute inset-0" />
-        <div aria-hidden="true" className="absolute inset-0 bg-blade-black/25" />
+        <div className={`relative h-full w-full ${panel ? 'max-md:h-[54%] md:w-[60%]' : ''}`}>
+          {/* The render's own LQIP, blown up — the colour of the room, not letterboxing.
+              Deepened and saturated hard: a 24px thumbnail blown up averages towards mud,
+              and on a bright render that mud reads as flat grey card either side of the
+              image. Pushed down and warmed, the same pixels read as the room's own light
+              falling off past the frame, which is the whole point of it being there. */}
+          <img
+            data-overflow-ok
+            src={render.lqip}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full scale-[1.14] object-cover blur-[26px] brightness-[0.42] saturate-[1.7]"
+          />
+          <div aria-hidden="true" className="sheen-soft absolute inset-0" />
+          <div aria-hidden="true" className="absolute inset-0 bg-blade-black/25" />
 
-        <img
-          data-sharp
-          src={render.src}
-          srcSet={render.srcSet}
-          sizes="100vw"
-          width={render.width}
-          height={render.height}
-          alt={render.alt}
-          decoding="async"
-          loading={i === 0 ? 'eager' : 'lazy'}
-          className="absolute inset-0 h-full w-full object-contain"
-        />
+          {/* Slides that carry copy go full-bleed object-cover, filling this column's
+              height edge to edge with no letterboxing. Slides with no copy (none right
+              now — see AMENITY_GALLERY in src/data/gallery.js — but the branch stays for
+              when exteriors are added back) keep object-contain: the render is the whole
+              point there and nothing should crop it. */}
+          <img
+            data-sharp
+            src={render.src}
+            srcSet={render.srcSet}
+            sizes="100vw"
+            width={render.width}
+            height={render.height}
+            alt={render.alt}
+            decoding="async"
+            loading={i === 0 ? 'eager' : 'lazy'}
+            className={`absolute inset-0 h-full w-full ${panel ? 'object-cover' : 'object-contain'}`}
+          />
+        </div>
+
+        {/* The copy panel — the client's own slide layout: level, headline, body, bullet
+            list, on a solid ground beside the render. Rides inside the same masked slide
+            as the image, so it wipes in with it rather than cutting to new copy. */}
+        {panel && (
+          <div className="relative flex min-h-0 w-full flex-1 flex-col justify-center gap-[0.9em] overflow-hidden bg-blade-black px-[8%] py-[6%] max-md:px-[7%] max-md:py-[5%] md:w-[40%] md:flex-none md:px-[5%]">
+            <div aria-hidden="true" className="sheen-soft absolute inset-0" />
+            <div className="relative flex flex-col gap-[0.9em]">
+              <span data-panel-anim className="block text-caption uppercase tracking-[0.3em] text-blade-copper">
+                {panel.level}
+              </span>
+              <div className="flex flex-col gap-[0.1em]">
+                {panel.headline.map((line) => (
+                  <span
+                    key={line}
+                    data-panel-anim
+                    className="block text-headline uppercase text-blade-cream max-md:text-subhead"
+                  >
+                    {line}
+                  </span>
+                ))}
+              </div>
+              <span aria-hidden="true" data-panel-anim className="block h-px w-[20%] bg-blade-copper" />
+              <p data-panel-anim className="max-w-[52ch] text-body text-blade-cream/80 max-md:text-caption">
+                {panel.body}
+              </p>
+              {panel.list?.length ? (
+                <ul data-panel-anim className="flex flex-col gap-[0.4em] pt-[0.1em]">
+                  {panel.list.map((item) => (
+                    <li key={item} className="flex items-baseline gap-[0.7em] text-caption text-blade-cream/75">
+                      <span aria-hidden="true" className="h-[0.35em] w-[0.35em] shrink-0 rounded-full bg-blade-copper" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -197,46 +285,38 @@ export function Amenities() {
           e.stopPropagation();
         }}
       >
-        {/* The outgoing render sits plainly in the frame. */}
-        {prev !== null && prev !== index && slot(prev, 'out')}
+        {/* The outgoing slide — image and panel together — sits plainly in the frame. */}
+        {prev !== null && prev !== index && slide(prev, 'out')}
 
-        {/* The incoming one is behind a 12° mask that sweeps across to uncover it. */}
-        <div data-mask className="blade-reveal z-[4]">
+        {/* The incoming one is behind a 12° mask that sweeps across the WHOLE slide —
+            image and panel together, not the image alone — to uncover it. Wrapping the
+            full slide (rather than just the image column) is also what keeps the mask's
+            34dvh sideways bleed (see .blade-reveal in base.css) landing off the edge of
+            the viewport, same as it always did: there is no interior column boundary
+            inside the masked region for it to spill onto.
+
+            RESPONSIVE FIX: data-overflow-ok added here. Both the mask's bleed and the
+            LQIP backdrop's 1.14x scale (to hide its own blur edges) are clipped by
+            .blade-reveal's own `overflow: hidden` and never actually paint outside the
+            screen at any device size, but without this flag the dev-only LAW 1 overflow
+            guard (useOverflowGuard.js) reported it as a violation on every viewport, from
+            the narrowest flip-phone width to a 3840px 5xl display. Features.jsx's
+            backdrop wrapper already carries this same flag for the identical reason. */}
+        <div data-mask data-overflow-ok className="blade-reveal z-[4]">
           <span aria-hidden="true" className={`blade-wipe-edge ${dir > 0 ? 'left-0' : 'right-0'}`} />
-          <div className="blade-reveal-inner">{slot(index, 'in')}</div>
+          <div className="blade-reveal-inner">{slide(index, 'in')}</div>
         </div>
 
-        <div className="screen-inset pointer-events-none absolute inset-0 z-20 grid grid-rows-[auto_1fr_auto]">
-          <SectionTitle id="amenities" />
+        <div className="screen-inset pointer-events-none absolute inset-0 z-20 grid grid-rows-[1fr_auto]">
           <span />
 
           <div className="flex items-end justify-between gap-[2em] max-md:justify-end">
-            <ol className="pointer-events-auto flex items-end gap-[0.45em] max-md:hidden">
-              {RENDERS.map((r, i) => (
-                <li key={r.id}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (i === index || busy.current) return;
-                      const fwd = (i - index + total) % total;
-                      move(fwd <= total / 2 ? fwd : fwd - total);
-                    }}
-                    aria-label={`Render ${i + 1} of ${total}`}
-                    aria-current={i === index}
-                    className="group/t block py-[0.7em]"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={`block h-px origin-left bg-blade-copper transition-[width,opacity] duration-[420ms] ease-out ${
-                        i === index
-                          ? 'w-[3.2em] opacity-100'
-                          : 'w-[1.1em] opacity-35 group-hover/t:w-[2em] group-hover/t:opacity-80'
-                      }`}
-                    />
-                  </button>
-                </li>
-              ))}
-            </ol>
+            <div className="pointer-events-auto flex flex-col items-start gap-[0.9em]">
+              {/* Moved down to sit left-bottom, clear of the busy top edge of the
+                  render. Plain text now — no chip backdrop, no pager ticks beneath it —
+                  carrying the copper gradient itself instead of flat cream. */}
+              <SectionTitle id="amenities" bold gradient />
+            </div>
 
             <div className="pointer-events-auto flex items-center gap-[1.4em]">
               <span className="text-caption tabular-nums tracking-[0.3em] text-blade-cream/75">

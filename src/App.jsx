@@ -30,7 +30,8 @@ export default function App() {
              2xl:bottom-4 2xl:right-8 2xl:w-46
              3xl:bottom-5 3xl:right-10 3xl:w-44
              4xl:bottom-12 4xl:right-12 4xl:w-50
-             5xl:bottom-16 5xl:right-16 5xl:w-62"
+             5xl:bottom-16 5xl:right-16 5xl:w-62
+             6xl:bottom-20 6xl:right-20 6xl:w-74"
           /> 
     </AppStateProvider>
   );

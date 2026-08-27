@@ -36,7 +36,12 @@ function SlideBody({ slide }) {
     case 'statement':
       return (
         <>
-          <p data-rise className="max-w-[58ch] text-body text-blade-cream/80">{slide.body}</p>
+       
+                 {/* PHONE TEXT FIX: max-md:text-caption added — text-body floors at 14px and
+              stayed that size on phone; dropping to text-caption's 11px floor below the
+              md breakpoint (768px) is the "smaller on phone" change, applied the same
+              way everywhere text-body appears in this file. */}
+          <p data-rise className="max-w-[58ch] text-body text-blade-cream/80 max-md:text-caption">{slide.body}</p>
           <div data-rise className="flex flex-col gap-[0.8em] pt-[1em]">
             <Eyebrow>{slide.footnote}</Eyebrow>
             <ul className="grid grid-cols-3 gap-[1.2em] max-md:grid-cols-1">
@@ -57,7 +62,9 @@ function SlideBody({ slide }) {
     case 'columns':
       return (
         <>
-          <p data-rise className="max-w-[54ch] text-body text-blade-cream/80">{slide.body}</p>
+          {/* PHONE TEXT FIX: max-md:text-caption on the intro paragraph and the column
+              subtitle, same reasoning as the 'statement' case above. */}
+          <p data-rise className="max-w-[54ch] text-body text-blade-cream/80 max-md:text-caption">{slide.body}</p>
           <div data-rise className="grid grid-cols-4 gap-[2em] pt-[0.6em] max-lg:grid-cols-2">
             {slide.columns.map((col, i) => (
               <div key={col.eyebrow} className="relative flex min-w-0 flex-col gap-[0.6em]">
@@ -65,8 +72,8 @@ function SlideBody({ slide }) {
                   <span aria-hidden="true" className="absolute -left-[1em] top-0 h-full w-px bg-blade-ink max-lg:hidden" />
                 )}
                 <Eyebrow>{col.eyebrow}</Eyebrow>
-                <span className="text-body font-medium text-blade-cream">{col.subtitle}</span>
-                <p className="text-[calc(var(--text-caption)*1.03)] text-blade-cream/70 3xl:text-[calc(var(--text-caption)*1.05)]">{col.body}</p>
+                <span className="text-body font-medium text-blade-cream max-md:text-caption">{col.subtitle}</span>
+                <p className="text-[calc(var(--text-caption)*1.03)] text-blade-cream/70 3xl:text-[calc(var(--text-caption)*1.05)] 6xl:text-[calc(var(--text-caption)*1.07)] max-md:text-[0.625rem]">{col.body}</p>
               </div>
             ))}
           </div>
@@ -76,7 +83,11 @@ function SlideBody({ slide }) {
     case 'stack':
       return (
         <>
-          <p data-rise className="max-w-[54ch] text-body text-blade-cream/80">{slide.body}</p>
+          {/* PHONE TEXT FIX: same text-body -> max-md:text-caption drop, plus the floor
+              height and floor name shrink a step on phone (text-body->text-caption,
+              text-subhead->text-body) so a full floor list is legible without feeling
+              oversized next to the copper stack. */}
+          <p data-rise className="max-w-[54ch] text-body text-blade-cream/80 max-md:text-caption">{slide.body}</p>
           <div data-rise className="flex flex-col pt-[0.4em]">
             {slide.floors.map((f) => (
               <div key={f.id} className="group/s grid grid-cols-[auto_auto_auto_1fr] items-center gap-[0.9em] py-[0.5em]">
@@ -84,8 +95,8 @@ function SlideBody({ slide }) {
                 <span className={`text-stat font-bold tabular-nums ${TONE[f.tone]}`}>{f.code}</span>
                 <span aria-hidden="true" className="h-[1.8em] w-px skew-blade bg-blade-copper opacity-40 transition-opacity duration-300 group-hover/s:opacity-100" />
                 <span className="flex min-w-0 items-baseline gap-[1.1em]">
-                  <span className="text-body tabular-nums text-blade-rose">{f.height}</span>
-                  <span className={`truncate text-subhead font-medium transition-transform duration-300 ease-out group-hover/s:translate-x-[6px] ${TONE[f.tone]}`}>
+                  <span className="text-body tabular-nums text-blade-rose max-md:text-caption">{f.height}</span>
+                  <span className={`truncate text-subhead font-medium transition-transform duration-300 ease-out group-hover/s:translate-x-[6px] max-md:text-body ${TONE[f.tone]}`}>
                     {f.name}
                   </span>
                 </span>
@@ -103,10 +114,14 @@ function SlideBody({ slide }) {
               {i > 0 && (
                 <span aria-hidden="true" className="absolute -left-[1em] top-0 h-full w-px bg-blade-ink max-lg:hidden" />
               )}
-              <h2 className="text-[calc(var(--text-caption)*1.02)] font-bold uppercase tracking-[0.24em] text-blade-copper 4xl:text-[1.275rem]">{col.heading}</h2>
+              {/* PHONE TEXT FIX: max-md:text-[0.625rem] on both the heading and the
+                  list items — this slide packs 4 columns of copy, and on phone it
+                  collapses to a single column (max-lg:grid-cols-2 further up doesn't
+                  reach 1 column, so this is carrying more rows per screen than desktop). */}
+              <h2 className="text-[calc(var(--text-caption)*1.02)] font-bold uppercase tracking-[0.24em] text-blade-copper 4xl:text-[1.275rem] 6xl:text-[1.35rem] max-md:text-[0.625rem]">{col.heading}</h2>
               <ul className="flex flex-col">
                 {col.items.map((item) => (
-                  <li key={item} className="border-t border-blade-ink py-[0.45em] text-[calc(var(--text-caption)*1.051)] text-blade-cream/85 3xl:text-[calc(var(--text-caption)*1.091)] 4xl:text-[1.275rem]">
+                  <li key={item} className="border-t border-blade-ink py-[0.45em] text-[calc(var(--text-caption)*1.051)] text-blade-cream/85 3xl:text-[calc(var(--text-caption)*1.091)] 4xl:text-[1.275rem] 6xl:text-[1.35rem] max-md:text-[0.625rem]">
                     {item}
                   </li>
                 ))}
@@ -118,13 +133,17 @@ function SlideBody({ slide }) {
 
     case 'rows':
       return (
+        // PHONE TEXT FIX: max-md:text-[0.625rem] on both dt and dd. This is the
+        // densest slide kind (6 label/value rows, values often wrapping to 2 lines) —
+        // it was the one that read as cramped on a phone screenshot, so it gets the
+        // smallest step down of any text in this file.
         <dl data-rise className="grid grid-cols-[minmax(0,15em)_1fr] content-start gap-x-[2.4em] max-md:grid-cols-1">
           {slide.rows.map((row) => (
             <div key={row.label} className="contents">
-              <dt className="border-t border-blade-ink py-[0.5em] text-caption uppercase tracking-[0.16em] text-blade-rose 4xl:text-xl">
+              <dt className="border-t border-blade-ink py-[0.5em] text-caption uppercase tracking-[0.16em] text-blade-rose 4xl:text-xl 6xl:text-2xl max-md:text-[0.625rem]">
                 {row.label}
               </dt>
-              <dd className="border-t border-blade-ink py-[0.5em] text-[calc(var(--text-caption)*1.01)] text-blade-cream max-md:border-t-0 max-md:pt-0 4xl:text-xl">
+              <dd className="border-t border-blade-ink py-[0.5em] text-[calc(var(--text-caption)*1.01)] text-blade-cream max-md:border-t-0 max-md:pt-0 4xl:text-xl 6xl:text-2xl max-md:text-[0.625rem]">
                 {row.value}
               </dd>
             </div>
@@ -140,12 +159,18 @@ function SlideBody({ slide }) {
             <Eyebrow>{slide.stat.label}</Eyebrow>
             <span className="text-stat font-bold text-blade-copper">{slide.stat.value}</span>
           </div>
-          <div data-rise className="grid grid-cols-2 gap-x-[3em] max-md:grid-cols-1">
+          {/* PHONE OVERFLOW FIX: this was max-md:grid-cols-1 — with an 11-item list split
+              into two halves for two desktop columns, collapsing to one column on phone
+              stacked both halves (11 rows instead of 6) and ran the list past the bottom
+              of the frame, clipping the last item. Staying at grid-cols-2 on phone too
+              (same pattern as the 'columns' and 'grid' slide kinds, which never collapse
+              past 2) keeps it to 6 rows tall instead. */}
+          <div data-rise className="grid grid-cols-2 gap-x-[3em] max-md:gap-x-[1em]">
             {[slide.items.slice(0, half), slide.items.slice(half)].map((col, ci) => (
               <ul key={ci} className="flex min-w-0 flex-col">
                 {col.map((m) => (
-    //font size for features sustanability
-                  <li key={m} className="border-t border-blade-ink py-[0.5em] text-[calc(var(--text-caption)*1.03)] text-blade-cream/80 3xl:text-[calc(var(--text-caption)*1.04)] 4xl:text-[1.475rem]">
+    // font size for features sustainability — PHONE TEXT FIX: max-md:text-[0.625rem] added
+                  <li key={m} className="border-t border-blade-ink py-[0.5em] text-[calc(var(--text-caption)*1.03)] text-blade-cream/80 3xl:text-[calc(var(--text-caption)*1.04)] 4xl:text-[1.475rem] 6xl:text-[1.55rem] max-md:text-[0.625rem]">
                     {m}
                   </li>
                 ))}
@@ -159,7 +184,8 @@ function SlideBody({ slide }) {
     case 'partners':
       return (
         <>
-          <p data-rise className="max-w-[58ch] text-body text-blade-cream/80">{slide.body}</p>
+          {/* PHONE TEXT FIX: max-md:text-caption added */}
+          <p data-rise className="max-w-[58ch] text-body text-blade-cream/80 max-md:text-caption">{slide.body}</p>
           <ul data-rise className="flex flex-col">
             {slide.rows.map((p) => (
               <li key={p.name} className="group/p relative border-t border-blade-ink last:border-b">
@@ -181,7 +207,8 @@ function SlideBody({ slide }) {
     case 'stats':
       return (
         <>
-          <p data-rise className="max-w-[58ch] text-body text-blade-cream/80">{slide.body}</p>
+          {/* PHONE TEXT FIX: max-md:text-caption added */}
+          <p data-rise className="max-w-[58ch] text-body text-blade-cream/80 max-md:text-caption">{slide.body}</p>
           <ul data-rise className="grid grid-cols-4 gap-[1.6em] max-lg:grid-cols-2">
             {slide.stats.map((s, i) => (
               <li key={s.id} className="flex min-w-0 flex-col gap-[0.4em] border-t border-blade-ink pt-[0.8em]">
@@ -342,6 +369,21 @@ export function Features() {
               data-plate={i}
               className={`absolute inset-0 overflow-hidden ${i === index ? '' : 'invisible opacity-0'}`}
             >
+              {/* BACKGROUND IMAGE FIX: object-cover (an object-fit value) is already
+                  applied — it's what fills this full-bleed backdrop edge-to-edge on any
+                  screen without stretching the render. object-center is now explicit
+                  too, so the crop stays centred on the building rather than drifting to
+                  whatever the browser's default anchor happens to be on a narrow phone.
+
+                  PHONE CROP FIX: every backdrop here is a landscape render (see the
+                  comment atop FEATURE_BACKDROPS in gallery.js), so a phone's tall
+                  portrait frame crops hard off the top and bottom to fill it edge to
+                  edge. object-contain was tried here but left letterbox gaps, which
+                  isn't wanted — this stays object-cover (true fullscreen, no gaps) and
+                  instead biases the crop upward with max-md:object-[50%_30%] so the
+                  tower/façade stays in frame; the copy overlay already sits in the
+                  lower half of the frame, so ceding more of the bottom to the crop
+                  costs nothing. */}
               <img
                 src={render.src}
                 srcSet={render.srcSet}
@@ -349,7 +391,7 @@ export function Features() {
                 alt=""
                 decoding="async"
                 loading={i === 0 ? 'eager' : 'lazy'}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover object-center max-md:object-[50%_30%]"
               />
             </div>
           ))}

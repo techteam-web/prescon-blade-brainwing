@@ -1,7 +1,7 @@
 import { Screen } from '../layout/Screen';
 import { Eyebrow, EnterPortal, RenderImage } from '../components/Primitives';
 import { MapPinIcon } from '../components/Icons';
-import { Wordmark } from '../components/Wordmark';
+import { BrandLockup, Wordmark } from '../components/Wordmark';
 import { LANDING } from '../data/content';
 import { renderIdFor } from '../data/renderMap';
 import { useApp } from '../app/appContext';
@@ -10,7 +10,10 @@ import { useApp } from '../app/appContext';
 // own elements rather than a separate intro screen — the data-* markers below are its
 // targets, and they are the contract between this file and TransitionDirector.js.
 //
-// No top rail here: the rail appears on every screen except the gate and the landing.
+// The nav rail (Home/Menu) still skips the landing — it IS home, so those controls have
+// nowhere useful to send you. The brand lockup is not navigation, though, so it keeps its
+// fixed top-right position here too, matching every other screen. It never animates
+// (same contract as PresconLogo), so it just sits at full opacity from first paint.
 
 export function Landing() {
   const { goToMenu, isTransitioning } = useApp();
@@ -29,9 +32,18 @@ export function Landing() {
       />
 
       <div
+        className="pointer-events-none absolute inset-0 z-10"
+        style={{ padding: 'var(--screen-margin)' }}
+      >
+        <div className="flex justify-end">
+          <BrandLockup className="pointer-events-auto" />
+        </div>
+      </div>
+
+      <div
         className="screen-inset-bare relative grid h-full min-h-0 grid-rows-[1fr_auto] gap-[3%]"
       >
-        <div className="flex min-h-0 max-w-[56%] flex-col justify-center gap-[4%] max-lg:max-w-[72%] max-md:max-w-none">
+        <div className="flex min-h-0 max-w-[65%] flex-col justify-center gap-[4%] max-lg:max-w-[80%] max-md:max-w-none">
           <Eyebrow landing data-landing-eyebrow>
             {LANDING.eyebrow}
           </Eyebrow>
@@ -50,7 +62,7 @@ export function Landing() {
           </h1>
 
           <div className="flex min-w-0 flex-wrap items-center gap-x-[1.4em] gap-y-[0.8em]">
-            <Wordmark className="w-[clamp(7rem,10.5vw,14rem)] shrink-0" />
+            <Wordmark className="w-[clamp(14rem,22vw,30rem)] shrink-0" />
             <span aria-hidden="true" className="h-[3.2em] w-px bg-blade-ink" />
             <span className="flex min-w-0 items-center gap-[0.5em] text-subhead text-blade-cream">
               <MapPinIcon className="text-blade-copper" size="1.1em" />
@@ -67,4 +79,4 @@ export function Landing() {
       </div>
     </Screen>
   );
-}
+};

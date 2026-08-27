@@ -10,17 +10,23 @@ import { SECTION_BY_ID } from '../../data/sections';
 // content, and it cannot turn "The Vision" into "INTRODUCING THE FINEST EDGE OF MODERN
 // BUSINESS". The title line is that match. Metrics are identical to the menu row on
 // purpose, so the morph is pure translation and cannot betray itself.
-export function SectionTitle({ id, className = '' }) {
+export function SectionTitle({ id, className = '', bold = false, gradient = false }) {
   const section = SECTION_BY_ID[id];
   if (!section) return null;
 
   // Metrics and colour match the menu row exactly — same size, weight, casing, cream —
-  // so the aperture Flip is pure translation and never has to animate colour.
+  // so the aperture Flip is pure translation and never has to animate colour. `bold` and
+  // `gradient` are opt-in overrides for a screen that repositions this title away from
+  // the Flip's landing spot (see Amenities) and so no longer needs the exact match.
   // The index is NOT repeated here: it Flips into the top rail instead, per T3.
   return (
     <span
       data-flip-id={`ttl:${id}`}
-      className={`block text-subhead font-medium uppercase text-blade-cream ${className}`}
+      className={`block text-subhead uppercase ${bold ? 'font-bold' : 'font-medium'} ${
+        // Went through a multi-stop metallic gradient with a drop shadow for contrast;
+        // asked back down to flat pure white, no gradient, no shadow.
+        gradient ? 'text-white' : 'text-blade-cream'
+      } ${className}`}
     >
       {section.label}
     </span>

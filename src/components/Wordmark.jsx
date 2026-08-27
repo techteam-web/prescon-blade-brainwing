@@ -1,3 +1,4 @@
+import { useId, useMemo } from 'react';
 import wordmarkSrc from '../assets/brand/wordmark.svg?raw';
 import presconSrc from '../assets/brand/prescon-logo.png';
 
@@ -8,23 +9,63 @@ import presconSrc from '../assets/brand/prescon-logo.png';
 // MuPDF converts glyphs to filled outlines, so there are no strokes to draw. Adding a
 // stroke to each contour gives the intro its "the mark draws itself in the wake of the
 // strike" effect: stroke-dashoffset runs the outline, then it crossfades to fill.
-const wordmarkMarkup = wordmarkSrc
-  .replace(/<svg /, '<svg data-wordmark-svg ')
-  .replace(
-    /<path /g,
-    '<path data-wordmark-path stroke="currentColor" stroke-width="0.75" ' +
-      'vector-effect="non-scaling-stroke" fill-opacity="1" stroke-opacity="0" ',
-  );
+//
+// Every glyph shares the same fill so the mark reads as one piece rather than a random
+// per-letter patchwork. Normally that fill is flat currentColor; the `gradient` prop (used
+// by the fullscreen gate's centre mark) swaps it for a shared linearGradient instead —
+// still one fill across every glyph, just not flat. Either way, the stroke used for the
+// draw-in stays currentColor, so the crossfade animation below is untouched.
 
-export function Wordmark({ className = '', title = 'The Blade by Prescon', ...rest }) {
+function buildWordmarkMarkup(gradientId) {
+  let markup = wordmarkSrc
+    .replace(/<svg /, '<svg data-wordmark-svg ')
+    .replace(
+      /<path /g,
+      '<path data-wordmark-path stroke="currentColor" stroke-width="0.75" ' +
+        'vector-effect="non-scaling-stroke" fill-opacity="1" stroke-opacity="0" ',
+    );
+
+  if (gradientId) {
+    markup = markup
+      .replace(/fill="currentColor"/g, `fill="url(#${gradientId})"`)
+      .replace(
+        /(<svg[^>]*>)/,
+        `$1<defs><linearGradient id="${gradientId}" x1="0" y1="0" x2="1" y2="1">` +
+          '<stop offset="0%" stop-color="#f7efdd" />' +
+          '<stop offset="55%" stop-color="#ca8e5b" />' +
+          '<stop offset="100%" stop-color="#8f5c34" />' +
+          '</linearGradient></defs>',
+      );
+  }
+
+  return markup;
+}
+
+export function Wordmark({
+  className = '',
+  title = 'The Blade by Prescon',
+  corner = false,
+  gradient = false,
+  ...rest
+}) {
+  const reactId = useId();
+  const gradientId = gradient ? `wordmark-gradient-${reactId.replace(/[^a-zA-Z0-9]/g, '')}` : null;
+  const markup = useMemo(() => buildWordmarkMarkup(gradientId), [gradientId]);
+
   return (
     <span
       data-wordmark
+      // Set by BrandLockup only. The fixed corner mark never animates — see the
+      // comment on it in Landing.jsx — so introSequence (TransitionDirector.js)
+      // excludes anything carrying this flag when it picks which [data-wordmark]
+      // is "the" lockup to travel from centre stage to its resting position, and
+      // which [data-wordmark-path] elements are the ones being drawn.
+      {...(corner ? { 'data-corner-mark': true } : null)}
       role="img"
       aria-label={title}
       className={`block text-blade-cream ${className}`}
       {...rest}
-      dangerouslySetInnerHTML={{ __html: wordmarkMarkup }}
+      dangerouslySetInnerHTML={{ __html: markup }}
     />
   );
 }
@@ -43,5 +84,39 @@ export function PresconLogo({ className = '', title = 'Prescon' }) {
       decoding="async"
       className={`block h-auto ${className}`}
     />
+  );
+}
+
+// The fixed top-right anchor: Prescon lockup, the blade slash, the Blade wordmark.
+// Same three elements, same order, everywhere it appears — TopRail (menu/section) and
+// any other screen that wants the permanent corner mark rather than a hero placement.
+export function BrandLockup({ className = '' }) {
+  return (
+    <div className={`flex shrink-0 items-center gap-[0.4em] max-sm:gap-[0.28em] ${className}`}>
+      <PresconLogo className="w-[clamp(2.1rem,2.9vw,3.7rem)]" />
+      {/* The double slash, at the blade angle rather than a "/" glyph's own italic — two
+          copper strokes read as the brand's one graphic idea, the way a font's slash
+          never would. Staggered rather than levelled: one rides high, one rides low, so
+          the pair reads as a strike rather than a divider.
+
+          The bars are sized to sit fully inside this span's own height rather than
+          overflowing it on a translateY offset — a bar that paints outside its box
+          doesn't inflate the box, so TopRail's chrome measurement (which sizes
+          --chrome-top off the rail's real layout box) never saw the overflow, and every
+          screen below it — Plans' floor panel among them — pads for a shorter mark than
+          what actually got painted, so it landed right underneath the tail of the bars.
+          --chrome-top is also a fixed clamp(), not remeasured off the rail at all, so
+          the mark has to stay inside that fixed budget on its own — kept short on
+          purpose, not just contained. */}
+      <span aria-hidden="true" className="mx-[0.3em] flex h-[3.4em] items-center gap-[0.3em]">
+        <span
+          className="h-[2.9em] w-[3px]  [background:var(--copper-gradient)] [transform:skewX(calc(-1*var(--blade-angle)))_translateY(-1em)]"
+        />
+        <span
+          className="h-[2.9em] w-[3px]  [background:var(--copper-gradient)] [transform:skewX(calc(-1*var(--blade-angle)))__translateY(0.2em)]"
+        />
+      </span>
+      <Wordmark corner className="w-[clamp(5.3rem,7.5vw,9.4rem)]" />
+    </div>
   );
 }

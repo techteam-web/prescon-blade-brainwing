@@ -4,7 +4,18 @@
       "Bash(node \"C:\\\\Users\\\\TechTeam\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-TechTeam-Downloads-Aniket-prescon-blade-brainwing\\\\80f3be78-26f3-4c07-b14f-4e22246f8cf1\\\\scratchpad\\\\check-features-anim.js\")",
       "Bash(node -e \"require.resolve\\('playwright'\\)\")",
       "Bash(NODE_PATH=\"$\\(pwd\\)/node_modules\" node \"C:\\\\Users\\\\TechTeam\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-TechTeam-Downloads-Aniket-prescon-blade-brainwing\\\\80f3be78-26f3-4c07-b14f-4e22246f8cf1\\\\scratchpad\\\\check-features-anim.js\")",
-      "Bash(NODE_PATH=\"$\\(pwd\\)/node_modules\" node \"C:\\\\Users\\\\TechTeam\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-TechTeam-Downloads-Aniket-prescon-blade-brainwing\\\\80f3be78-26f3-4c07-b14f-4e22246f8cf1\\\\scratchpad\\\\check-location.js\")"
+      "Bash(NODE_PATH=\"$\\(pwd\\)/node_modules\" node \"C:\\\\Users\\\\TechTeam\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-TechTeam-Downloads-Aniket-prescon-blade-brainwing\\\\80f3be78-26f3-4c07-b14f-4e22246f8cf1\\\\scratchpad\\\\check-location.js\")",
+      "WebFetch(domain:nominatim.openstreetmap.org)",
+      "WebSearch",
+      "Bash(cp \"C:\\\\Users\\\\TechTeam\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-TechTeam-Downloads-Aniket-prescon-blade-brainwing\\\\dfc34366-d732-4647-b7d9-af2bb848375d\\\\scratchpad\\\\check-features.mjs\" ./__check-features.mjs)",
+      "Bash(node ./__check-features.mjs)",
+      "Bash(curl -sf http://localhost:5173)",
+      "Bash(taskkill //PID 22856 //F)",
+      "Bash(taskkill //PID 53908 //F)",
+      "Bash(taskkill //PID 48888 //F)",
+      "Bash(npm run *)",
+      "Bash(findstr LISTENING)",
+      "Bash(findstr \":517\")"
     ]
   }
 }

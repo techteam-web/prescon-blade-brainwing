@@ -80,6 +80,32 @@ export function FullscreenIcon(props) {
 
 
 
+export function TowerIcon(props) {
+  return (
+    <Icon {...props}>
+      <rect x="8" y="3" width="8" height="18" />
+      <path d="M8 21h8M11 3v18M13 3v18M9.5 7h1M13.5 7h1M9.5 11h1M13.5 11h1M9.5 15h1M13.5 15h1" />
+    </Icon>
+  );
+}
+
+export function MenuIcon(props) {
+  return (
+    <Icon {...props}>
+      <path d="M4 6h16M4 12h16M4 18h16" />
+    </Icon>
+  );
+}
+
+export function HomeIcon(props) {
+  return (
+    <Icon {...props}>
+      <path d="M4 11.5 12 4l8 7.5" />
+      <path d="M6 10v10h12V10" />
+    </Icon>
+  );
+}
+
 export function CheckIcon(props) {
   return (
     <Icon {...props}>

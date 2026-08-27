@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
 import { Screen } from '../layout/Screen';
-import { Wordmark } from '../components/Wordmark';
 import { SECTIONS } from '../data/sections';
 import { MENU_BACKDROPS } from '../data/gallery';
 import { getRender } from '../data/renders';
@@ -223,12 +222,7 @@ export function Menu() {
       </div>
 
       <div className="screen-inset relative z-10 grid h-full min-h-0 grid-cols-[minmax(0,42%)_1fr] max-md:grid-cols-1">
-        <div ref={menuRef} className="relative flex min-h-0 flex-col justify-center">
-          <Wordmark
-            data-menu-brand
-            className="absolute top-0 left-0 w-[clamp(6rem,8vw,10rem)]"
-          />
-
+        <div ref={menuRef} className="relative flex min-h-0 flex-col justify-center max-md:justify-end max-md:pb-[6vh]">
           <div className="relative flex min-h-0 gap-[1.4em]">
             <span data-menu-rule aria-hidden="true" className="w-px shrink-0 origin-top bg-blade-copper" />
             <nav className="flex min-h-0 min-w-0 flex-1 flex-col justify-center">

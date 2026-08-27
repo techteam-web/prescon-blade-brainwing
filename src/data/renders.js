@@ -200,6 +200,44 @@ export const RENDERS = [
     "lqip": "data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAACQBACdASoYABQAPu1srVCppiQiqAqpMB2JYwDA3Ac7zwddsL9EEsbsvc5w+wAA3VJ49hXpC/sdX1wtPZlNtePRvUswIAAzuMcHf48CE8e/ji1XIilgAA==",
     "alt": "The Blade by Prescon — artistic impression"
   }
+,
+  {
+    "id": "amenity-13",
+    "src": "/assets/renders/blade-07-2560.webp",
+    "srcSet": "/assets/renders/blade-07-2560.webp 573w",
+    "width": 573,
+    "height": 685,
+    "lqip": "data:image/webp;base64,UklGRoYAAABXRUJQVlA4IHoAAACQBQCdASoYAB0APu1wsFKppiSiqAgBMB2JQBOmargpOEsv/rjnA5fHOgb87+4hTjnoS2SaAAD+r4xfb6USSsOhfOjToH2A62sqgcHvnRd+l3d5M4F0FihR0Mj+wdMyX5Rn9hNGw1GyxgFpVb5ZhKLdBQxw8TeB+CAAAA==",
+    "alt": "The Blade by Prescon — amenities"
+  },
+  {
+    "id": "amenity-14",
+    "src": "/assets/renders/blade-08-2560.webp",
+    "srcSet": "/assets/renders/blade-08-2560.webp 541w",
+    "width": 541,
+    "height": 687,
+    "lqip": "data:image/webp;base64,UklGRoIAAABXRUJQVlA4IHYAAADQBACdASoYAB4APu1mrE+ppSQiMBgIATAdiUAVhmX4G7DA2WWD/SJeMorKa0FI0AD1PfI9DNILCVPSGNZ6qIobXbJUzHa46Y4pkR1UvBWM1pnioJpIkOQ1EAjAswnv3ws6sVP5hC87ZTIS8QqyIM78dzvrAAAA",
+    "alt": "The Blade by Prescon — amenities"
+  },
+  {
+    "id": "amenity-15",
+    "src": "/assets/renders/blade-09-2560.webp",
+    "srcSet": "/assets/renders/blade-09-2560.webp 544w",
+    "width": 544,
+    "height": 687,
+    "lqip": "data:image/webp;base64,UklGRnwAAABXRUJQVlA4IHAAAABQBQCdASoYAB4APt1gqU2opiQiMAwBEBuJYwAAW+oIHuRqS45g/unNE4lI/ghFzNjz8EgA/uOvALsG0aN/QeWH52BfJFXrdEJ2wf46xFZMqzl/VFHwKBqSeQGXTWfhwgdpIBuCHIXiEcfunK3JIAAA",
+    "alt": "The Blade by Prescon — amenities"
+  }
+,
+  {
+    "id": "group-01",
+    "src": "/assets/renders/group-01-1280.webp",
+    "srcSet": "/assets/renders/group-01-1280.webp 1280w",
+    "width": 1376,
+    "height": 768,
+    "lqip": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAAAQBACdASoYAA0APu1iqU2ppaOiMAgBMB2JYgCdMoACXt+LgINPjXkYAAD+ueatbQoqfS5cUYz3u3CCYJu8l7Bn37BcvknVUxIzI/eXC5cXQ4ry/AA=",
+    "alt": "The Blade by Prescon — the design team at work"
+  }
 ];
 
 export const RENDER_BY_ID = Object.fromEntries(RENDERS.map((r) => [r.id, r]));
