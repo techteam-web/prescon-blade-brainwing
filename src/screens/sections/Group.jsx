@@ -110,10 +110,12 @@ export function Group() {
                 <ul className="flex min-w-0 flex-1 flex-wrap gap-x-[1em] gap-y-[0.3em]">
                   {c.stats.map((s) => (
                     <li key={s.id} className="flex items-baseline gap-[0.3em]">
-                      <span className="flex items-baseline gap-[0.1em] text-caption font-bold tabular-nums text-blade-copper">
-                        <CountUp to={s.to} />
-                        <span className="text-[0.75em] text-blade-copper/75">{s.suffix}</span>
-                      </span>
+                      {s.to != null ? (
+                        <span className="flex items-baseline gap-[0.1em] text-caption font-bold tabular-nums text-blade-copper">
+                          <CountUp to={s.to} decimals={s.decimals} />
+                          <span className="text-[0.75em] text-blade-copper/75">{s.suffix}</span>
+                        </span>
+                      ) : null}
                       <span className="text-[0.65rem] text-blade-cream/60">{s.label}</span>
                     </li>
                   ))}
@@ -144,11 +146,21 @@ export function Group() {
               <ul className="grid grid-cols-2 gap-x-[1.6em] gap-y-[1.4em]">
                 {c.stats.map((s) => (
                   <li key={s.id} className="flex min-w-0 flex-col gap-[0.35em] border-t border-blade-ink pt-[0.8em]">
-                    <span className="flex items-baseline gap-[0.15em] text-stat font-bold tabular-nums text-blade-copper">
-                      <CountUp to={s.to} />
-                      <span className="text-[0.5em] text-blade-copper/75">{s.suffix}</span>
+                    {s.to != null ? (
+                      <span className="flex items-baseline gap-[0.15em] text-stat font-bold tabular-nums text-blade-copper">
+                        <CountUp to={s.to} decimals={s.decimals} />
+                        <span className="text-[0.5em] text-blade-copper/75">{s.suffix}</span>
+                      </span>
+                    ) : null}
+                    <span
+                      className={
+                        s.to != null
+                          ? 'text-caption text-blade-cream/70'
+                          : 'text-body font-medium text-blade-cream'
+                      }
+                    >
+                      {s.label}
                     </span>
-                    <span className="text-caption text-blade-cream/70">{s.label}</span>
                   </li>
                 ))}
               </ul>

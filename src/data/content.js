@@ -132,10 +132,11 @@ export const CONTENT = {
   },
 
   /* ------------------------------------------------------------------- 08 group */
-  // TODO: client content. Everything below is a placeholder — it is NOT verbatim from
-  // the vision document, which breaks LAW 4 above on purpose because the menu row
-  // ('Prescon Group') had no screen behind it at all. Replace every figure, date and
-  // project name with verified copy before this reaches a client.
+  // `stats` is verbatim from the client's "Prescon. Beyond the Ordinary." deck slide.
+  // Everything else below (eyebrow, headline, body, pillars) is still a placeholder —
+  // it is NOT verbatim from the vision document, which breaks LAW 4 above on purpose
+  // because the menu row ('Prescon Group') had no screen behind it at all. Replace
+  // those with verified copy before this reaches a client.
   group: {
     eyebrow: 'About the Developer',
     headline: ['BUILT ON SITE WORK,', 'NOT SLIDE DECKS.'],
@@ -145,11 +146,16 @@ export const CONTENT = {
       'discipline now spans residential towers, mixed-use addresses and ground-up ' +
       'redevelopment across Mumbai, each one held to one standard: structural honesty ' +
       'first, design second, marketing last. The Blade continues that line.',
+    // A stat with no `to` is a fact, not a figure — CountUp renders nothing for it
+    // (see Primitives.jsx), and Group.jsx shows its label alone, full weight.
     stats: [
-      { id: 'years', to: 25, suffix: '+', label: 'Years in Development' },
-      { id: 'projects', to: 40, suffix: '+', label: 'Projects Delivered' },
-      { id: 'area', to: 12, suffix: 'M+', label: 'Sq. Ft. Developed' },
-      { id: 'cities', to: 3, suffix: '', label: 'Cities, One Standard' },
+      { id: 'legacy', to: null, suffix: '', label: 'Legacy spanning over four decades' },
+      { id: 'projects', to: 21, suffix: '', label: 'Projects completed' },
+      { id: 'families', to: 3000, suffix: '+', label: 'Trusted by over 3,000 families' },
+      { id: 'area', to: 5.1, decimals: 1, suffix: 'M+', label: 'Sq. Ft. of total saleable area' },
+      { id: 'waterfront', to: null, suffix: '', label: 'Waterfront development — Prescon Midtown Bay, Mahim, Mumbai' },
+      { id: 'developments', to: null, suffix: '', label: 'Residential, commercial & township developments' },
+      { id: 'township', to: null, suffix: '', label: 'Landmark township development including Prescon Amanha, Goa' },
     ],
     pillars: [
       { eyebrow: 'Structural Integrity', body: 'Engineering decided before elevations are drawn — never the other way round.' },
