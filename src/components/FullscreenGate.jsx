@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { BrandLockup, Wordmark } from './Wordmark';
+import { Wordmark } from './Wordmark';
 import { Control } from './Primitives';
 import { CloseIcon } from './Icons';
 import { GATE } from '../data/content';
@@ -45,9 +45,6 @@ export function FullscreenGate() {
       if (!open || !root.current) return;
       const wrap = root.current.querySelector('[data-gate-mark]');
       if (!wrap) return;
-      // Scoped to `wrap`, not `root` — the gate also renders the small persistent
-      // BrandLockup (top-right corner), which carries its own Wordmark instance and
-      // its own [data-wordmark-path] elements. Querying from root animated both.
       const marksNodeList = wrap.querySelectorAll('[data-wordmark-path]');
       const glow = root.current.querySelector('[data-gate-glow]');
       const line = root.current.querySelector('[data-gate-line]');
@@ -144,15 +141,6 @@ export function FullscreenGate() {
         transition: 'opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
     >
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ padding: 'var(--screen-margin)' }}
-      >
-        <div className="flex justify-end">
-          <BrandLockup className="pointer-events-auto" />
-        </div>
-      </div>
-
       <div className="relative flex flex-col items-center gap-[2.4em]">
         <span data-gate-mark className="relative">
           <span
