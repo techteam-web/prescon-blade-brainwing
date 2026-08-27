@@ -78,7 +78,7 @@ export function Group() {
         <SplitLayout
           ratio={46}
           text={
-            <div className="flex min-h-0 flex-col justify-center gap-[1.5em]">
+            <div className="flex min-h-0 flex-col justify-center gap-[1.5em] max-md:gap-[1.1em]">
               <SectionTitle id="group" />
 
               <div className="flex flex-col gap-[0.5em]">
@@ -97,13 +97,36 @@ export function Group() {
                 <span data-group-rule aria-hidden="true" className="mt-[0.3em] block h-px w-[32%] bg-blade-copper" />
               </div>
 
+              {/* Below md, SplitLayout drops `visual` behind the text as a faint
+                  20%-opacity backdrop — right for a photo, wrong here: `visual` carries
+                  the Prescon mark and the four stats, actual content, not scenery. Left
+                  as-is it read as ghosting collided with the paragraph underneath.
+                  Hidden there instead (visualClassName below) and replaced with this
+                  compact strip, in-flow and fully legible, sized to fit the same
+                  no-scroll screen instead of the roomier two-column stat grid. */}
+              <div data-rise className="hidden items-center gap-[1.1em] max-md:flex">
+                <PresconLogo className="w-[5rem] shrink-0" />
+                <span aria-hidden="true" className="h-[1.8em] w-px shrink-0 bg-blade-ink" />
+                <ul className="flex min-w-0 flex-1 flex-wrap gap-x-[1em] gap-y-[0.3em]">
+                  {c.stats.map((s) => (
+                    <li key={s.id} className="flex items-baseline gap-[0.3em]">
+                      <span className="flex items-baseline gap-[0.1em] text-caption font-bold tabular-nums text-blade-copper">
+                        <CountUp to={s.to} />
+                        <span className="text-[0.75em] text-blade-copper/75">{s.suffix}</span>
+                      </span>
+                      <span className="text-[0.65rem] text-blade-cream/60">{s.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
               <p data-rise className="max-w-[52ch] text-body text-blade-cream/80 max-md:text-caption">
                 {c.body}
               </p>
 
-              <div data-rise className="grid grid-cols-3 gap-[2em] pt-[0.4em] max-md:grid-cols-1 max-md:gap-[1.2em]">
+              <div data-rise className="grid grid-cols-3 gap-[2em] pt-[0.4em] max-md:grid-cols-1 max-md:gap-[0.9em]">
                 {c.pillars.map((p, i) => (
-                  <div key={p.eyebrow} className="relative flex min-w-0 flex-col gap-[0.5em]">
+                  <div key={p.eyebrow} className="relative flex min-w-0 flex-col gap-[0.5em] max-md:gap-[0.3em]">
                     {i > 0 && (
                       <span aria-hidden="true" className="absolute -left-[1em] top-0 h-full w-px bg-blade-ink max-md:hidden" />
                     )}
@@ -131,6 +154,7 @@ export function Group() {
               </ul>
             </div>
           }
+          visualClassName="max-md:hidden"
         />
       </div>
     </Screen>
