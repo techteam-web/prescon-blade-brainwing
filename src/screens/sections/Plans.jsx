@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Screen } from '../../layout/Screen';
 import { SectionTitle } from './SectionShell';
 import { TowerElevation } from '../../features/plans/TowerElevation';
-import { TowerIcon } from '../../components/Icons';
+import { TowerIcon, FullscreenIcon, CloseIcon } from '../../components/Icons';
 import { ReraTable } from '../../features/plans/ReraTable';
 
 import { TOWER_ZONES, ZONE_BY_ID } from '../../data/towerZones';
@@ -189,6 +189,26 @@ export function Plans() {
   const comparing = compare !== 'off';
 
   usePreloadPlans();
+
+  // The plan panel itself is the fullscreen target, same trick as Gallery's render
+  // view — the browser's UA stylesheet stretches whatever element is fullscreened to
+  // fill the viewport, so the currently shown plate just gets more room for free. The
+  // RERA table is hidden while fullscreen (see the `fullscreen &&` below) since the
+  // point is to see the plan itself, not the numbers next to it.
+  const [planFullscreen, setPlanFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onChange = () => setPlanFullscreen(document.fullscreenElement === frame.current);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  const togglePlanFullscreen = useCallback(() => {
+    const el = frame.current;
+    if (!el) return;
+    if (document.fullscreenElement === el) document.exitFullscreen();
+    else el.requestFullscreen?.().catch(() => {});
+  }, []);
 
   // Hover only highlights the band and the label chip — the panel on the right is a
   // click-only choice, so sweeping the pointer up the tower never thrashes it.
@@ -475,6 +495,7 @@ export function Plans() {
 
   const chip = ZONE_BY_ID[hovered ?? locked];
   const chipPlate = chip?.plan ? getPlate(chip.plan) : null;
+  const shownHasPlan = Boolean(ZONE_BY_ID[shown]?.plan);
 
   const zoneList = useMemo(() => (comparing ? COMPARABLE : TOWER_ZONES), [comparing]);
 
@@ -608,9 +629,11 @@ export function Plans() {
                     </div>
                     <span
                       aria-hidden="true"
-                      className="block h-px w-full shrink-0 bg-blade-copper/30 max-md:hidden"
+                      className={`block h-px w-full shrink-0 bg-blade-copper/30 max-md:hidden ${
+                        planFullscreen ? 'hidden' : ''
+                      }`}
                     />
-                    <ReraTable plate={plate} className="max-md:hidden" />
+                    <ReraTable plate={plate} className={`max-md:hidden ${planFullscreen ? 'hidden' : ''}`} />
                   </>
                 ) : (
                   <div className="row-span-2 min-h-0">
@@ -668,6 +691,27 @@ export function Plans() {
           ) : null}
 
           <PlateWipeCanvas ref={wipe} />
+
+          {/* Fullscreen just the plan panel — same requestFullscreen trick as Gallery's
+              render view. Only offered when a real floor plate is on screen; the tower
+              prompt and amenity cards have nothing worth expanding. */}
+          {shownHasPlan && !comparing ? (
+            <button
+              type="button"
+              onClick={togglePlanFullscreen}
+              aria-label={planFullscreen ? 'Exit fullscreen' : 'View plan fullscreen'}
+              className="group/pfs absolute right-[1.1em] top-[0.75em] z-[60] flex items-center justify-center bg-blade-black/55 p-[0.55em] text-blade-cream/85 transition-colors duration-200 hover:bg-blade-black/75 hover:text-blade-cream"
+            >
+              {planFullscreen ? (
+                <CloseIcon size="1.2em" />
+              ) : (
+                <FullscreenIcon
+                  size="1.2em"
+                  className="transition-transform duration-200 ease-out group-hover/pfs:scale-110"
+                />
+              )}
+            </button>
+          ) : null}
         </div>
       </div>
 
