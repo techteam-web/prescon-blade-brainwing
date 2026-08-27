@@ -132,22 +132,20 @@ export const CONTENT = {
   },
 
   /* ------------------------------------------------------------------- 08 group */
-  // `stats` is verbatim from the client's "Prescon. Beyond the Ordinary." deck slide.
-  // Everything else below (eyebrow, headline, body, pillars) is still a placeholder —
-  // it is NOT verbatim from the vision document, which breaks LAW 4 above on purpose
-  // because the menu row ('Prescon Group') had no screen behind it at all. Replace
-  // those with verified copy before this reaches a client.
+  // `headline`, `body` and `stats` are verbatim from the client's "Prescon. Beyond the
+  // Ordinary." deck slide. `eyebrow` is still a placeholder — it is NOT verbatim from
+  // the vision document, which breaks LAW 4 above on purpose because the menu row
+  // ('Prescon Group') had no screen behind it at all. Replace it with verified copy
+  // before this reaches a client.
   group: {
     eyebrow: 'About the Developer',
-    headline: ['BUILT ON SITE WORK,', 'NOT SLIDE DECKS.'],
+    headline: ['BEYOND THE ORDINARY.'],
     body:
-      'Prescon Group began as a construction outfit before it was ever a developer — ' +
-      'which is why every project still starts on site, not in a boardroom. That ' +
-      'discipline now spans residential towers, mixed-use addresses and ground-up ' +
-      'redevelopment across Mumbai, each one held to one standard: structural honesty ' +
-      'first, design second, marketing last. The Blade continues that line.',
-    // A stat with no `to` is a fact, not a figure — CountUp renders nothing for it
-    // (see Primitives.jsx), and Group.jsx shows its label alone, full weight.
+      'Prescon has built its reputation on a more thoughtful way of creating places of ' +
+      'value. Across asset classes and geographies, our work is marked by design, ' +
+      'reliability and a clear sense of distinction. From townships to high-rises, ' +
+      'every project reflects the kind of care that earns enduring trust.',
+
     stats: [
       { id: 'legacy', to: null, suffix: '', label: 'Legacy spanning over four decades' },
       { id: 'projects', to: 21, suffix: '', label: 'Projects completed' },
@@ -156,11 +154,6 @@ export const CONTENT = {
       { id: 'waterfront', to: null, suffix: '', label: 'Waterfront development — Prescon Midtown Bay, Mahim, Mumbai' },
       { id: 'developments', to: null, suffix: '', label: 'Residential, commercial & township developments' },
       { id: 'township', to: null, suffix: '', label: 'Landmark township development including Prescon Amanha, Goa' },
-    ],
-    pillars: [
-      { eyebrow: 'Structural Integrity', body: 'Engineering decided before elevations are drawn — never the other way round.' },
-      { eyebrow: 'Design Discipline', body: 'Every material and line answers to the building, not to the trend cycle.' },
-      { eyebrow: 'On-Time Delivery', body: 'Handover dates are commitments made at launch, not adjusted at the end.' },
     ],
   },
 };

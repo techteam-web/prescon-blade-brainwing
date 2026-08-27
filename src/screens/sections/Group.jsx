@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { Screen, SplitLayout } from '../../layout/Screen';
 import { SectionTitle } from './SectionShell';
-import { Eyebrow, CountUp } from '../../components/Primitives';
+import { CountUp } from '../../components/Primitives';
 import { PresconLogo } from '../../components/Wordmark';
 import { CONTENT } from '../../data/content';
 import { getRender } from '../../data/renders';
@@ -13,6 +13,11 @@ import { gsap, useGSAP } from '../../gsap/Gsapconfig';
 //
 // The Prescon mark appears exactly as issued (see Wordmark.jsx) — never faded into a
 // watermark, never recoloured — sitting plainly atop its own stat panel instead.
+//
+// No pillars row any more — the client's deck carries no "three principles" copy for
+// this screen, only the headline/body/stats below, so the text column is just those
+// three blocks, centred with more breathing room than when a fourth block sat under
+// them.
 
 const BACKDROP = getRender('group-01');
 
@@ -78,7 +83,7 @@ export function Group() {
         <SplitLayout
           ratio={46}
           text={
-            <div className="flex min-h-0 flex-col justify-center gap-[1.5em] max-md:gap-[1.1em]">
+            <div className="flex min-h-0 flex-col justify-center gap-[1.9em] max-md:gap-[1.1em]">
               <SectionTitle id="group" />
 
               <div className="flex flex-col gap-[0.5em]">
@@ -122,28 +127,16 @@ export function Group() {
                 </ul>
               </div>
 
-              <p data-rise className="max-w-[52ch] text-body text-blade-cream/80 max-md:text-caption">
+              <p data-rise className="max-w-[54ch] text-body text-blade-cream/80 max-md:text-caption">
                 {c.body}
               </p>
-
-              <div data-rise className="grid grid-cols-3 gap-[2em] pt-[0.4em] max-md:grid-cols-1 max-md:gap-[0.9em]">
-                {c.pillars.map((p, i) => (
-                  <div key={p.eyebrow} className="relative flex min-w-0 flex-col gap-[0.5em] max-md:gap-[0.3em]">
-                    {i > 0 && (
-                      <span aria-hidden="true" className="absolute -left-[1em] top-0 h-full w-px bg-blade-ink max-md:hidden" />
-                    )}
-                    <Eyebrow>{p.eyebrow}</Eyebrow>
-                    <p className="text-caption text-blade-cream/70">{p.body}</p>
-                  </div>
-                ))}
-              </div>
             </div>
           }
           visual={
-            <div data-rise className="flex h-full min-h-0 flex-col justify-center gap-[1.6em]">
+            <div data-rise className="flex h-full min-h-0 flex-col justify-center gap-[1.9em]">
               <PresconLogo className="w-[clamp(6rem,9vw,9.5rem)]" />
               <span aria-hidden="true" className="h-px w-full bg-blade-ink" />
-              <ul className="grid grid-cols-2 gap-x-[1.6em] gap-y-[1.4em]">
+              <ul className="grid grid-cols-2 gap-x-[1.8em] gap-y-[1.6em]">
                 {c.stats.map((s) => (
                   <li key={s.id} className="flex min-w-0 flex-col gap-[0.35em] border-t border-blade-ink pt-[0.8em]">
                     {s.to != null ? (
