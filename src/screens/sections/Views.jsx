@@ -131,12 +131,15 @@ export function Views() {
           }}
         />
 
-        <div className="screen-inset pointer-events-none absolute inset-0 z-20 grid grid-cols-[1fr_auto] grid-rows-[auto_1fr_auto] gap-[1.4em]">
+        <div className="screen-inset pointer-events-none absolute inset-0 z-20 grid grid-cols-[1fr_auto] grid-rows-[auto_1fr_auto] gap-[1.4em] max-md:grid-cols-1 max-md:grid-rows-[auto_auto_1fr_auto]">
           <SectionTitle id="views" />
-          <span />
+          <span className="max-md:hidden" />
 
-          {/* The time-of-day rail: day, evening, night, in that order. */}
-          <ol className="pointer-events-auto col-start-2 row-start-1 row-end-4 flex flex-col justify-center gap-[0.15em] self-center">
+          {/* The time-of-day rail: day, evening, night, in that order. A vertical list
+              pinned to the right on wide screens; on phones it would collide with the
+              centred stage content, so it collapses into a horizontal row under the
+              title instead. */}
+          <ol className="pointer-events-auto col-start-2 row-start-1 row-end-4 flex flex-col justify-center gap-[0.15em] self-center max-md:col-start-1 max-md:row-start-2 max-md:row-end-3 max-md:flex-row max-md:flex-wrap max-md:justify-start max-md:gap-x-[1.1em] max-md:gap-y-[0.3em] max-md:self-auto">
             {PANORAMAS.map((p, i) => {
               const on = i === index;
               return (
@@ -145,10 +148,10 @@ export function Views() {
                     type="button"
                     onClick={() => jump(i)}
                     aria-current={on}
-                    className="group/f flex items-center justify-end gap-[0.8em] py-[0.28em] text-right"
+                    className="group/f flex items-center justify-end gap-[0.8em] py-[0.28em] text-right max-md:justify-start max-md:gap-[0.5em] max-md:py-[0.15em] max-md:text-left"
                   >
                     <span
-                      className={`text-subhead font-medium uppercase transition-colors duration-300 ease-out ${
+                      className={`text-subhead font-medium uppercase transition-colors duration-300 ease-out max-md:text-caption ${
                         on ? 'text-blade-copper' : 'text-blade-cream/45 group-hover/f:text-blade-cream'
                       }`}
                     >
@@ -156,7 +159,7 @@ export function Views() {
                     </span>
                     <span
                       aria-hidden="true"
-                      className={`block h-px origin-right bg-blade-copper transition-[width,opacity] duration-[420ms] ease-out ${
+                      className={`block h-px origin-right bg-blade-copper transition-[width,opacity] duration-[420ms] ease-out max-md:origin-left ${
                         on
                           ? 'w-[2.6em] opacity-100'
                           : 'w-[0.9em] opacity-40 group-hover/f:w-[1.8em] group-hover/f:opacity-80'
@@ -168,7 +171,7 @@ export function Views() {
             })}
           </ol>
 
-          <div className="col-start-1 row-start-3 flex items-end justify-between gap-[2em]">
+          <div className="col-start-1 row-start-3 flex items-end justify-between gap-[2em] max-md:row-start-4">
             <div className="flex flex-col gap-[0.4em]">
               <span className="text-subhead font-medium uppercase text-blade-cream">
                 {active.label}
