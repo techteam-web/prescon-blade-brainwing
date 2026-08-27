@@ -60,7 +60,13 @@ return (
         {/* The two places anyone ever wants to get back to. The section index is
             deliberately NOT here: it belongs to the menu, where it orders the list,
             and repeating it beside the controls made the rail read as a breadcrumb. */}
-        <div className="flex min-w-0 items-start gap-[1.4em] max-sm:gap-[0.9em]">
+        {/* shrink-0, not min-w-0: BrandLockup opposite already carries shrink-0, so with
+            no counterweight here flexbox put all the squeeze on this cluster once the
+            row ran out of room — MENU/HOME shrank below their own label's width and the
+            clip-path cut straight through the text ("MEN"/"HON" on a 320px phone). These
+            are the working buttons; the logo is decorative and already scales itself via
+            clamp() — it's the one that should give first, not this. */}
+        <div className="flex shrink-0 items-start gap-[1.4em] max-sm:gap-[0.9em]">
           {stage === 'section' ? (
             <NavButton
               label="Menu"

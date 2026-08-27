@@ -214,6 +214,15 @@ export function Profile() {
               </div>
             </div>
           }
+          // Below md, SplitLayout drops `visual` behind the text as a 20%-opacity
+          // absolute backdrop — right for a photo, wrong here: the tower elevation
+          // painted as a faint full-bleed ghost behind the headline and floor list,
+          // misaligned with everything since it's stretched to the screen rather than
+          // kept in its own box. The text column's own floor list (level, height, name)
+          // already carries the section's full content without it, so it's simplest to
+          // just hide it there rather than try to fit a second illustration into a
+          // no-scroll mobile screen that already has no spare height.
+          visualClassName="max-md:hidden"
         />
       </div>
     </Screen>

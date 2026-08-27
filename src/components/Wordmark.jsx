@@ -92,8 +92,13 @@ export function PresconLogo({ className = '', title = 'Prescon' }) {
 // any other screen that wants the permanent corner mark rather than a hero placement.
 export function BrandLockup({ className = '' }) {
   return (
-    <div className={`flex shrink-0 items-center gap-[0.4em] max-sm:gap-[0.28em] ${className}`}>
-      <PresconLogo className="w-[clamp(2.1rem,2.9vw,3.7rem)]" />
+    <div className={`flex shrink-0 items-center gap-[0.4em] max-sm:gap-[0.16em] ${className}`}>
+      {/* clamp()'s own floor (2.1rem) was still too wide once TopRail's nav cluster
+          stopped shrinking to make room for it — on a narrow phone the two together
+          no longer fit and this mark ran off the right edge instead of MENU/HOME
+          clipping. max-sm drops the floor further, since this mark is decorative and
+          the nav buttons are the ones that have to stay full size. */}
+      <PresconLogo className="w-[clamp(2.1rem,2.9vw,3.7rem)] max-sm:w-[1.3rem]" />
       {/* The double slash, at the blade angle rather than a "/" glyph's own italic — two
           copper strokes read as the brand's one graphic idea, the way a font's slash
           never would. Staggered rather than levelled: one rides high, one rides low, so
@@ -108,7 +113,7 @@ export function BrandLockup({ className = '' }) {
           --chrome-top is also a fixed clamp(), not remeasured off the rail at all, so
           the mark has to stay inside that fixed budget on its own — kept short on
           purpose, not just contained. */}
-      <span aria-hidden="true" className="mx-[0.3em] flex h-[3.4em] items-center gap-[0.3em]">
+      <span aria-hidden="true" className="mx-[0.3em] flex h-[3.4em] items-center gap-[0.3em] max-sm:mx-[0.08em] max-[360px]:hidden">
         <span
           className="h-[2.9em] w-[3px]  [background:var(--copper-gradient)] [transform:skewX(calc(-1*var(--blade-angle)))_translateY(-1em)]"
         />
@@ -116,7 +121,13 @@ export function BrandLockup({ className = '' }) {
           className="h-[2.9em] w-[3px]  [background:var(--copper-gradient)] [transform:skewX(calc(-1*var(--blade-angle)))__translateY(0.2em)]"
         />
       </span>
-      <Wordmark corner className="w-[clamp(5.3rem,7.5vw,9.4rem)]" />
+      {/* Below 360px (the oldest iPhone SE's 320px included) even a legible-sized
+          wordmark plus the logo and MENU/HOME no longer all fit — shrinking the
+          wordmark further than 3.3rem started running into its own letterforms, three
+          lines of real type, not a mark that reads fine tiny. Dropped instead: the
+          logo + slash alone still say "Prescon" and fit comfortably, and the full
+          lockup is one tap away on every other screen in the app. */}
+      <Wordmark corner className="w-[clamp(5.3rem,7.5vw,9.4rem)] max-sm:w-[3.3rem] max-[360px]:hidden" />
     </div>
   );
 }
