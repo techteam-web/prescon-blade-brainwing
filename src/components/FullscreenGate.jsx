@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Wordmark } from './Wordmark';
+import { PresconLogo, Wordmark } from './Wordmark';
 import { Control } from './Primitives';
 import { CloseIcon } from './Icons';
 import { GATE } from '../data/content';
@@ -141,6 +141,15 @@ export function FullscreenGate() {
         transition: 'opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
     >
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ padding: 'var(--screen-margin)' }}
+      >
+        <div className="flex justify-end">
+          <PresconLogo className="w-[clamp(2.1rem,2.9vw,3.7rem)]" />
+        </div>
+      </div>
+
       <div className="relative flex flex-col items-center gap-[2.4em]">
         <span data-gate-mark className="relative">
           <span
