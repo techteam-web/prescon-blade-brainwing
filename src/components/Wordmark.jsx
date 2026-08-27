@@ -98,27 +98,23 @@ export function BrandLockup({ className = '' }) {
           no longer fit and this mark ran off the right edge instead of MENU/HOME
           clipping. max-sm drops the floor further, since this mark is decorative and
           the nav buttons are the ones that have to stay full size. */}
-      <PresconLogo className="w-[clamp(2.1rem,2.9vw,3.7rem)] max-sm:w-[1.3rem]" />
-      {/* The double slash, at the blade angle rather than a "/" glyph's own italic — two
-          copper strokes read as the brand's one graphic idea, the way a font's slash
-          never would. Staggered rather than levelled: one rides high, one rides low, so
-          the pair reads as a strike rather than a divider.
+      <PresconLogo className="w-[clamp(2.6rem,3.5vw,4.5rem)] max-sm:w-[1.6rem]" />
+      {/* A single copper stroke at the blade angle, rather than a "/" glyph's own
+          italic — one clean strike reads as the brand's graphic idea without the
+          second bar's clutter at this size.
 
-          The bars are sized to sit fully inside this span's own height rather than
-          overflowing it on a translateY offset — a bar that paints outside its box
-          doesn't inflate the box, so TopRail's chrome measurement (which sizes
-          --chrome-top off the rail's real layout box) never saw the overflow, and every
-          screen below it — Plans' floor panel among them — pads for a shorter mark than
-          what actually got painted, so it landed right underneath the tail of the bars.
-          --chrome-top is also a fixed clamp(), not remeasured off the rail at all, so
-          the mark has to stay inside that fixed budget on its own — kept short on
-          purpose, not just contained. */}
-      <span aria-hidden="true" className="mx-[0.3em] flex h-[3.4em] items-center gap-[0.3em] max-sm:mx-[0.08em] max-[360px]:hidden">
+          The bar is sized to sit fully inside this span's own height rather than
+          overflowing it — a bar that paints outside its box doesn't inflate the box,
+          so TopRail's chrome measurement (which sizes --chrome-top off the rail's real
+          layout box) never sees the overflow, and every screen below it — Plans' floor
+          panel among them — pads for a shorter mark than what actually got painted, so
+          it would land right underneath the tail of the bar. --chrome-top is also a
+          fixed clamp(), not remeasured off the rail at all, so the mark has to stay
+          inside that fixed budget on its own — kept short on purpose, not just
+          contained. */}
+      <span aria-hidden="true" className="mx-[0.3em] flex h-[3.6em] items-center max-sm:mx-[0.08em] max-[360px]:hidden">
         <span
-          className="h-[2.9em] w-[3px]  [background:var(--copper-gradient)] [transform:skewX(calc(-1*var(--blade-angle)))_translateY(-1em)]"
-        />
-        <span
-          className="h-[2.9em] w-[3px]  [background:var(--copper-gradient)] [transform:skewX(calc(-1*var(--blade-angle)))__translateY(0.2em)]"
+          className="h-[3.3em] w-[3px] [background:var(--copper-gradient)] [transform:skewX(calc(-1*var(--blade-angle)))]"
         />
       </span>
       {/* Below 360px (the oldest iPhone SE's 320px included) even a legible-sized
