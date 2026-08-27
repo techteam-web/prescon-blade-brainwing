@@ -25,6 +25,14 @@ export function Group() {
   const c = CONTENT.group;
   const root = useRef(null);
 
+  // Split once: a stat with a `to` is a figure worth counting up, everything else is a
+  // fact worth stating plainly. Rendered as two distinct clusters below — a numbers row
+  // and a highlights list — rather than interleaved in one grid, so a long sentence
+  // ("Waterfront development — Prescon Midtown Bay…") never has to share a narrow
+  // column with a big tabular-nums figure.
+  const numericStats = c.stats.filter((s) => s.to != null);
+  const factStats = c.stats.filter((s) => s.to == null);
+
   useGSAP(
     () => {
       const el = root.current;
@@ -104,24 +112,32 @@ export function Group() {
 
               {/* Below md, SplitLayout drops `visual` behind the text as a faint
                   20%-opacity backdrop — right for a photo, wrong here: `visual` carries
-                  the Prescon mark and the four stats, actual content, not scenery. Left
+                  the Prescon mark and the stats, actual content, not scenery. Left
                   as-is it read as ghosting collided with the paragraph underneath.
                   Hidden there instead (visualClassName below) and replaced with this
-                  compact strip, in-flow and fully legible, sized to fit the same
-                  no-scroll screen instead of the roomier two-column stat grid. */}
-              <div data-rise className="hidden items-center gap-[1.1em] max-md:flex">
-                <PresconLogo className="w-[5rem] shrink-0" />
-                <span aria-hidden="true" className="h-[1.8em] w-px shrink-0 bg-blade-ink" />
-                <ul className="flex min-w-0 flex-1 flex-wrap gap-x-[1em] gap-y-[0.3em]">
-                  {c.stats.map((s) => (
-                    <li key={s.id} className="flex items-baseline gap-[0.3em]">
-                      {s.to != null ? (
+                  compact block, in-flow and fully legible, sized to fit the same
+                  no-scroll screen instead of the roomier two-cluster desktop layout. */}
+              <div data-rise className="hidden flex-col gap-[0.7em] max-md:flex">
+                <div className="flex items-center gap-[1em]">
+                  <PresconLogo className="w-[4.6rem] shrink-0" />
+                  <span aria-hidden="true" className="h-[1.8em] w-px shrink-0 bg-blade-ink" />
+                  <ul className="grid min-w-0 flex-1 grid-cols-3 gap-x-[0.8em]">
+                    {numericStats.map((s) => (
+                      <li key={s.id} className="flex min-w-0 flex-col gap-[0.15em]">
                         <span className="flex items-baseline gap-[0.1em] text-caption font-bold tabular-nums text-blade-copper">
                           <CountUp to={s.to} decimals={s.decimals} />
                           <span className="text-[0.75em] text-blade-copper/75">{s.suffix}</span>
                         </span>
-                      ) : null}
-                      <span className="text-[0.65rem] text-blade-cream/60">{s.label}</span>
+                        <span className="text-[0.6rem] leading-tight text-blade-cream/60">{s.label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <ul className="flex flex-col gap-[0.25em]">
+                  {factStats.map((s) => (
+                    <li key={s.id} className="flex items-start gap-[0.5em]">
+                      <span aria-hidden="true" className="mt-[0.45em] h-[3px] w-[3px] shrink-0 bg-blade-copper" />
+                      <span className="text-[0.625rem] leading-snug text-blade-cream/60">{s.label}</span>
                     </li>
                   ))}
                 </ul>
@@ -133,27 +149,41 @@ export function Group() {
             </div>
           }
           visual={
-            <div data-rise className="flex h-full min-h-0 flex-col justify-center gap-[1.9em]">
+            <div data-rise className="flex h-full min-h-0 flex-col justify-center gap-[1.7em]">
               <PresconLogo className="w-[clamp(6rem,9vw,9.5rem)]" />
               <span aria-hidden="true" className="h-px w-full bg-blade-ink" />
-              <ul className="grid grid-cols-2 gap-x-[1.8em] gap-y-[1.6em]">
-                {c.stats.map((s) => (
-                  <li key={s.id} className="flex min-w-0 flex-col gap-[0.35em] border-t border-blade-ink pt-[0.8em]">
-                    {s.to != null ? (
-                      <span className="flex items-baseline gap-[0.15em] text-stat font-bold tabular-nums text-blade-copper">
-                        <CountUp to={s.to} decimals={s.decimals} />
-                        <span className="text-[0.5em] text-blade-copper/75">{s.suffix}</span>
-                      </span>
-                    ) : null}
-                    <span
-                      className={
-                        s.to != null
-                          ? 'text-caption text-blade-cream/70'
-                          : 'text-body font-medium text-blade-cream'
-                      }
-                    >
-                      {s.label}
+
+              {/* By the numbers — three figures, side by side, dividers rather than a
+                  grid gap so the row reads as one measured statement. */}
+              <ul className="grid grid-cols-3 gap-x-[1.6em]">
+                {numericStats.map((s, i) => (
+                  <li
+                    key={s.id}
+                    className={`flex min-w-0 flex-col gap-[0.4em] ${
+                      i > 0 ? 'border-l border-blade-ink pl-[1.6em]' : ''
+                    }`}
+                  >
+                    <span className="flex items-baseline gap-[0.15em] text-stat font-bold tabular-nums text-blade-copper">
+                      <CountUp to={s.to} decimals={s.decimals} />
+                      <span className="text-[0.5em] text-blade-copper/75">{s.suffix}</span>
                     </span>
+                    <span className="text-caption text-blade-cream/70">{s.label}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <span aria-hidden="true" className="h-px w-full bg-blade-ink" />
+
+              {/* The rest — legacy and portfolio breadth — as plain statements, a tick
+                  mark standing in for the number none of them have. */}
+              <ul className="flex flex-col">
+                {factStats.map((s) => (
+                  <li
+                    key={s.id}
+                    className="flex items-start gap-[0.7em] border-t border-blade-ink py-[0.6em] first:border-t-0 first:pt-0"
+                  >
+                    <span aria-hidden="true" className="mt-[0.5em] h-[3px] w-[3px] shrink-0 bg-blade-copper" />
+                    <span className="text-caption text-blade-cream/75">{s.label}</span>
                   </li>
                 ))}
               </ul>
