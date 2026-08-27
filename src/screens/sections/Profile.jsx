@@ -99,7 +99,7 @@ export function Profile() {
         className="grid h-full min-h-0 w-full grid-cols-[48fr_52fr] gap-[3%] md:grid-cols-[52fr_48fr] md:gap-[4%]"
       >
         <div data-rise className="relative min-h-0 min-w-0 overflow-hidden">
-          <div className="flex h-full items-center justify-start gap-[0.7em] pl-[clamp(1rem,4vw,4.5rem)] lg:gap-[2.2em]">
+          <div className="flex h-full items-center justify-start gap-[0.7em] pl-[clamp(1rem,4vw,4.5rem)] lg:gap-[1.1em]">
             {/* h-full w-full plus object-contain on the <img>, not a hand-tuned
                 aspect-ratio box — the browser fits both the column's width and the
                 row's height at once, so no breakpoint (this now includes mobile) needs
