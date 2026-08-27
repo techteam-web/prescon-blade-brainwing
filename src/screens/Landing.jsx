@@ -44,9 +44,7 @@ export function Landing() {
         className="screen-inset-bare relative grid h-full min-h-0 grid-rows-[1fr_auto] gap-[3%]"
       >
         <div className="flex min-h-0 max-w-[65%] flex-col justify-center gap-[4%] max-lg:max-w-[80%] max-md:max-w-none">
-          <Eyebrow landing data-landing-eyebrow>
-            {LANDING.eyebrow}
-          </Eyebrow>
+          
 
           {/* Futura Light. The one place in the app that uses weight 300. */}
           <h1

@@ -5,7 +5,7 @@
 // with no content stays structurally empty with a // TODO: client content marker.
 
 export const LANDING = {
-  eyebrow: 'VISION DOCUMENT',
+
   headline: ['SCULPTED FOR', 'THE DISTINGUISHED,', 'THE INFLUENTIAL,', 'THE POWERFUL.'],
   place: 'Worli Naka',
   enter: 'ENTER EXPERIENCE',

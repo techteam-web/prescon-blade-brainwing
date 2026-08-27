@@ -222,8 +222,8 @@ export const RENDERS = [
 ,
   {
     "id": "group-01",
-    "src": "/assets/renders/group-01-1280.webp",
-    "srcSet": "/assets/renders/group-01-1280.webp 1280w",
+    "src": "/assets/renders/blade-11-2560.webp",
+    "srcSet": "/assets/renders/blade-11-2560.webp 1280w",
     "width": 1376,
     "height": 768,
     "lqip": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAAAQBACdASoYAA0APu1iqU2ppaOiMAgBMB2JYgCdMoACXt+LgINPjXkYAAD+ueatbQoqfS5cUYz3u3CCYJu8l7Bn37BcvknVUxIzI/eXC5cXQ4ry/AA=",
