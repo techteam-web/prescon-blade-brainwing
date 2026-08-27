@@ -8,12 +8,13 @@ import { gsap, useGSAP, Observer, E } from '../../gsap/Gsapconfig';
 
 // No sheen: the view IS the page.
 //
-// A floor rail down the right, a 360° stage filling the screen. Floors advance on the
-// arrow keys, a swipe, or the rail itself. Every swap is a masked wipe — never a cut.
+// A time-of-day rail down the right, a 360° stage filling the screen. Day, evening and
+// night advance on the arrow keys, a swipe, or the rail itself. Every swap is a masked
+// wipe — never a cut.
 
 export function Views() {
   const c = CONTENT.views;
-  const [index, setIndex] = useState(PANORAMAS.length - 1); // open at the top floor
+  const [index, setIndex] = useState(0); // open on the day view
   const [dir, setDir] = useState(1);
   const root = useRef(null);
   const stage = useRef(null);
@@ -64,7 +65,7 @@ export function Views() {
     { dependencies: [move], scope: root },
   );
 
-  // The stage wipes on every floor change. killTweensOf first so a fast run up the rail
+  // The stage wipes on every view change. killTweensOf first so a fast run up the rail
   // never leaves two wipes fighting over the same element.
   useGSAP(
     () => {
@@ -94,7 +95,7 @@ export function Views() {
         className="relative h-full w-full"
         tabIndex={0}
         role="group"
-        aria-label="360 degree views by floor"
+        aria-label="360 degree views by time of day"
         onKeyDown={(e) => {
           if (e.key === 'ArrowUp' || e.key === 'PageUp') move(1);
           else if (e.key === 'ArrowDown' || e.key === 'PageDown') move(-1);
@@ -111,10 +112,9 @@ export function Views() {
             // flat render dressed up as a 360° view.
             <div className="flex h-full w-full items-center justify-center">
               <div className="flex flex-col items-center gap-[1.1em] text-center">
-                <span className="text-stat font-bold tabular-nums text-blade-copper">
-                  {active.slab.toFixed(2)} m
+                <span className="text-stat font-bold uppercase text-blade-copper">
+                  {active.label}
                 </span>
-                <span className="eyebrow">{active.label} · slab level</span>
                 <span aria-hidden="true" className="h-px w-[7em] skew-blade bg-blade-ink" />
                 <span className="max-w-[28ch] text-caption text-blade-cream/45">{c.empty}</span>
               </div>
@@ -135,10 +135,9 @@ export function Views() {
           <SectionTitle id="views" />
           <span />
 
-          {/* The floor rail: every drone-shoot level, tallest at the top. */}
+          {/* The time-of-day rail: day, evening, night, in that order. */}
           <ol className="pointer-events-auto col-start-2 row-start-1 row-end-4 flex flex-col justify-center gap-[0.15em] self-center">
-            {[...PANORAMAS].reverse().map((p) => {
-              const i = PANORAMAS.indexOf(p);
+            {PANORAMAS.map((p, i) => {
               const on = i === index;
               return (
                 <li key={p.id}>
@@ -149,20 +148,11 @@ export function Views() {
                     className="group/f flex items-center justify-end gap-[0.8em] py-[0.28em] text-right"
                   >
                     <span
-                      className={`text-caption tabular-nums transition-[color,opacity] duration-300 ease-out ${
-                        on
-                          ? 'text-blade-cream opacity-100'
-                          : 'text-blade-cream/40 group-hover/f:text-blade-cream/85'
-                      }`}
-                    >
-                      {p.slab.toFixed(1)}
-                    </span>
-                    <span
-                      className={`text-subhead font-medium tabular-nums transition-colors duration-300 ease-out ${
+                      className={`text-subhead font-medium uppercase transition-colors duration-300 ease-out ${
                         on ? 'text-blade-copper' : 'text-blade-cream/45 group-hover/f:text-blade-cream'
                       }`}
                     >
-                      {p.floor}
+                      {p.label}
                     </span>
                     <span
                       aria-hidden="true"
@@ -183,10 +173,7 @@ export function Views() {
               <span className="text-subhead font-medium uppercase text-blade-cream">
                 {active.label}
               </span>
-              <span className="text-caption text-blade-cream/60">
-                {active.offices} {active.offices === 1 ? 'office' : 'offices'} · slab{' '}
-                {active.slab.toFixed(2)} m
-              </span>
+              <span className="text-caption text-blade-cream/60">360° panorama</span>
             </div>
             <span className="shrink-0 text-caption tracking-[0.24em] text-blade-cream/45 max-md:hidden">
               {c.hint}

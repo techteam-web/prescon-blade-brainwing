@@ -2,7 +2,7 @@
 // in square metres; `total` is the same figure in square feet.
 //
 // A unit with a `status` ('RESERVED' | 'REFUGE') has no area: it renders in
-// plan-unit-alt with a copper dot on its unit cell.
+// blade-rose with a copper dot on its unit cell.
 
 export const FLOOR_PLATES = {
   'plan-15': {

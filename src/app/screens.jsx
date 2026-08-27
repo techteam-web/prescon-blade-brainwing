@@ -1,10 +1,13 @@
 import { Landing } from '../screens/Landing';
 import { Menu } from '../screens/Menu';
 import { Views } from '../screens/sections/Views';
+import { Profile } from '../screens/sections/Profile';
+import { Gallery } from '../screens/sections/Gallery';
 import { Amenities } from '../screens/sections/Amenities';
 import { Plans } from '../screens/sections/Plans';
 import { Location } from '../screens/sections/Location';
 import { Features } from '../screens/sections/Features';
+import { Group } from '../screens/sections/Group';
 
 // Five screens. Every one is statically imported: the incoming screen must be mounted
 // and laid out before the transition timeline is built, so a lazy screen still resolving
@@ -15,10 +18,13 @@ import { Features } from '../screens/sections/Features';
 // without putting a Suspense boundary in the middle of a transition.
 export const SECTION_SCREENS = {
   views: Views,
+  profile: Profile,
+  gallery: Gallery,
   amenities: Amenities,
   plans: Plans,
   location: Location,
   features: Features,
+  group: Group,
 };
 
 // Stage → component. 'gate' mounts nothing: the gate is an overlay outside the stage,

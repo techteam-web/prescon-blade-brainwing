@@ -40,21 +40,21 @@ function Directions({ route }) {
   return (
     <div ref={box} className="shrink-0 border-t border-blade-ink/70 pt-[0.75em]">
       <div className="flex items-baseline justify-between gap-[0.8em]">
-        <span className="min-w-0 truncate text-[0.72rem] font-medium uppercase tracking-[0.14em] text-blade-cream">
+        <span className="min-w-0 truncate text-[0.72rem] font-medium uppercase tracking-[0.14em] text-blade-cream 4xl:text-[0.92rem] 6xl:text-[1.06rem]">
           {route.label}
         </span>
         {route.state === 'ready' ? (
-          <span className="shrink-0 text-[0.72rem] font-medium tabular-nums text-blade-copper">
+          <span className="shrink-0 text-[0.72rem] font-medium tabular-nums text-blade-copper 4xl:text-[0.92rem] 6xl:text-[1.06rem]">
             {formatDistance(route.distance)}
           </span>
         ) : null}
       </div>
 
       {route.state === 'loading' ? (
-        <p className="pt-[0.4em] text-[0.64rem] text-blade-cream/55">Finding the route…</p>
+        <p className="pt-[0.4em] text-[0.64rem] text-blade-cream/55 4xl:text-[0.82rem] 6xl:text-[0.94rem]">Finding the route…</p>
       ) : null}
       {route.state === 'error' ? (
-        <p className="pt-[0.4em] text-[0.64rem] text-blade-cream/55">
+        <p className="pt-[0.4em] text-[0.64rem] text-blade-cream/55 4xl:text-[0.82rem] 6xl:text-[0.94rem]">
           Route unavailable right now.
         </p>
       ) : null}
@@ -63,10 +63,10 @@ function Directions({ route }) {
         <ul className="grid grid-cols-4 gap-[0.45em] pt-[0.65em]">
           {travelTimes(route).map((m) => (
             <li key={m.id} className="flex min-w-0 flex-col gap-[0.16em]">
-              <span className="text-[0.58rem] uppercase tracking-[0.14em] text-blade-cream/50">
+              <span className="text-[0.58rem] uppercase tracking-[0.14em] text-blade-cream/50 4xl:text-[0.75rem] 6xl:text-[0.87rem]">
                 {m.label}
               </span>
-              <span className="truncate text-[0.7rem] tabular-nums text-blade-cream">
+              <span className="truncate text-[0.7rem] tabular-nums text-blade-cream 4xl:text-[0.9rem] 6xl:text-[1.03rem]">
                 {m.time}
               </span>
             </li>
@@ -75,7 +75,7 @@ function Directions({ route }) {
       ) : null}
 
       {route.state === 'ready' ? (
-        <p className="pt-[0.55em] text-[0.56rem] leading-[1.3] text-blade-cream/40">
+        <p className="pt-[0.55em] text-[0.56rem] leading-[1.3] text-blade-cream/40 4xl:text-[0.72rem] 6xl:text-[0.82rem]">
           Driving time is routed. Metro, bus and walking are estimates from the road
           distance.
         </p>
@@ -121,7 +121,7 @@ export function Location() {
 
       <div
         ref={panel}
-        className="glass absolute z-10 top-[calc(var(--screen-margin)+var(--chrome-top)+2.2em)] left-[var(--screen-margin)] flex max-h-[70%] w-[clamp(17rem,21vw,22rem)] min-w-0 flex-col gap-[0.9em] overflow-hidden p-[1.25em] max-md:inset-x-0 max-md:bottom-0 max-md:top-auto max-md:max-h-[50%] max-md:w-auto max-md:rounded-none max-md:border-x-0 max-md:border-b-0 max-md:p-[1.1em] max-md:pb-[calc(var(--screen-margin)+var(--chrome-bottom))]"
+        className="glass absolute z-10 top-[calc(var(--screen-margin)+var(--chrome-top)+2.2em)] left-[var(--screen-margin)] flex max-h-[70%] w-[clamp(17rem,21vw,22rem)] min-w-0 flex-col gap-[0.9em] overflow-hidden p-[1.25em] 3xl:w-[25rem] 4xl:w-[29rem] 5xl:w-[33rem] 6xl:w-[37rem] max-md:inset-x-0 max-md:bottom-0 max-md:top-auto max-md:max-h-[50%] max-md:w-auto max-md:rounded-none max-md:border-x-0 max-md:border-b-0 max-md:p-[1.1em] max-md:pb-[calc(var(--screen-margin)+var(--chrome-bottom))]"
       >
         <div className="flex items-baseline justify-between gap-[1em] max-md:hidden">
           <SectionTitle id="location" />
@@ -140,7 +140,7 @@ export function Location() {
                 type="button"
                 aria-pressed={on}
                 onClick={() => setCategory(on ? null : f.id)}
-                className={`group/f relative pb-[0.25em] text-[0.62rem] uppercase tracking-[0.16em] ${
+                className={`group/f relative pb-[0.25em] text-[0.62rem] uppercase tracking-[0.16em] 4xl:text-[0.8rem] 6xl:text-[0.92rem] ${
                   on ? TONE[f.tone] : 'text-blade-cream/45'
                 }`}
               >
@@ -186,13 +186,13 @@ export function Location() {
                     }`}
                   />
                   <span
-                    className={`min-w-0 truncate text-[0.72rem] transition-colors duration-300 ease-out ${
+                    className={`min-w-0 truncate text-[0.72rem] transition-colors duration-300 ease-out 4xl:text-[0.92rem] 6xl:text-[1.06rem] ${
                       on ? 'text-blade-cream' : 'text-blade-cream/75 group-hover/r:text-blade-cream'
                     }`}
                   >
                     {row.label}
                   </span>
-                  <span className="shrink-0 text-[0.64rem] tabular-nums text-blade-copper">
+                  <span className="shrink-0 text-[0.64rem] tabular-nums text-blade-copper 4xl:text-[0.82rem] 6xl:text-[0.94rem]">
                     {row.km.toFixed(1)}
                   </span>
                 </button>

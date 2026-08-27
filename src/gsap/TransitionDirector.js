@@ -167,7 +167,6 @@ function theCut(ctx, mode) {
   // by the scale factor and the cut would drift off the mark mid-transition. The seam
   // carries the skew and nothing else; only the bloom breathes.
   const glow = chrome.splitGlow ?? null;
-  const rail = chrome.rail ?? null;
 
   const opening = mode === 'open';
   const source = opening ? outEl : inEl;
@@ -224,7 +223,6 @@ function theCut(ctx, mode) {
       // The seam draws itself from the bottom of the frame to the top.
       .to(seam, { clipPath: SEAM_SHOWN, duration: 0.62, ease: E.out }, 0)
       .to(some(glow), { scaleX: 1, autoAlpha: 1, duration: 0.5, ease: E.out }, 0)
-      .to(some(rail), { autoAlpha: 0, duration: 0.22, ease: E.soft }, 0)
       .addLabel('swap', 0.3)
       // The anticipation: half a percent of compression against the seam while it
       // finishes drawing. Nobody reads it as a movement — they read the part that
@@ -237,7 +235,6 @@ function theCut(ctx, mode) {
       .to(seam, { autoAlpha: 0, duration: 0.65, ease: E.out }, 0.62)
       .to(inEl, { scale: 1, filter: 'blur(0px)', duration: 1.5, ease: E.out }, 0.5)
       .to([L, R], { autoAlpha: 0, duration: 0.35, ease: 'none' }, 1.35)
-      .to(some(rail), { autoAlpha: 1, duration: 0.5, ease: E.soft }, 1.1)
       .set(root, { autoAlpha: 0 }, 1.75);
 
     revealIncoming(tl, inEl, 0.95);
@@ -259,7 +256,7 @@ function theCut(ctx, mode) {
 
   stageIncoming(tl, inEl, cleanups, 0);
 
-  tl.to(some(rail), { autoAlpha: 0, duration: 0.22, ease: E.soft }, 0)
+  tl
     // The page you are leaving recedes rather than being covered — the halves close over
     // an empty stage, which is what makes the join read as an arrival.
     .to(some(outEl), { scale: 1.06, filter: 'blur(16px)', autoAlpha: 0, duration: 0.72, ease: E.in }, 0)
@@ -275,7 +272,6 @@ function theCut(ctx, mode) {
     .to(seam, { clipPath: SEAM_HIDDEN, duration: 0.55, ease: E.in }, 1.32)
     .to(some(glow), { scaleX: 0.25, duration: 0.55, ease: E.in }, 1.32)
     .to(seam, { autoAlpha: 0, duration: 0.25 }, 1.75)
-    .to(some(rail), { autoAlpha: 1, duration: 0.5, ease: E.soft }, 1.35)
     .set(root, { autoAlpha: 0 }, 2.0);
 
   revealIncoming(tl, inEl, 1.3);
@@ -307,7 +303,9 @@ function partsOf(el) {
     brand: el?.querySelector('[data-menu-brand]') ?? null,
     landing,
     eyebrow: el?.querySelector('[data-landing-eyebrow]') ?? null,
-    lockup: el?.querySelector('[data-wordmark]:not([data-menu-brand])') ?? null,
+    // Same corner-mark exclusion as introSequence below — Landing carries both the
+    // fixed, never-animated corner BrandLockup and its own hero mark.
+    lockup: el?.querySelector('[data-wordmark]:not([data-menu-brand]):not([data-corner-mark])') ?? null,
     enter: el?.querySelector('[data-enter]') ?? null,
   };
 }
@@ -379,12 +377,19 @@ export function plateSlide({ outEl, inEl, tl, opts = {} }) {
 // Fullscreen granted → landing, ~4.2s, runs once.
 export function introSequence({ inEl, chrome, tl, cleanups }) {
   const strike = chrome.introLine;
-  const marks = q(inEl, '[data-wordmark-path]');
+  // Landing carries TWO [data-wordmark] instances: the fixed corner BrandLockup
+  // (marked data-corner-mark, never animates — see the comment on it in
+  // Landing.jsx) and the hero mark beside the headline, which is the one that
+  // actually travels from centre stage to its resting position. Excluding the
+  // corner mark from both queries used to leave it stuck mid-transition: ripped
+  // out to centre screen and animated back, while the real hero mark just sat
+  // there untouched.
+  const marks = q(inEl, '[data-wordmark-path]').filter((p) => !p.closest('[data-corner-mark]'));
   const eyebrow = inEl?.querySelector('[data-landing-eyebrow]') ?? null;
   const byline = inEl?.querySelector('[data-landing-byline]') ?? null;
   const hero = inEl?.querySelector('[data-hero]') ?? null;
   const scrim = inEl?.querySelector('[data-scrim]') ?? null;
-  const lockup = inEl?.querySelector('[data-wordmark]') ?? null;
+  const lockup = inEl?.querySelector('[data-wordmark]:not([data-corner-mark])') ?? null;
   const lines = splitLines(headlineOf(inEl), cleanups);
   const enter = inEl?.querySelector('[data-enter]') ?? null;
   const enterRule = inEl?.querySelector('[data-enter] [data-control-rule]') ?? null;

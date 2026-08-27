@@ -110,8 +110,10 @@ function Zone({ zone, state, onHover, onSelect, tabIndex, badge = null, horizont
   const { contextSafe } = useGSAP({ scope: ref });
   const { shape } = zone;
   // The traced SVG highlight takes over both the visual fill/edge and pointer hit-testing
-  // for every zone now; the plain rectangle underneath stays mounted only as the
-  // keyboard-focus target.
+  // for every zone on a fine (mouse) pointer; the plain rectangle underneath stays mounted
+  // as the keyboard-focus target and — via pointer-coarse: below — as a touch fallback.
+  // Floor bands can be only a few px tall once drawn at phone width, so a touch that misses
+  // the exact traced polygon still lands on the coarser rect instead of hitting nothing.
   const hasTracedHighlight = Boolean(ZONE_HIGHLIGHT[zone.id]?.length);
 
   // Hairlines draw outward from centre, 0.35s, bladeSoft.
@@ -152,7 +154,9 @@ function Zone({ zone, state, onHover, onSelect, tabIndex, badge = null, horizont
         onPointerLeave={hasTracedHighlight ? undefined : () => onHover(null)}
         onFocus={() => onHover(zone.id)}
         onClick={() => onSelect(zone.id)}
-        className="absolute"
+        className={`absolute ${
+          hasTracedHighlight ? 'pointer-events-none pointer-coarse:pointer-events-auto' : 'pointer-events-auto'
+        }`}
         style={{
           left: `${shape.x}%`,
           top: `${shape.y}%`,
@@ -161,10 +165,6 @@ function Zone({ zone, state, onHover, onSelect, tabIndex, badge = null, horizont
           // Touch targets stay reachable even where a single floor band is only a few px.
           minHeight: '2px',
           outline: SHOW_ZONES ? '1px solid #CA8E5B' : undefined,
-          // The traced polygon is the real pointer target once it exists — this rect
-          // would otherwise sit on top of it and re-introduce the mismatch. It remains
-          // reachable by keyboard (Tab + Enter/Space still fire its onClick/onFocus).
-          pointerEvents: hasTracedHighlight ? 'none' : 'auto',
         }}
       >
         <span

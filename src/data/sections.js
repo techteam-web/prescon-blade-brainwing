@@ -5,11 +5,14 @@
 // marketing requirement). `null` means the screen carries no render or map.
 
 export const SECTIONS = [
-  { id: 'views', no: '01', label: 'Views', caption: null},
-  { id: 'amenities', no: '02', label: 'Amenities', caption: null},
-  { id: 'plans', no: '03', label: 'Floor Plans', caption: null },
-  { id: 'location', no: '04', label: 'Location', caption: null},
-  { id: 'features', no: '05', label: 'Features', caption: null },
+  { id: 'views', no: '01', label: '360 Degree  Panoramic Views', caption: null},
+  { id: 'profile', no: '02', label: 'Section Profile', caption: null},
+  { id: 'gallery', no: '03', label: 'Gallery', caption: null},
+  { id: 'amenities', no: '04', label: 'Amenities', caption: null},
+  { id: 'plans', no: '05', label: 'Floor Picker', caption: null },
+  { id: 'location', no: '06', label: 'Location Highlights', caption: null},
+  { id: 'features', no: '07', label: ' Salient Features', caption: null },
+  { id: 'group', no: '08', label: 'Prescon Group', caption: null },
 ];
 
 export const SECTION_IDS = SECTIONS.map((s) => s.id);

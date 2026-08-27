@@ -92,8 +92,10 @@ export function Control({ children, onClick, className = '', disabled = false, .
 //
 // It stays inside the system: copper, cream, one angle, no radius, no glow.
 //
-// `size="sm"` is the top-rail variant — same control, same three gestures, tightened so
-// it sits beside MENU and HOME without shouting over them.
+// `size="sm"` is the top-rail variant — same control, same three gestures, tightened
+// into a pill so HOME/MENU read as a constant, always-visible pair rather than the
+// landing's one-time invitation. It sits outlined and cream at rest; hover wipes the
+// same copper fill in as the landing CTA and inverts the label to match.
 export function EnterPortal({
   children,
   onClick,
@@ -104,6 +106,8 @@ export function EnterPortal({
   ...rest
 }) {
   const root = useRef(null);
+  const nav = size === 'sm';
+  const restColor = nav ? 'var(--color-blade-cream)' : 'var(--color-blade-copper)';
 
   useGSAP(
     (self) => {
@@ -136,13 +140,13 @@ export function EnterPortal({
     const vars = { duration: 0.5, ease: E.out, overwrite: 'auto' };
     gsap.to('[data-portal-fill]', { scaleX: on ? 1 : 0, ...vars });
     gsap.to('[data-control-label]', {
-      color: on ? 'var(--color-blade-black)' : 'var(--color-blade-copper)',
+      color: on ? 'var(--color-blade-black)' : restColor,
       letterSpacing: on ? '0.46em' : '0.4em',
       scale: on ? 1.03 : 1,
       ...vars,
     });
     gsap.to('[data-portal-mark]', {
-      color: on ? 'var(--color-blade-black)' : 'var(--color-blade-copper)',
+      color: on ? 'var(--color-blade-black)' : restColor,
       ...vars,
     });
     // A second, faster sheen fired on contact — the ambient loop keeps drawing the eye
@@ -170,21 +174,33 @@ export function EnterPortal({
       onBlur={leave}
       disabled={disabled}
       className={`enter-portal group disabled:opacity-40 ${
-        size === 'sm' ? 'enter-portal--sm' : ''
+        nav ? 'enter-portal--sm' : ''
       } ${className}`}
       {...rest}
     >
+      <span aria-hidden="true" className="enter-portal-panel" />
       <span aria-hidden="true" className="enter-portal-fill">
         <span data-portal-fill className="enter-portal-fill-bar" />
       </span>
       <span data-portal-sheen aria-hidden="true" className="enter-portal-sheen" />
       <span data-portal-sheen-hit aria-hidden="true" className="enter-portal-sheen" />
+      {/* Redraws the border's one edge that clip-path clips away — see the comment on
+          .enter-portal-edge. */}
+      <span aria-hidden="true" className="enter-portal-edge" />
 
-      <span data-control-label className="eyebrow enter-portal-label">
+      <span
+        data-control-label
+        className={`eyebrow enter-portal-label ${nav ? 'text-blade-cream' : 'text-blade-copper'}`}
+      >
         {children}
       </span>
 
-      <span data-portal-mark className="enter-portal-label flex items-center gap-[0.9em] text-blade-copper">
+      <span
+        data-portal-mark
+        className={`enter-portal-label flex items-center gap-[0.9em] ${
+          nav ? 'text-blade-cream' : 'text-blade-copper'
+        }`}
+      >
         {icon}
       </span>
 

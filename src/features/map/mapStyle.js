@@ -313,10 +313,32 @@ export const buildMapStyle = () => ({
     },
 
     /* ------------------------------------------------------------------- labels
-       Restrained on purpose: settlements and the sea, nothing else. Street names and
-       POIs would compete with the landmark chips, which are the labels that matter
-       here. */
+       Restrained on purpose: settlements, the sea, and named roads — nothing else. POIs
+       would compete with the landmark chips, which are the labels that matter here. Road
+       names only draw in from zoom 14, close enough in that they read as street context
+       rather than clutter over the wide city view. */
 
+    {
+      id: 'label-road',
+      type: 'symbol',
+      source: 'omt',
+      'source-layer': 'transportation_name',
+      minzoom: 14,
+      filter: CLASS('motorway', 'trunk', 'primary', 'secondary', 'tertiary'),
+      layout: {
+        'symbol-placement': 'line',
+        'text-field': ['coalesce', ['get', 'name:en'], ['get', 'name']],
+        'text-font': FONT,
+        'text-size': ['interpolate', ['linear'], ['zoom'], 14, 9.5, 18, 13],
+        'text-letter-spacing': 0.04,
+      },
+      paint: {
+        'text-color': MAP_COLORS.label,
+        'text-halo-color': MAP_COLORS.labelHalo,
+        'text-halo-width': 1.2,
+        'text-opacity': 0.85,
+      },
+    },
     {
       id: 'label-water',
       type: 'symbol',

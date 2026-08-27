@@ -17,6 +17,39 @@ import { fetchRoute } from './routing';
 
 const HOME = { center: [PROJECT.lng, PROJECT.lat], zoom: 11.6, bearing: -18, pitch: 48 };
 
+// The marker is a fixed-pixel HTML element, so its own on-screen size never moves with
+// the camera — zooming in on the neighbourhood left the tower exactly as big as it was
+// at the city-wide HOME view, reading as it shrinking relative to the roads and
+// buildings growing in around it. This ties its scale to zoom instead: 1x (150px) at
+// HOME, ramping up as the camera gets closer, capped at 700px so it stays prominent
+// once a route pulls the camera in tight, without blowing past a sane size.
+const TOWER_HOME_HEIGHT = 150;
+const TOWER_MAX_HEIGHT = 700;
+const TOWER_SCALE_MAX = TOWER_MAX_HEIGHT / TOWER_HOME_HEIGHT;
+const TOWER_SCALE_ZOOM_SPAN = 4;
+// Clicking a destination flies the camera in via fitBounds, which frames the route and
+// lands close to this span's own cap (its own maxZoom is 15.5, right under HOME.zoom +
+// TOWER_SCALE_ZOOM_SPAN) — so the tower already read as maxed-out the instant a route
+// appeared, before the visitor asked to see it that big by zooming in themselves. Only
+// that automatic flight gets its growth dampened; a manual zoom to the same camera
+// position still reaches full size.
+const ROUTE_TOWER_DAMPEN = 0.7;
+// The marker's own visual stack above its anchor point, in CSS pixels, at scale 1 —
+// --tower-base-bottom (15px) + the label's 8px clearance + the label's own ~47px height
+// (map.css). fitRoute reads this to keep the fitBounds top padding wide enough that a
+// tall marker never runs off the top of the map — see there for why.
+const TOWER_LABEL_STACK = 70;
+const towerScale = (zoom, dampen = 1) => {
+  const t = Math.min(1, Math.max(0, (zoom - HOME.zoom) / TOWER_SCALE_ZOOM_SPAN));
+  // Eased (t⁴), not linear or t²: at the full 700px cap, a gentler ease (t², or linear)
+  // already reaches most of that size well before the camera is actually all the way in,
+  // so the tower read as oversized mid-zoom instead of growing into its size right at the
+  // end. The steeper curve keeps growth flat for most of the zoom range and saves it for
+  // the final approach to max zoom.
+  const e = t * t * t * t;
+  return 1 + e * (TOWER_SCALE_MAX - 1) * dampen;
+};
+
 const ROUTE_SRC = 'blade-route';
 const EMPTY = { type: 'FeatureCollection', features: [] };
 const lineFeature = (coordinates) => ({
@@ -59,6 +92,14 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
   const corridorFade = useRef({ o: 0 });
   const routeFade = useRef({ o: 0 });
   const hasFocused = useRef(false);
+  // Read by applyTowerScale (set up once, inside the 'load' handler) so it can tell a
+  // manual zoom from the camera's own fitBounds flight to a clicked destination — see
+  // ROUTE_TOWER_DAMPEN below.
+  const routeActive = useRef(false);
+  // The marker planted at the clicked destination's own coordinate, carrying its name —
+  // the route line alone never said WHERE it ended, only the side panel did.
+  const destMarker = useRef(null);
+  const destMarkerTimeout = useRef(0);
   const [loaded, setLoaded] = useState(false);
 
   useIdleTask(() => {
@@ -187,17 +228,41 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
           '<span class="blade-project__halo" data-halo></span>' +
           '<span class="blade-project__ring"></span>' +
           `<img class="blade-project__tower" src="${TOWER_ELEVATION.src}" alt="" />` +
-          '<span class="blade-project__label">The Blade</span>';
+          '<img class="blade-project__label" src="/assets/tower/theblade.png" alt="The Blade" />';
         new maplibregl.Marker({ element: projectEl, anchor: 'bottom' })
           .setLngLat([PROJECT.lng, PROJECT.lat])
           .addTo(m);
 
+        const applyTowerScale = () => {
+          const dampen = routeActive.current ? ROUTE_TOWER_DAMPEN : 1;
+          projectEl.style.setProperty('--tower-scale', String(towerScale(m.getZoom(), dampen)));
+        };
+        applyTowerScale();
+        m.on('zoom', applyTowerScale);
+
         for (const l of LANDMARKS) {
           const el = document.createElement('div');
           el.className = 'blade-landmark';
+          // Emphasis landmarks — junctions and named places that have to read on the map
+          // on their own, rather than waiting for hover like every other chip — see the
+          // `emphasis: true` entries in src/data/landmarks.js.
+          if (l.emphasis) el.classList.add('blade-landmark--emphasis');
+          if (l.labelSide === 'left') el.classList.add('blade-landmark--label-left');
+          // labelDx/labelDy: a manual nudge for labels whose dots sit too close to a
+          // neighbour's to both read at once — currently only the 'roads' cluster
+          // (see the comment on it in landmarks.js). Every other landmark leaves
+          // these unset, so the CSS default of 0 applies and nothing about its
+          // position changes.
+          const labelStyle =
+            l.labelDx || l.labelDy
+              ? ` style="--label-dx:${l.labelDx ?? 0}px; --label-dy:${l.labelDy ?? 0}px;"`
+              : '';
           el.innerHTML =
             '<span class="blade-landmark__dot"></span>' +
-            `<span class="blade-landmark__label">${l.name}</span>`;
+            '<span class="blade-landmark__particle" style="--a: 20deg"></span>' +
+            '<span class="blade-landmark__particle" style="--a: 150deg"></span>' +
+            '<span class="blade-landmark__particle" style="--a: 260deg"></span>' +
+            `<span class="blade-landmark__label"${labelStyle}>${l.name}</span>`;
           new maplibregl.Marker({ element: el, anchor: 'center' })
             .setLngLat([l.lng, l.lat])
             .addTo(m);
@@ -206,11 +271,25 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
 
         // Light travelling along each corridor, offset per corridor so they never march
         // in lockstep.
+        //
+        // Throttled to a fixed cadence rather than riding gsap.ticker's raw rAF rate —
+        // uncapped that recomputed and wrote a paint property on all seven corridor
+        // layers every display refresh (144/sec on a high-refresh monitor), which is pure
+        // main-thread cost competing with an in-progress drag/pan for no visible gain: a
+        // marching-light effect doesn't read any smoother above ~24 steps/sec. It also
+        // skips entirely while the corridors are faded out (a route is on screen) —
+        // updating paint properties nobody can see wasted the same time doing nothing.
         if (!prefersReducedMotion()) {
           const ids = Object.keys(ROUTE_STYLES);
           const t = { v: 0 };
-          const tick = () => {
-            t.v = (t.v + 0.0022) % 1;
+          let last = 0;
+          const STEP_MS = 1000 / 24;
+          const tick = (_time, deltaMs) => {
+            if (corridorFade.current.o <= 0) return;
+            last += deltaMs;
+            if (last < STEP_MS) return;
+            last = 0;
+            t.v = (t.v + 0.0022 * (STEP_MS / 16.67)) % 1;
             ids.forEach((id, k) => {
               const head = (t.v + k / ids.length) % 1;
               if (!m.getLayer(`route-${id}-pulse`)) return;
@@ -237,6 +316,8 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
       observer?.disconnect();
       abort.current?.abort();
       cancelAnimationFrame(dashRaf.current);
+      clearTimeout(destMarkerTimeout.current);
+      destMarker.current = null;
       gsap.killTweensOf([corridorFade.current, routeFade.current]);
       if (corridorTicker.current) gsap.ticker.remove(corridorTicker.current);
       map.current?.m?.remove?.();
@@ -258,13 +339,29 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
   useGSAP(
     () => {
       if (!map.current) return;
+      // Clicking a destination (a CONNECTIVITY row — it's what sets focusId and draws
+      // the route) surfaces ONLY the one road it's nearest to (CONNECTIVITY_BY_ID[id]
+      // .road, see the comment on that field in connectivity.js), not the whole set —
+      // the route is easier to read against the specific street it runs along, not
+      // every road in the area at once.
+      const focusedRoad = focusId ? CONNECTIVITY_BY_ID[focusId]?.road : null;
       for (const l of LANDMARKS) {
         const el = markers.current.get(l.id);
-        const on = !activeCategory || l.cat === activeCategory || ALWAYS_ON.has(l.cat);
+        const isFocusedRoad = l.cat === 'roads' && l.id === focusedRoad;
+        // No filter picked yet is NOT "show everything" — only the always-on landmarks
+        // (junctions, transit, the emphasis set in landmarks.js) show until a category is
+        // actually clicked; every other landmark stays dim until its own filter is on.
+        const on = l.cat === activeCategory || ALWAYS_ON.has(l.cat) || isFocusedRoad;
         if (el) el.setAttribute('data-dim', String(!on));
+        // Roads have no CONNECTIVITY row of their own to hover (see connectivity.js),
+        // so hover-to-reveal — every other category's mechanism — has no way to
+        // trigger. A road's name stays on for as long as the Roads filter itself is
+        // on, or its own linked destination is focused, same as an always-on
+        // 'emphasis' landmark.
+        if (el) el.setAttribute('data-labelled', String(l.cat === 'roads' && (activeCategory === 'roads' || isFocusedRoad)));
       }
     },
-    { dependencies: [activeCategory, loaded] },
+    { dependencies: [activeCategory, focusId, loaded] },
   );
 
   useGSAP(
@@ -311,6 +408,37 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
     dashRaf.current = requestAnimationFrame(tick);
   }, []);
 
+  const showDestMarker = useCallback((maplibregl, m, dest) => {
+    clearTimeout(destMarkerTimeout.current);
+    destMarker.current?.remove();
+
+    const el = document.createElement('div');
+    el.className = 'blade-dest';
+    el.innerHTML =
+      '<span class="blade-marker__dot"></span>' +
+      '<span class="blade-marker__particle" style="--a: 20deg"></span>' +
+      '<span class="blade-marker__particle" style="--a: 150deg"></span>' +
+      '<span class="blade-marker__particle" style="--a: 260deg"></span>' +
+      `<span class="blade-place">${dest.label}</span>`;
+    destMarker.current = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+      .setLngLat(dest.at)
+      .addTo(m);
+
+    // Born invisible and flipped to visible next frame so the opacity transition in
+    // map.css actually has a 0 -> 1 change to animate, instead of painting in at full
+    // strength on the same frame the marker is added.
+    requestAnimationFrame(() => el.setAttribute('data-visible', 'true'));
+  }, []);
+
+  const hideDestMarker = useCallback(() => {
+    const marker = destMarker.current;
+    if (!marker) return;
+    destMarker.current = null;
+    marker.getElement().setAttribute('data-visible', 'false');
+    clearTimeout(destMarkerTimeout.current);
+    destMarkerTimeout.current = window.setTimeout(() => marker.remove(), 350);
+  }, []);
+
   const fadeRoute = useCallback((m, to) => {
     const state = routeFade.current;
     gsap.to(state, {
@@ -339,11 +467,13 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
 
       abort.current?.abort();
       const dest = focusId ? CONNECTIVITY_BY_ID[focusId] : null;
+      routeActive.current = !!dest;
 
       if (!dest) {
         cancelAnimationFrame(dashRaf.current);
         fadeRoute(m, false);
         setCorridors(m, true);
+        hideDestMarker();
         onRoute?.(null);
         // Only fly home if we ever left. This branch also runs once when the map first
         // loads, and a 1.4s camera move to the position the camera is already in wastes
@@ -358,6 +488,7 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
       const controller = new AbortController();
       abort.current = controller;
       onRoute?.({ id: dest.id, label: dest.label, state: 'loading' });
+      showDestMarker(maplibregl, m, dest);
 
       fetchRoute(dest.at, controller.signal)
         .then(({ coordinates, distance, duration }) => {
@@ -370,9 +501,24 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
 
           const bounds = new maplibregl.LngLatBounds(coordinates[0], coordinates[0]);
           for (const c of coordinates) bounds.extend(c);
+
+          // The tower is a fixed-pixel marker anchored at PROJECT's coordinate, growing
+          // tall via CSS transform — fitBounds only knows about the route's geometry, not
+          // that stack of pixels standing on top of one of its own points. A short, nearby
+          // destination fits at a tight zoom where the marker is close to its max height,
+          // and with only the route's own padding it ran clean off the top of the map.
+          // Preview the zoom fitBounds would pick, work out how tall the marker stands at
+          // that zoom, and reserve that much top padding before doing the real, animated
+          // fit — a route already using more top padding than that is left untouched.
+          const basePadding = fitPadding();
+          const preview = m.cameraForBounds(bounds, { padding: basePadding, maxZoom: 15.5, pitch: 52 });
+          const markerClearance =
+            TOWER_HOME_HEIGHT * towerScale(preview?.zoom ?? m.getZoom(), ROUTE_TOWER_DAMPEN) + TOWER_LABEL_STACK;
+          const padding = { ...basePadding, top: Math.max(basePadding.top, markerClearance + 24) };
+
           m.fitBounds(bounds, {
             duration: 1500,
-            padding: fitPadding(),
+            padding,
             maxZoom: 15.5,
             pitch: 52,
             easing: (t) => 1 - Math.pow(1 - t, 3),

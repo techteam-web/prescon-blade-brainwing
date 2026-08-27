@@ -90,7 +90,7 @@ function Column({ id, index, unit, leader, rows }) {
           </span>
         </div>
 
-        <div className="relative min-h-0 flex-1 bg-plan-canvas p-[4%]">
+        <div className="relative min-h-0 flex-1 p-[4%]">
           <img
             src={plan.src}
             srcSet={plan.srcSet}

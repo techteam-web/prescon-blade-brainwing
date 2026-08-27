@@ -2,17 +2,19 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { Screen } from '../../layout/Screen';
 import { SectionTitle } from './SectionShell';
 import { TowerElevation } from '../../features/plans/TowerElevation';
+import { TowerIcon } from '../../components/Icons';
 import { ReraTable } from '../../features/plans/ReraTable';
 
 import { TOWER_ZONES, ZONE_BY_ID } from '../../data/towerZones';
 
 import { CompareDeck } from '../../features/plans/CompareDeck';
+import { PlateWipeCanvas } from '../../features/plans/PlateWipeCanvas';
 
 
 import { getPlate } from '../../data/floorPlates';
 import { getPlan, PLAN_ASSETS, TOWER_ELEVATION } from '../../data/planAssets';
 import { CONTENT } from '../../data/content';
-import { gsap, useGSAP, E } from '../../gsap/Gsapconfig';
+import { gsap, useGSAP, E, D, durationScale, prefersReducedMotion } from '../../gsap/Gsapconfig';
 import { useIdleTask } from '../../hooks/useEventListener';
 
 import { useApp } from '../../app/appContext';
@@ -29,7 +31,6 @@ import { useApp } from '../../app/appContext';
 // thing. The state machine lives in AppState (the control is in the rail, which knows
 // nothing about screens); everything else — the picks and all of the motion — is here.
 
-const FIRST = TOWER_ZONES.find((z) => z.plan)?.id ?? TOWER_ZONES[0].id;
 const MAX_PICKS = 3;
 
 // Only floors with a published plate can be compared, so compare mode narrows the tower
@@ -50,21 +51,21 @@ function usePreloadPlans() {
 }
 
 function AmenityCard({ zone }) {
-  const panel = CONTENT.amenities.find((a) => a.id === zone.amenity);
+  const panel = CONTENT.gallery.find((a) => a.id === zone.amenity);
   return (
-    <div className="flex h-full min-h-0 flex-col justify-center gap-[1em] bg-plan-canvas p-[6%] text-blade-cocoa">
-      <span className="text-caption uppercase tracking-[0.24em] text-blade-terracotta">
+    <div className="flex h-full min-h-0 flex-col justify-center gap-[1em] p-[6%] text-blade-cream">
+      <span className="text-caption uppercase tracking-[0.24em] text-blade-copper">
         {zone.floors}
       </span>
       <h2 className="text-headline uppercase">{zone.label}</h2>
       <span aria-hidden="true" className="h-px w-[34%] bg-blade-copper" />
       {panel ? (
         <>
-          <p className="max-w-[54ch] text-caption">{panel.body}</p>
+          <p className="max-w-[54ch] text-caption text-blade-cream/80">{panel.body}</p>
           {panel.list ? (
             <ul className="flex flex-wrap gap-x-[1.2em] gap-y-[0.3em]">
               {panel.list.map((item) => (
-                <li key={item} className="text-caption text-blade-cocoa/75">
+                <li key={item} className="text-caption text-blade-cream/60">
                   {item}
                 </li>
               ))}
@@ -72,7 +73,7 @@ function AmenityCard({ zone }) {
           ) : null}
         </>
       ) : (
-        <p className="text-caption text-blade-cocoa/70">
+        <p className="text-caption text-blade-cream/60">
           {zone.service
             ? 'A service level. No leasable floor plate.'
             : 'No floor plate is published for this level.'}
@@ -166,8 +167,8 @@ function ComparePrompt({ innerRef, picks, onRemove, onCompare, onCancel }) {
 
 export function Plans() {
   const [hovered, setHovered] = useState(null);
-  const [locked, setLocked] = useState(FIRST);
-  const [shown, setShown] = useState(FIRST);
+  const [locked, setLocked] = useState(null);
+  const [shown, setShown] = useState(null);
   const [picks, setPicks] = useState([]);
   const frame = useRef(null);
   const tower = useRef(null);
@@ -175,11 +176,14 @@ export function Plans() {
   const scrim = useRef(null);
   const prompt = useRef(null);
   const deck = useRef(null);
+  const wipe = useRef(null);
 
   const firstPaint = useRef(true);
-  const prevShown = useRef(FIRST);
+  const prevShown = useRef(null);
   const prevCompare = useRef('off');
   const fit = useRef({ x: 0, y: 0, scale: 1 });
+  const wipeProgress = useRef({ value: 0 });
+  const swapCall = useRef(null);
 
   const { compare, setCompare } = useApp();
   const comparing = compare !== 'off';
@@ -192,7 +196,10 @@ export function Plans() {
     setHovered(id);
   }, []);
 
+  // Only floors with a published plate can be locked in — hover still lights up every
+  // band (crown, service floors, amenities), but clicking one of those is a no-op.
   const onSelect = useCallback((id) => {
+    if (!ZONE_BY_ID[id]?.plan) return;
     setLocked(id);
     setShown(id);
   }, []);
@@ -233,56 +240,69 @@ export function Plans() {
   // full-screen blur. That is the "glitchy split" on the way into this screen.
   //
   // Now the first pass is a `set`, not a `to`, and it happens in the same frame the
-  // screen mounts. Later swaps move `transform` and `opacity` only: the previous version
-  // also tweened `clip-path` on a box holding a 4952px drawing, which repaints the whole
-  // subtree every frame for no visual gain over a slide.
+  // screen mounts. Later swaps run a shader wipe (plateWipeGL.js) over the panel: a
+  // noise-warped band sweeps down covering the outgoing plate, the actual DOM swap
+  // happens underneath at the moment the band is most opaque (so it's never visible),
+  // and the same band continues on to uncover the incoming plate. Reduced-motion and
+  // WebGL-unavailable both fall back to an instant swap, no wipe.
   useGSAP(
     () => {
       const root = frame.current;
       if (!root) return;
       const layers = Array.from(root.querySelectorAll('[data-plate]'));
       const incoming = layers.find((l) => l.dataset.plate === shown);
-      const leaving = prevShown.current;
+      const leavingId = prevShown.current;
       prevShown.current = shown;
 
       if (firstPaint.current) {
         firstPaint.current = false;
         for (const layer of layers) {
           const on = layer === incoming;
-          gsap.set(layer, { autoAlpha: on ? 1 : 0, x: 0, pointerEvents: on ? 'auto' : 'none' });
+          gsap.set(layer, {
+            autoAlpha: on ? 1 : 0,
+            zIndex: on ? 1 : 0,
+            pointerEvents: on ? 'auto' : 'none',
+          });
         }
         return;
       }
-      if (shown === leaving) return;
+      if (shown === leavingId || !incoming) return;
 
-      const back = layers.indexOf(incoming) < layers.findIndex((l) => l.dataset.plate === leaving);
-      const dir = back ? -1 : 1;
+      const swap = () => {
+        for (const layer of layers) {
+          const on = layer === incoming;
+          gsap.set(layer, {
+            autoAlpha: on ? 1 : 0,
+            zIndex: on ? 1 : 0,
+            pointerEvents: on ? 'auto' : 'none',
+          });
+        }
+      };
 
-      for (const layer of layers) {
-        if (layer === incoming) continue;
-        gsap.to(layer, {
-          x: -46 * dir,
-          autoAlpha: 0,
-          pointerEvents: 'none',
-          duration: 0.42,
-          ease: E.in,
-          overwrite: 'auto',
-        });
+      swapCall.current?.kill();
+      gsap.killTweensOf(wipeProgress.current);
+
+      if (prefersReducedMotion() || !wipe.current?.ready) {
+        swap();
+        return;
       }
-      if (incoming) {
-        gsap.fromTo(
-          incoming,
-          { x: 46 * dir, autoAlpha: 0 },
-          {
-            x: 0,
-            autoAlpha: 1,
-            pointerEvents: 'auto',
-            duration: 0.62,
-            ease: E.out,
-            overwrite: 'auto',
-          },
-        );
-      }
+
+      wipeProgress.current.value = 0;
+      wipe.current.render(0);
+
+      const duration = D.wipe * durationScale();
+
+      // The band is at its most opaque a little past the midpoint (see coverP/clearP
+      // in the shader) — that's the one moment the swap underneath is fully hidden.
+      swapCall.current = gsap.delayedCall(duration * 0.48, swap);
+
+      gsap.to(wipeProgress.current, {
+        value: 1,
+        duration,
+        ease: 'none',
+        onUpdate: () => wipe.current?.render(wipeProgress.current.value),
+        onComplete: () => wipe.current?.render(0),
+      });
     },
     { dependencies: [shown], scope: frame },
   );
@@ -468,7 +488,11 @@ export function Plans() {
         className="invisible pointer-events-none absolute inset-0 z-10 bg-blade-black/78 opacity-0 backdrop-blur-[2px]"
       />
 
-      <div className="grid h-full min-h-0 grid-cols-[34fr_66fr] gap-[3%] max-md:grid-cols-1 max-md:grid-rows-[32%_68%] max-md:gap-[2%]">
+      {/* pt- on top of Screen's own screen-inset: --chrome-top is a fixed clamp(), not
+          remeasured off the rail, so it doesn't grow with the brand mark in the corner —
+          this extra clearance is what actually keeps the plan panel's top edge (and the
+          tower/plate cards it sizes to h-full) out from under it. */}
+      <div className="grid h-full min-h-0 grid-cols-[34fr_66fr] gap-[3%] pt-[1.8em] max-md:grid-cols-1 max-md:grid-rows-[44%_56%] max-md:gap-[2%]">
         <div className="flex min-h-0 flex-col gap-[1em]">
           <div ref={title}>
             <SectionTitle id="plans" />
@@ -476,7 +500,15 @@ export function Plans() {
           <div
             ref={tower}
             data-stagger
-            className="relative min-h-0 flex-1"
+            // RESPONSIVE FIX: z-10 added. GSAP puts `will-change: transform` on every
+            // [data-stagger] element (this one and the plan panel's wrapper below), and
+            // that alone promotes each to its own stacking context — so the z-30 on the
+            // label chip inside this box (a few lines down) could only ever out-rank
+            // other things in HERE, never the plan panel's column, which is a sibling
+            // context that simply paints after this one in DOM order. Raising this
+            // wrapper's own stacking position is what actually lets the chip that spills
+            // out of its right edge sit above the plan panel next to it.
+            className="relative z-10 min-h-0 flex-1"
             role="listbox"
             aria-label={comparing ? 'Floors to compare' : 'Floors'}
             tabIndex={0}
@@ -497,8 +529,16 @@ export function Plans() {
                 // column around it) so the gap stays the same at every breakpoint —
                 // see the comment in TowerElevation.
                 chip && !comparing ? (
+                  // RESPONSIVE FIX: z-30 added. The chip is anchored just past the
+                  // tower's own edge, in the grid gap between the tower column and the
+                  // plan panel (grid-cols-[34fr_66fr] a few lines up). At desktop widths
+                  // that gap is wide enough that this never mattered, but the plan
+                  // panel's column comes after this one in the DOM and both columns are
+                  // `position: relative` with no z-index of their own — so on narrower
+                  // layouts (iPad portrait and below, where the gap shrinks) the plan
+                  // panel painted on top and hid all but a sliver of the chip's text.
                   <div
-                    className="glass pointer-events-none absolute left-full flex flex-col gap-[0.2em] px-[0.9em] py-[0.5em]"
+                    className="glass pointer-events-none absolute left-full z-30 flex flex-col gap-[0.2em] px-[0.9em] py-[0.5em]"
                     style={{
                       top: `${chip.shape.y + chip.shape.h / 2}%`,
                       transform: 'translateY(-50%)',
@@ -520,7 +560,11 @@ export function Plans() {
           </div>
         </div>
 
-        <div ref={frame} data-stagger className="relative min-h-0 min-w-0">
+        <div
+          ref={frame}
+          data-stagger
+          className="relative min-h-0 min-w-0"
+        >
           {TOWER_ZONES.map((zone) => {
             const plan = getPlan(zone.plan);
             const plate = getPlate(zone.plan);
@@ -531,19 +575,25 @@ export function Plans() {
                 aria-hidden={shown !== zone.id}
                 // The resting state is declared here as well as set by GSAP: the class
                 // wins on the very first paint, before any script has run.
-                className={`absolute inset-0 grid min-h-0 grid-rows-[auto_1fr_auto] gap-[0.8em] overflow-hidden ${
-                  zone.id === FIRST ? '' : 'invisible opacity-0'
+                //
+                // Square corners throughout — deliberately no `rounded-*` anywhere in
+                // this card. The gold border is the one frame the brochure page uses.
+                className={`absolute inset-0 grid min-h-0 grid-rows-[auto_1fr_auto_auto] gap-[0.9em] overflow-hidden border border-blade-copper/45 bg-blade-black-2 p-[1.1em] ${
+                  zone.id === shown ? '' : 'invisible opacity-0'
                 }`}
               >
-                <div className="flex items-baseline gap-[1.4em]">
-                  <h2 className="text-subhead font-medium uppercase text-blade-cream">
+                <div className="flex items-baseline gap-[1.4em] border-b border-blade-copper/30 pb-[0.7em]">
+                  <h2 className="text-subhead font-medium uppercase tracking-[0.06em] text-blade-cream">
                     {plate?.label ?? zone.label}
                   </h2>
                 </div>
 
                 {plan ? (
                   <>
-                    <div className="relative min-h-0 bg-plan-canvas p-[2.5%]">
+                    {/* No canvas fill behind the drawing — the plan's own alpha channel
+                        is real (transparent outside the drawn plate, not painted
+                        ivory), so it sits straight on the card's dark ground. */}
+                    <div className="relative min-h-0 p-[2.5%]">
                       <img
                         src={plan.src}
                         srcSet={plan.srcSet}
@@ -556,7 +606,11 @@ export function Plans() {
                         className="h-full w-full object-contain"
                       />
                     </div>
-                    <ReraTable plate={plate} className="bg-plan-canvas p-[1.4%] max-md:hidden" />
+                    <span
+                      aria-hidden="true"
+                      className="block h-px w-full shrink-0 bg-blade-copper/30 max-md:hidden"
+                    />
+                    <ReraTable plate={plate} className="max-md:hidden" />
                   </>
                 ) : (
                   <div className="row-span-2 min-h-0">
@@ -566,6 +620,54 @@ export function Plans() {
               </div>
             );
           })}
+
+          {shown === null ? (
+            <div className="absolute inset-[2.5%] flex flex-col items-center justify-center gap-[1.1em] bg-blade-black-2 text-center">
+              {/* Soft blurred halo hugging each hairline, brightest at the shared
+                  corner and fading along the edge — not a separate glow shape. */}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-0 left-0 w-2 blur-md"
+                style={{
+                  background:
+                    'linear-gradient(to top, rgb(240 231 211 / 0.65) 0%, rgb(202 142 91 / 0.3) 25%, transparent 75%)',
+                }}
+              />
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-2 blur-md"
+                style={{
+                  background:
+                    'linear-gradient(to right, rgb(240 231 211 / 0.65) 0%, rgb(202 142 91 / 0.3) 25%, transparent 75%)',
+                }}
+              />
+              <span
+                aria-hidden="true"
+                className="absolute inset-y-0 left-0 w-px"
+                style={{
+                  background:
+                    'linear-gradient(to top, var(--color-blade-cream) 0%, var(--color-blade-copper) 30%, transparent 88%)',
+                }}
+              />
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-0 bottom-0 h-px"
+                style={{
+                  background:
+                    'linear-gradient(to right, var(--color-blade-cream) 0%, var(--color-blade-copper) 30%, transparent 88%)',
+                }}
+              />
+              <TowerIcon size="3.6em" className="text-blade-copper" />
+              <p className="text-headline font-medium uppercase text-blade-cream">
+                Pick any floor from tower
+              </p>
+              <span className="text-body uppercase tracking-[0.2em] text-blade-copper">
+                To get the floor plans.
+              </span>
+            </div>
+          ) : null}
+
+          <PlateWipeCanvas ref={wipe} />
         </div>
       </div>
 
