@@ -146,7 +146,7 @@ export function FullscreenGate() {
         style={{ padding: 'var(--screen-margin)' }}
       >
         <div className="flex justify-end">
-          <PresconLogo className="w-[clamp(2.1rem,2.9vw,3.7rem)]" />
+          <PresconLogo className="w-[clamp(3.2rem,4.4vw,5.6rem)]" />
         </div>
       </div>
 
