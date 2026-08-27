@@ -86,17 +86,94 @@ export function Profile() {
 
       {/* Not SplitLayout: its mobile fallback drops `visual` behind the text as a
           faint, stretched 20%-opacity ghost — wrong for this tower, which is real
-          content (the thing the floor list on the left describes) and very tall and
+          content (the thing the floor list opposite describes) and very tall and
           narrow (aspect ratio ~0.24), so stretching it to a full-bleed box distorted
           it badly. Kept side by side at every width instead, the same idea as desktop:
           the tower's own tall-narrow shape actually suits a phone's tall-narrow
-          viewport better than most images do. The column ratio narrows the tower's
-          share on mobile (44%) since the floor list needs the width more there than the
-          desktop layout's wider stat lines do; both widen back out at md. */}
+          viewport better than most images do. Tower left, text right — the column
+          ratio narrows the tower's share on mobile (38%) since the floor list needs
+          the width more there than the desktop layout's wider stat lines do; both
+          widen back out at md. */}
       <div
         ref={root}
-        className="grid h-full min-h-0 w-full grid-cols-[62fr_38fr] gap-[4%] md:grid-cols-[48fr_52fr]"
+        className="grid h-full min-h-0 w-full grid-cols-[48fr_52fr] gap-[3%] md:grid-cols-[52fr_48fr] md:gap-[4%]"
       >
+        <div data-rise className="relative min-h-0 min-w-0 overflow-hidden">
+          <div className="flex h-full items-center justify-start gap-[0.7em] pl-[clamp(1rem,4vw,4.5rem)] lg:gap-[2.2em]">
+            {/* h-full w-full plus object-contain on the <img>, not a hand-tuned
+                aspect-ratio box — the browser fits both the column's width and the
+                row's height at once, so no breakpoint (this now includes mobile) needs
+                its own guessed percentage to avoid clipping or overflow. */}
+            <div className="relative h-full w-full">
+              <img
+                src={TOWER_SRC}
+                alt="The Blade — massing elevation, floor zones marked"
+                decoding="async"
+                className="h-full w-full object-contain"
+              />
+            </div>
+
+            {/* The leader column: a single spine connecting the four named floors, a
+                circle at each one carrying its code — the reference slide's composition
+                — plus the plain floor-range labels ticked off the same line, without
+                tracing the building's own uneven isometric edge for every connector.
+                Same composition at every width now, just narrower on a phone — the
+                node circles and labels shrink further there (max-md below) and the
+                labels lean on `truncate` the same way the floor list opposite already
+                does, rather than disappearing outright. */}
+            <div className="relative h-[92%] w-[4.6em] shrink-0 md:h-[62%] md:w-[9em] lg:h-[92%] lg:w-[13em]">
+              {/* Centred under the node column below, so the line runs through every
+                  circle's middle rather than its own left edge. */}
+              <span
+                data-spine
+                aria-hidden="true"
+                className="absolute left-[0.75em] w-px bg-blade-cream/25 md:left-[1.2em]"
+                style={{ top: `${SPINE_TOP}%`, height: `${SPINE_BOTTOM - SPINE_TOP}%` }}
+              />
+
+              {marks.map((m) => {
+                const isFloor = m.kind === 'floor';
+                return (
+                  <div
+                    key={isFloor ? m.level : m.code}
+                    data-mark
+                    className="absolute left-0 flex items-center gap-[0.4em] md:gap-[0.7em]"
+                    style={{ top: `${m.y}%`, transform: 'translateY(-50%)' }}
+                  >
+                    {/* A fixed-width slot, floor or range mark alike, so both share the
+                        same centre line as the spine above instead of each drifting to
+                        its own natural flex width. */}
+                    <span className="flex h-[1.5em] w-[1.5em] shrink-0 items-center justify-center md:h-[2.1em] md:w-[2.1em]">
+                      {isFloor ? (
+                        <span
+                          data-mark-node
+                          className={`relative z-10 flex h-full w-full items-center justify-center rounded-full border bg-blade-black text-[0.5rem] font-bold tabular-nums md:text-[0.6rem] ${
+                            m.level === '41F'
+                              ? 'border-blade-cream text-blade-cream'
+                              : 'border-blade-copper text-blade-copper'
+                          }`}
+                        >
+                          {m.level}
+                        </span>
+                      ) : (
+                        <span aria-hidden="true" className="h-px w-[0.9em] bg-blade-cream/25" />
+                      )}
+                    </span>
+                    {isFloor ? (
+                      <span className="min-w-0 truncate text-[0.625rem] text-blade-cream/85 md:text-caption">{m.label}</span>
+                    ) : (
+                      <span className="flex min-w-0 items-baseline gap-[0.4em] whitespace-nowrap">
+                        <span className="text-[0.55rem] tabular-nums text-blade-cream/45 md:text-[0.625rem]">{m.code}</span>
+                        <span className="truncate text-[0.55rem] text-blade-cream/45 md:text-[0.625rem]">{m.label}</span>
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
         <div className="relative flex min-h-0 min-w-0 flex-col justify-center overflow-hidden">
           <div className="flex min-h-0 flex-col justify-center gap-[min(2.2em,2.6vh)]">
             <SectionTitle id="profile" />
@@ -133,8 +210,8 @@ export function Profile() {
                     </span>
                     <span aria-hidden="true" className="skew-blade ml-[0.35em] inline-block h-[0.85em] w-px bg-blade-copper/50" />
                   </span>
-                  <span className="shrink-0 text-caption tabular-nums text-blade-cream/55">{f.height}</span>
-                  <span aria-hidden="true" className="shrink-0 text-blade-cream/35">
+                  <span className="shrink-0 text-caption tabular-nums text-blade-cream/55 max-md:hidden">{f.height}</span>
+                  <span aria-hidden="true" className="shrink-0 text-blade-cream/35 max-md:hidden">
                     –
                   </span>
                   <span className="min-w-0 truncate text-body font-medium text-blade-cream max-md:text-caption">
@@ -143,81 +220,6 @@ export function Profile() {
                 </li>
               ))}
             </ul>
-          </div>
-        </div>
-
-        <div data-rise className="relative min-h-0 min-w-0 overflow-hidden">
-          <div className="flex h-full items-center justify-end gap-[1.4em] pr-[clamp(1.5rem,4vw,4.5rem)] max-md:justify-center max-md:pr-0 lg:gap-[2.2em]">
-            {/* h-full w-full plus object-contain on the <img>, not a hand-tuned
-                aspect-ratio box — the browser fits both the column's width and the
-                row's height at once, so no breakpoint (this now includes mobile) needs
-                its own guessed percentage to avoid clipping or overflow. */}
-            <div className="relative h-full w-full">
-              <img
-                src={TOWER_SRC}
-                alt="The Blade — massing elevation, floor zones marked"
-                decoding="async"
-                className="h-full w-full object-contain"
-              />
-            </div>
-
-            {/* The leader column: a single spine connecting the four named floors, a
-                circle at each one carrying its code — the reference slide's composition
-                — plus the plain floor-range labels ticked off the same line, without
-                tracing the building's own uneven isometric edge for every connector.
-                Still md-only: the floor list opposite already carries every one of
-                these labels as text, and there isn't room for a second, wider copy of
-                them beside the tower on a phone. */}
-            <div className="relative hidden h-[92%] w-[13em] shrink-0 md:block md:h-[62%] md:w-[9em] lg:h-[92%] lg:w-[13em]">
-              {/* Centred under the 2.4em node column below, so the line runs through
-                  every circle's middle rather than its own left edge. */}
-              <span
-                data-spine
-                aria-hidden="true"
-                className="absolute left-[1.2em] w-px bg-blade-cream/25"
-                style={{ top: `${SPINE_TOP}%`, height: `${SPINE_BOTTOM - SPINE_TOP}%` }}
-              />
-
-              {marks.map((m) => {
-                const isFloor = m.kind === 'floor';
-                return (
-                  <div
-                    key={isFloor ? m.level : m.code}
-                    data-mark
-                    className="absolute left-0 flex items-center gap-[0.7em]"
-                    style={{ top: `${m.y}%`, transform: 'translateY(-50%)' }}
-                  >
-                    {/* A fixed-width slot, floor or range mark alike, so both share the
-                        same centre line as the spine above instead of each drifting to
-                        its own natural flex width. */}
-                    <span className="flex h-[2.1em] w-[2.1em] shrink-0 items-center justify-center">
-                      {isFloor ? (
-                        <span
-                          data-mark-node
-                          className={`relative z-10 flex h-full w-full items-center justify-center rounded-full border bg-blade-black text-[0.6rem] font-bold tabular-nums ${
-                            m.level === '41F'
-                              ? 'border-blade-cream text-blade-cream'
-                              : 'border-blade-copper text-blade-copper'
-                          }`}
-                        >
-                          {m.level}
-                        </span>
-                      ) : (
-                        <span aria-hidden="true" className="h-px w-[0.9em] bg-blade-cream/25" />
-                      )}
-                    </span>
-                    {isFloor ? (
-                      <span className="min-w-0 truncate text-caption text-blade-cream/85">{m.label}</span>
-                    ) : (
-                      <span className="flex min-w-0 items-baseline gap-[0.4em] whitespace-nowrap">
-                        <span className="text-[0.625rem] tabular-nums text-blade-cream/45">{m.code}</span>
-                        <span className="truncate text-[0.625rem] text-blade-cream/45">{m.label}</span>
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
           </div>
         </div>
       </div>
