@@ -99,9 +99,8 @@ export function BrandLockup({ className = '' }) {
           clipping. max-sm drops the floor further, since this mark is decorative and
           the nav buttons are the ones that have to stay full size. */}
       <PresconLogo className="w-[clamp(2.6rem,3.5vw,4.5rem)] max-sm:w-[1.6rem]" />
-      {/* A single copper stroke at the blade angle, rather than a "/" glyph's own
-          italic — one clean strike reads as the brand's graphic idea without the
-          second bar's clutter at this size.
+      {/* A single straight copper stroke, standing in for a "/" the way a plain divider
+          would, rather than italicised at the blade angle.
 
           The bar is sized to sit fully inside this span's own height rather than
           overflowing it — a bar that paints outside its box doesn't inflate the box,
@@ -112,18 +111,16 @@ export function BrandLockup({ className = '' }) {
           fixed clamp(), not remeasured off the rail at all, so the mark has to stay
           inside that fixed budget on its own — kept short on purpose, not just
           contained. */}
-      <span aria-hidden="true" className="mx-[0.3em] flex h-[3.6em] items-center max-sm:mx-[0.08em] max-[360px]:hidden">
-        <span
-          className="h-[3.3em] w-[3px] [background:var(--copper-gradient)] [transform:skewX(calc(-1*var(--blade-angle)))]"
-        />
+      <span aria-hidden="true" className="mx-[0.3em] flex h-[4.4em] items-center max-sm:mx-[0.08em] max-[360px]:hidden">
+        <span className="h-[4.1em] w-[3px] [background:var(--copper-gradient)]" />
       </span>
       {/* Below 360px (the oldest iPhone SE's 320px included) even a legible-sized
           wordmark plus the logo and MENU/HOME no longer all fit — shrinking the
-          wordmark further than 3.3rem started running into its own letterforms, three
+          wordmark further than 3.8rem started running into its own letterforms, three
           lines of real type, not a mark that reads fine tiny. Dropped instead: the
           logo + slash alone still say "Prescon" and fit comfortably, and the full
           lockup is one tap away on every other screen in the app. */}
-      <Wordmark corner className="w-[clamp(5.3rem,7.5vw,9.4rem)] max-sm:w-[3.3rem] max-[360px]:hidden" />
+      <Wordmark corner className="w-[clamp(6.4rem,8.8vw,11rem)] max-sm:w-[3.8rem] max-[360px]:hidden" />
     </div>
   );
 }
