@@ -3,8 +3,8 @@
 export const PROJECT = {
   id: 'blade',
   name: 'The Blade by Prescon',
-  lat: 18.9983725,
-  lng: 72.8191735,
+  lat: 18.99837158252392,
+  lng: 72.81920075539162,
 };
 
 export const INITIAL_VIEW = { center: [PROJECT.lat, PROJECT.lng], zoom: 15 };

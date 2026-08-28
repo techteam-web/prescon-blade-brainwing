@@ -29,7 +29,7 @@ export const LEGEND = ['coastal', 'railway', 'aqua', 'eeh', 'freeway', 'mthl', '
 // verified road distance from the project, matching the connectivity list.
 export const DISTANCE_CHIPS = [
   { id: 'coastal', km: 1.2, at: [72.8071, 18.9812] },
-  { id: 'racecourse', km: 1.8, at: [72.8168, 18.9758] },
+  { id: 'racecourse', km: 1.8, at: [18.984313222742394, 72.81996502153488] },
   { id: 'sealink', km: 1.5, at: [72.8236, 19.0332] },
   { id: 'lowerparel', km: 1.2, at: [72.8352, 18.9902] },
   { id: 'aqua', km: 4.4, at: [72.8262, 18.9588] },
@@ -48,7 +48,7 @@ export const DISTANCE_CHIPS = [
 // Place labels, as on page 6.
 export const PLACE_LABELS = [
   { id: 'sealink', name: 'Bandra Worli Sea Link', at: [72.8214, 19.0287] },
-  { id: 'racecourse', name: 'Mahalaxmi Race Course', at: [72.8200, 18.9842] },
+  { id: 'racecourse', name: 'Mahalaxmi Race Course', at: [18.984313222742394, 72.81996502153488] },
   { id: 'lowerparel', name: 'Lower Parel', at: [72.8302, 18.9958] },
   { id: 'dadar', name: 'Dadar', at: [72.8402, 19.0178] },
   { id: 'bkc', name: 'BKC', at: [72.8618, 19.0654] },

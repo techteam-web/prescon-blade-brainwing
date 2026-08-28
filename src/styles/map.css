@@ -68,8 +68,10 @@
   pointer-events: none;
   /* The one number that sets how far the tower's base floats above the ring — read by
      both the tower and the label below, so tuning the gap here never leaves the label
-     out of sync. */
-  --tower-base-bottom: 15px;
+     out of sync. Kept at 0 so the tower's own footprint sits on the ring instead of
+     hovering above it — a positive value here reads as the building floating off the
+     ground. */
+  --tower-base-bottom: 0px;
 }
 
 /* The tower's own elevation drawing, standing on the ring in place of the old abstract
@@ -110,6 +112,9 @@
   margin-left: -18px;
   border: 1px solid var(--color-blade-copper);
   border-radius: 50%;
+  /* A lit ground pad under the tower instead of a hollow hairline — fades from copper
+     at the centre so the ring still reads as a thin line at its edge. */
+  background: radial-gradient(closest-side, rgb(202 142 91 / 0.55), rgb(202 142 91 / 0.08) 70%, transparent);
 }
 
 .blade-project__halo {

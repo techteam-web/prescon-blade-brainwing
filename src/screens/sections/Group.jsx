@@ -73,7 +73,7 @@ export function Group() {
             alt=""
             decoding="async"
             loading="eager"
-            className="h-full w-full scale-105 object-cover object-center blur-[5px] max-md:object-[50%_30%]"
+            className="h-full w-full scale-105 object-cover object-center blur-[3px] max-md:object-[50%_30%]"
           />
           <div className="absolute inset-0 z-[5] bg-blade-black/60" />
           <div

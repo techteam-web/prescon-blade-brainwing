@@ -17,6 +17,14 @@
 // confirmed, manually-checked pairing for that destination — not a nearest-neighbour
 // guess. Clicking a row focuses it in BladeMap.jsx, which reveals only its `road`'s
 // label. Leave the field off a row entirely until its road is actually confirmed.
+//
+// `finalStretch` is an optional list of [lng, lat] waypoints BladeMap.jsx splices onto
+// the end of the OSRM driving route before drawing it. OSRM's driving profile won't
+// route onto a way tagged access:private, so for a destination only reachable that way
+// (Mahalaxmi Race Course's approach road, confirmed against OSM) the route otherwise
+// stops at the public road and leaves a gap to the pin. These points are that private
+// road's own real geometry (from OSM, not a straight line), so the drawn route still
+// follows an actual path for the stretch OSRM refuses to route.
 
 export const CONNECTIVITY = [
   // -------------------------------------------------------------- 1. Residences
@@ -31,7 +39,21 @@ export const CONNECTIVITY = [
   { id: 'Four Seasons', label: 'Four Seasons', km: 0.8, cat: 'hospitality', at: [72.8200655, 18.993915], road:'dr-elijah-moses-rd'},
   { id: 'Blue Sea', label: 'Blue Sea', km: 2.5, cat: 'hospitality', at: [72.8179428, 19.016009], road:'khan-abdul' },
   { id: 'NSCI', label: 'NSCI', km: 1.9, cat: 'hospitality', at: [72.8154765, 18.9863678] , road:'dr-annie'},
-  { id: 'Mahalaxmi Race Course', label: 'Mahalaxmi Race Course', km: 1.7, cat: 'hospitality', at: [72.8200753, 18.9842089] , road:'dr-elijah-moses-rd'},
+  // Pinned to the client's own marked point. OSRM's driving route reaches the public
+  // end of Lala Lajpatrai Marg and stops there — the last stretch in is a private
+  // service road (access:private in OSM) that public routers won't use. See
+  // `finalStretch` above.
+  {
+    id: 'Mahalaxmi Race Course',
+    label: 'Mahalaxmi Race Course',
+    km: 1.7,
+    cat: 'hospitality',
+    at: [72.8156272367974, 18.98221544417475],
+    finalStretch: [
+      [72.8151554, 18.9826659],
+      [72.8154556, 18.9823846],
+    ],
+  },
 
   // -------------------------------------------------------------- 3. Commerce
   { id: 'Palladium Mall', label: 'Palladium Mall', km: 2.0, cat: 'commerce', at: [72.825031, 18.994459],road:'dr-elijah-moses-rd'},

@@ -493,14 +493,24 @@ export function BladeMap({ activeCategory, focusId, highlightId, onRoute }) {
       fetchRoute(dest.at, controller.signal)
         .then(({ coordinates, distance, duration }) => {
           if (controller.signal.aborted || !m.getSource(ROUTE_SRC)) return;
-          m.getSource(ROUTE_SRC).setData(lineFeature(coordinates));
+          // OSRM snaps the destination to the nearest point it can actually drive on —
+          // for a destination off any public road that leaves the route short of the
+          // pin. `finalStretch` (connectivity.js), where set, is that last leg's own
+          // real path (an OSM way OSRM's driving profile won't route onto, e.g.
+          // access:private) rather than a straight line invented here. Falls back to a
+          // direct line to the pin when no such path is known.
+          const last = coordinates[coordinates.length - 1];
+          const tail = [...(dest.finalStretch ?? []), dest.at];
+          const drawCoordinates =
+            last[0] === dest.at[0] && last[1] === dest.at[1] ? coordinates : [...coordinates, ...tail];
+          m.getSource(ROUTE_SRC).setData(lineFeature(drawCoordinates));
           setCorridors(m, false);
           fadeRoute(m, true);
           startDashes(m);
           onRoute?.({ id: dest.id, label: dest.label, state: 'ready', distance, duration });
 
-          const bounds = new maplibregl.LngLatBounds(coordinates[0], coordinates[0]);
-          for (const c of coordinates) bounds.extend(c);
+          const bounds = new maplibregl.LngLatBounds(drawCoordinates[0], drawCoordinates[0]);
+          for (const c of drawCoordinates) bounds.extend(c);
 
           // The tower is a fixed-pixel marker anchored at PROJECT's coordinate, growing
           // tall via CSS transform — fitBounds only knows about the route's geometry, not
