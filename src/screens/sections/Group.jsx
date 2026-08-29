@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Screen, SplitLayout } from '../../layout/Screen';
+import { Screen } from '../../layout/Screen';
 import { SectionTitle } from './SectionShell';
 import { CountUp } from '../../components/Primitives';
 import { PresconLogo } from '../../components/Wordmark';
@@ -11,13 +11,9 @@ import { gsap, useGSAP } from '../../gsap/Gsapconfig';
 // carries a backdrop now (blade-10) so it doesn't sit flat next to every render-backed
 // section around it, same object-cover + scrim technique as Features.jsx's slides.
 //
-// The Prescon mark appears exactly as issued (see Wordmark.jsx) — never faded into a
-// watermark, never recoloured — sitting plainly atop its own stat panel instead.
-//
-// No pillars row any more — the client's deck carries no "three principles" copy for
-// this screen, only the headline/body/stats below, so the text column is just those
-// three blocks, centred with more breathing room than when a fourth block sat under
-// them.
+// Two columns: stat figures and facts on the left, title/headline/body on the right.
+// No Prescon mark or ghost wordmark on this screen — tried both, the client reference
+// doesn't carry either, just the two copy columns.
 
 const BACKDROP = getRender('group-01');
 
@@ -60,12 +56,6 @@ export function Group() {
           bleeds to the edges — same structure as Features.jsx's backdrop layer. */}
       {BACKDROP && (
         <div aria-hidden="true" data-overflow-ok className="pointer-events-none absolute inset-0 -z-10">
-          {/* Unlike Features.jsx's slides, Group's copy sits on BOTH sides — the Prescon
-              mark and stats on the left, the headline/body/pillars on the right — so a
-              one-sided directional scrim left it readable on one edge and not the other.
-              Blurred and darkened flat instead: legible everywhere, and the room reads as
-              atmosphere behind the copy rather than a competing photo. scale-105 hides
-              the blur's own soft edge at the screen boundary. */}
           <img
             src={BACKDROP.src}
             srcSet={BACKDROP.srcSet}
@@ -73,7 +63,7 @@ export function Group() {
             alt=""
             decoding="async"
             loading="eager"
-            className="h-full w-full scale-105 object-cover object-center blur-[3px] max-md:object-[50%_30%]"
+            className="h-full w-full scale-105 object-cover object-center blur-[5px] max-md:object-[50%_30%]"
           />
           <div className="absolute inset-0 z-[5] bg-blade-black/60" />
           <div
@@ -87,110 +77,119 @@ export function Group() {
         </div>
       )}
 
-      <div ref={root} className="h-full min-h-0">
-        <SplitLayout
-          ratio={46}
-          text={
-            <div className="flex min-h-0 flex-col justify-center gap-[1.9em] max-md:gap-[1.1em]">
-              <SectionTitle id="group" />
-
-              <div className="flex flex-col gap-[0.5em]">
-                <span data-line className="block">
-                  <span className="block text-caption uppercase tracking-[0.34em] text-blade-copper">
-                    {c.eyebrow}
-                  </span>
+      {/* w-fit + mx-auto rather than a full-width grid — each column sizes to its own
+          content instead of stretching across a fixed track, so the pair centres as
+          one measured block instead of leaving empty track space down one side. */}
+      <div
+        ref={root}
+        className="mx-auto flex h-full min-h-0 w-fit max-w-full items-center gap-x-[4%] max-md:w-full max-md:flex-col max-md:justify-center max-md:gap-x-0"
+      >
+        {/* Column 1 — the stat figures, stacked with the same thin-hairline-divider
+            language the deck already uses for stat and list slides (Features.jsx's
+            'stats'/'list' kinds), then the facts as a small-square-bulleted list.
+            Sized up from the shared text-stat/text-caption tokens — bigger throughout
+            this screen only, not a change to the shared type scale. */}
+        <div data-rise className="hidden h-full min-h-0 flex-col justify-center md:flex">
+          <ul className="flex flex-col">
+            {numericStats.map((s, i) => (
+              <li
+                key={s.id}
+                className={`flex flex-col gap-[0.35em] py-[0.85em] ${
+                  i > 0 ? 'border-t border-blade-ink' : ''
+                }`}
+              >
+                <span className="flex items-baseline gap-[0.15em] text-[clamp(1.9rem,2.5vw,3.4rem)] font-bold tabular-nums text-blade-copper [text-shadow:0_2px_14px_rgb(0_0_0_/_0.45)]">
+                  <CountUp to={s.to} decimals={s.decimals} />
+                  <span className="text-[0.5em] text-blade-copper/75">{s.suffix}</span>
                 </span>
-                {c.headline.map((l) => (
-                  <span key={l} data-line className="block">
-                    <span className="block text-headline uppercase text-blade-cream max-md:text-subhead">
-                      {l}
-                    </span>
+                <span className="text-[clamp(0.8rem,0.85vw,1.15rem)] text-blade-cream/70">{s.label}</span>
+              </li>
+            ))}
+          </ul>
+
+          <ul className="mt-[0.6em] flex flex-col gap-[0.3em]">
+            {factStats.map((s) => (
+              <li key={s.id} className="flex items-start gap-[0.6em]">
+                <span aria-hidden="true" className="mt-[0.5em] h-[6px] w-[6px] shrink-0 bg-blade-copper" />
+                <span className="text-[clamp(0.8rem,0.85vw,1.15rem)] leading-snug text-blade-cream/70">{s.label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Column 2 — title, headline and body, same as every other screen's copy
+            column. Below md this is the only column shown; the stats and facts
+            collapse into the compact block just under the headline instead. */}
+        <div className="flex min-h-0 flex-col justify-center gap-[1.7em] max-md:gap-[1.1em]">
+          <div className="flex flex-col gap-[0.5em]">
+            <SectionTitle id="group" />
+            <span data-group-rule aria-hidden="true" className="block h-px w-[3.4rem] bg-blade-copper" />
+          </div>
+
+          <div className="flex flex-col gap-[0.5em]">
+            <span data-line className="block">
+              <span className="block text-[clamp(0.8rem,0.85vw,1.15rem)] uppercase tracking-[0.34em] text-blade-copper">
+                {c.eyebrow}
+              </span>
+            </span>
+            {c.headline.map((l) => {
+              // Presentational split only — `l` itself is untouched, still the
+              // verbatim "BEYOND THE ORDINARY." string; this just breaks it across
+              // two coloured lines the way the client's slide does. Sized up from the
+              // shared text-headline token — bigger on this screen only.
+              const [first, ...rest] = l.split(' ');
+              const restStr = rest.join(' ');
+              return (
+                <span key={l} data-line className="block">
+                  <span className="block text-[clamp(2.4rem,3.7vw,5.75rem)] uppercase text-blade-cream max-md:text-subhead [text-shadow:0_2px_18px_rgb(0_0_0_/_0.5)]">
+                    {first}
                   </span>
-                ))}
-                <span data-group-rule aria-hidden="true" className="mt-[0.3em] block h-px w-[32%] bg-blade-copper" />
-              </div>
-
-              {/* Below md, SplitLayout drops `visual` behind the text as a faint
-                  20%-opacity backdrop — right for a photo, wrong here: `visual` carries
-                  the Prescon mark and the stats, actual content, not scenery. Left
-                  as-is it read as ghosting collided with the paragraph underneath.
-                  Hidden there instead (visualClassName below) and replaced with this
-                  compact block, in-flow and fully legible, sized to fit the same
-                  no-scroll screen instead of the roomier two-cluster desktop layout. */}
-              <div data-rise className="hidden flex-col gap-[0.7em] max-md:flex">
-                <div className="flex items-center gap-[1em]">
-                  <PresconLogo className="w-[4.6rem] shrink-0" />
-                  <span aria-hidden="true" className="h-[1.8em] w-px shrink-0 bg-blade-ink" />
-                  <ul className="grid min-w-0 flex-1 grid-cols-3 gap-x-[0.8em]">
-                    {numericStats.map((s) => (
-                      <li key={s.id} className="flex min-w-0 flex-col gap-[0.15em]">
-                        <span className="flex items-baseline gap-[0.1em] text-caption font-bold tabular-nums text-blade-copper">
-                          <CountUp to={s.to} decimals={s.decimals} />
-                          <span className="text-[0.75em] text-blade-copper/75">{s.suffix}</span>
-                        </span>
-                        <span className="text-[0.6rem] leading-tight text-blade-cream/60">{s.label}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <ul className="flex flex-col gap-[0.25em]">
-                  {factStats.map((s) => (
-                    <li key={s.id} className="flex items-start gap-[0.5em]">
-                      <span aria-hidden="true" className="mt-[0.45em] h-[3px] w-[3px] shrink-0 bg-blade-copper" />
-                      <span className="text-[0.625rem] leading-snug text-blade-cream/60">{s.label}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <p data-rise className="max-w-[54ch] text-body text-blade-cream/80 max-md:text-caption">
-                {c.body}
-              </p>
-            </div>
-          }
-          visual={
-            <div data-rise className="flex h-full min-h-0 flex-col justify-center gap-[1.7em]">
-              <PresconLogo className="w-[clamp(6rem,9vw,9.5rem)]" />
-              <span aria-hidden="true" className="h-px w-full bg-blade-ink" />
-
-              {/* By the numbers — three figures, side by side, dividers rather than a
-                  grid gap so the row reads as one measured statement. */}
-              <ul className="grid grid-cols-3 gap-x-[1.6em]">
-                {numericStats.map((s, i) => (
-                  <li
-                    key={s.id}
-                    className={`flex min-w-0 flex-col gap-[0.4em] ${
-                      i > 0 ? 'border-l border-blade-ink pl-[1.6em]' : ''
-                    }`}
-                  >
-                    <span className="flex items-baseline gap-[0.15em] text-stat font-bold tabular-nums text-blade-copper">
-                      <CountUp to={s.to} decimals={s.decimals} />
-                      <span className="text-[0.5em] text-blade-copper/75">{s.suffix}</span>
+                  {restStr && (
+                    <span className="block text-[clamp(2.4rem,3.7vw,5.75rem)] uppercase text-blade-copper max-md:text-subhead [text-shadow:0_2px_18px_rgb(0_0_0_/_0.5)]">
+                      {restStr}
                     </span>
-                    <span className="text-caption text-blade-cream/70">{s.label}</span>
-                  </li>
-                ))}
-              </ul>
+                  )}
+                </span>
+              );
+            })}
+          </div>
 
-              <span aria-hidden="true" className="h-px w-full bg-blade-ink" />
-
-              {/* The rest — legacy and portfolio breadth — as plain statements, a tick
-                  mark standing in for the number none of them have. */}
-              <ul className="flex flex-col">
-                {factStats.map((s) => (
-                  <li
-                    key={s.id}
-                    className="flex items-start gap-[0.7em] border-t border-blade-ink py-[0.6em] first:border-t-0 first:pt-0"
-                  >
-                    <span aria-hidden="true" className="mt-[0.5em] h-[3px] w-[3px] shrink-0 bg-blade-copper" />
-                    <span className="text-caption text-blade-cream/75">{s.label}</span>
+          {/* Below md, column 1 is hidden (see its md:flex above) — this compact block
+              replaces it, in-flow and fully legible, sized to fit the same no-scroll
+              screen instead of the roomier two-column desktop layout. */}
+          <div data-rise className="hidden flex-col gap-[0.7em] max-md:flex">
+            <div className="flex items-center gap-[1em]">
+              <PresconLogo className="w-[4.6rem] shrink-0" />
+              <span aria-hidden="true" className="h-[1.8em] w-px shrink-0 bg-blade-ink" />
+              <ul className="grid min-w-0 flex-1 grid-cols-3 gap-x-[0.8em]">
+                {numericStats.map((s) => (
+                  <li key={s.id} className="flex min-w-0 flex-col gap-[0.15em]">
+                    <span className="flex items-baseline gap-[0.1em] text-caption font-bold tabular-nums text-blade-copper">
+                      <CountUp to={s.to} decimals={s.decimals} />
+                      <span className="text-[0.75em] text-blade-copper/75">{s.suffix}</span>
+                    </span>
+                    <span className="text-[0.6rem] leading-tight text-blade-cream/60">{s.label}</span>
                   </li>
                 ))}
               </ul>
             </div>
-          }
-          visualClassName="max-md:hidden"
-        />
+            <ul className="flex flex-col gap-[0.25em]">
+              {factStats.map((s) => (
+                <li key={s.id} className="flex items-start gap-[0.5em]">
+                  <span aria-hidden="true" className="mt-[0.45em] h-[3px] w-[3px] shrink-0 bg-blade-copper" />
+                  <span className="text-[0.625rem] leading-snug text-blade-cream/60">{s.label}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <p
+            className="max-w-[58ch] text-[clamp(1rem,1.2vw,1.8rem)] text-blade-cream/85 [text-shadow:0_1px_10px_rgb(0_0_0_/_0.4)] max-md:text-caption"
+            data-rise
+          >
+            {c.body}
+          </p>
+        </div>
       </div>
     </Screen>
   );
