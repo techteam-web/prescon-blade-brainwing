@@ -9,10 +9,13 @@ import { TOWER_ZONES, ZONE_BY_ID } from '../../data/towerZones';
 
 import { CompareDeck } from '../../features/plans/CompareDeck';
 import { PlateWipeCanvas } from '../../features/plans/PlateWipeCanvas';
+import { FloorPlanOverlay } from '../../features/plans/FloorPlanOverlay';
+import { UnitPanoramaViewer } from '../../features/plans/UnitPanoramaViewer';
 
 
 import { getPlate } from '../../data/floorPlates';
-import { getPlan, PLAN_ASSETS, TOWER_ELEVATION } from '../../data/planAssets';
+import { getPlan, getPlanSvg, PLAN_ASSETS, TOWER_ELEVATION } from '../../data/planAssets';
+import { getFloorPanorama } from '../../data/floorPanoramas';
 import { CONTENT } from '../../data/content';
 import { gsap, useGSAP, E, D, durationScale, prefersReducedMotion } from '../../gsap/Gsapconfig';
 import { useIdleTask } from '../../hooks/useEventListener';
@@ -170,6 +173,7 @@ export function Plans() {
   const [locked, setLocked] = useState(null);
   const [shown, setShown] = useState(null);
   const [picks, setPicks] = useState([]);
+  const [activeView, setActiveView] = useState(null);
   const frame = useRef(null);
   const tower = useRef(null);
   const title = useRef(null);
@@ -216,6 +220,7 @@ export function Plans() {
     setHovered(id);
   }, []);
 
+
   // Only floors with a published plate can be locked in — hover still lights up every
   // band (crown, service floors, amenities), but clicking one of those is a no-op.
   const onSelect = useCallback((id) => {
@@ -237,6 +242,16 @@ export function Plans() {
   }, []);
 
   const removePick = useCallback((id) => setPicks((l) => l.filter((x) => x !== id)), []);
+
+  // Clicking a unit shape in the plan overlay opens that floor's 360° panorama — only
+  // floors with an actual drone still (floorPanoramas.js) have one; anything else is a
+  // no-op rather than opening an empty viewer.
+  const onOpenView = useCallback((zoneId, unitId, bearingDeg) => {
+    if (!getFloorPanorama(zoneId)) return;
+    setActiveView({ zoneId, unitId, bearingDeg });
+  }, []);
+
+  const closeView = useCallback(() => setActiveView(null), []);
 
   // ↑/↓ move between zones, Enter locks (or picks, in compare mode).
   const onKeyDown = (event) => {
@@ -588,6 +603,7 @@ export function Plans() {
         >
           {TOWER_ZONES.map((zone) => {
             const plan = getPlan(zone.plan);
+            const planSvg = getPlanSvg(zone.plan);
             const plate = getPlate(zone.plan);
             return (
               <div
@@ -604,8 +620,13 @@ export function Plans() {
                 }`}
               >
                 <div className="flex items-baseline gap-[1.4em] border-b border-blade-copper/30 pb-[0.7em]">
+                  {/* zone.label, not plate.label — several zones (f19/f21-26, f20/f27)
+                      share one printed plate/plan across a wider floor range than the
+                      zone itself covers, so plate.label reads as "19th & 21st to 26th
+                      Floor" even when this card is showing just the 19th on its own.
+                      zone.label is always the specific floor(s) actually selected. */}
                   <h2 className="text-subhead font-medium uppercase tracking-[0.06em] text-blade-cream">
-                    {plate?.label ?? zone.label}
+                    {zone.label}
                   </h2>
                 </div>
 
@@ -615,17 +636,37 @@ export function Plans() {
                         is real (transparent outside the drawn plate, not painted
                         ivory), so it sits straight on the card's dark ground. */}
                     <div className="relative min-h-0 p-[2.5%]">
-                      <img
-                        src={plan.src}
-                        srcSet={plan.srcSet}
-                        sizes="66vw"
-                        width={plan.width}
-                        height={plan.height}
-                        alt={`${plate?.label ?? zone.label} — architectural plan`}
-                        decoding="async"
-                        loading="lazy"
-                        className="h-full w-full object-contain"
-                      />
+                      {/* The overlay below is `absolute inset-0`, which resolves
+                          against this box's PADDING edge, not its content edge — the
+                          same quirk noted on the compare prompt above. Without this
+                          inner, padding-free wrapper the overlay would render larger
+                          than, and offset from, the raster image sitting in the
+                          padded content box, so every unit shape would drift off the
+                          drawing under it. Both now share this one unpadded box. */}
+                      <div className="relative h-full w-full">
+                        <img
+                          src={plan.src}
+                          srcSet={plan.srcSet}
+                          sizes="66vw"
+                          width={plan.width}
+                          height={plan.height}
+                          alt={`${plate?.label ?? zone.label} — architectural plan`}
+                          decoding="async"
+                          loading="lazy"
+                          className="h-full w-full object-contain"
+                        />
+                        {/* Vector overlay traced over the raster drawing above — same
+                            plate, at the same aspect ratio, but split into one
+                            clickable shape per office. Invisible at rest, so the
+                            brochure drawing reads exactly as before; a copper wash on
+                            hover marks which unit a click will open. */}
+                        {planSvg ? (
+                          <FloorPlanOverlay
+                            src={planSvg}
+                            onSelectUnit={(unitId, bearingDeg) => onOpenView(zone.id, unitId, bearingDeg)}
+                          />
+                        ) : null}
+                      </div>
                     </div>
                     <span
                       aria-hidden="true"
@@ -733,6 +774,12 @@ export function Plans() {
           onEdit={() => setCompare('picking')}
         />
       </div>
+
+      <UnitPanoramaViewer
+        view={activeView}
+        panorama={getFloorPanorama(activeView?.zoneId)}
+        onClose={closeView}
+      />
 
     </Screen>
   );

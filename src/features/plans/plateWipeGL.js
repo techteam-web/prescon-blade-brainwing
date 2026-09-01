@@ -89,11 +89,11 @@ const FRAGMENT = `
 
     vec3 color = mix(uColorA, uColorB, tint);
 
-    color += 0.03 * vec3(
-      sin(w * 8.0 + t),
-      sin(w * 8.0 + t + 2.1),
-      sin(w * 8.0 + t + 4.2)
-    );
+    // A shared scalar, not three independent per-channel sines — that version phase-offset
+    // R/G/B by ~120° each, which is a rainbow generator, not a shimmer: against colors this
+    // dark a ±0.03 per-channel drift reads as visible green/magenta blotches sweeping across
+    // the panel instead of the warm, single-tone sheen this is meant to be.
+    color += 0.03 * sin(w * 8.0 + t);
 
     float frontGlow = 1.0 - smoothstep(0.0, 0.25, abs(frontPos - wipe));
     float backGlow = 1.0 - smoothstep(0.0, 0.25, abs(backPos - wipe));

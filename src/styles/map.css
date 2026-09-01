@@ -72,6 +72,17 @@
      hovering above it — a positive value here reads as the building floating off the
      ground. */
   --tower-base-bottom: 0px;
+  /* tower-elevation.png's own canvas carries a drawn site-boundary apron below the
+     building's real base — about 7% of the full 3840px height is near-black ground
+     plane with just a thin plot-line running through it, not transparent padding, so
+     `object-fit: contain` can't crop it out. Anchoring the image at raw `bottom: 0`
+     (as the box's aspect-ratio lock otherwise wants) plants that invisible apron on
+     the ring instead of the building, reading as the tower floating above it — worse
+     the more `--tower-scale` grows it on zoom. This shifts the image down by the
+     apron's own share of the natural 150px marker height (~10.7px), scaled the same
+     way the tower itself is, so the building's actual base lands on the ring at any
+     zoom instead of the empty canvas beneath it. */
+  --tower-apron: 10.7px;
 }
 
 /* The tower's own elevation drawing, standing on the ring in place of the old abstract
@@ -86,7 +97,7 @@
 .blade-project__tower {
   position: absolute;
   left: 50%;
-  bottom: var(--tower-base-bottom);
+  bottom: calc(var(--tower-base-bottom) - var(--tower-apron, 0px) * var(--tower-scale, 1));
   width: 35.9375px;
   aspect-ratio: 920 / 3840;
   height: auto;
@@ -132,11 +143,14 @@
 .blade-project__label {
   position: absolute;
   left: 50%;
-  /* Tracks the tower's own scaled height (--tower-base-bottom + 150px natural height ×
-     --tower-scale + an 8px clearance) so the label stays pinned above the tower instead
-     of drifting under it as the base offset is tuned or zoom grows the tower past its
-     HOME size. */
-  bottom: calc(var(--tower-base-bottom, 0px) + 150px * var(--tower-scale, 1) + 8px);
+  /* Tracks the tower's own scaled height and base shift (--tower-base-bottom -
+     --tower-apron × --tower-scale + 150px natural height × --tower-scale + an 8px
+     clearance) so the label stays pinned above the tower instead of drifting out of
+     sync as the base offset is tuned or zoom grows the tower past its HOME size. */
+  bottom: calc(
+    var(--tower-base-bottom, 0px) - var(--tower-apron, 0px) * var(--tower-scale, 1) + 150px *
+      var(--tower-scale, 1) + 8px
+  );
   width: 145px;
   /* The marker box (.blade-project) is only 56px wide, and the global `img { max-width:
      100% }` reset resolves against that containing block — without this override the

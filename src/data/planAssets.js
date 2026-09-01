@@ -27,6 +27,32 @@ export const PLAN_ASSETS = Object.fromEntries(
   }),
 );
 
+// Vector plates, one per floor group — same clickable drawing the raster plan renders,
+// but scalable and used as the surface that opens a floor's unit views. `views` on each
+// entry stays null until the actual view targets exist; onOpenView in Plans.jsx no-ops
+// until then.
+//
+// Filenames renamed at the source to drop `&` and `,`, same reason and same fix as
+// PLAN_FILES above — both characters make Vite's dev server silently fall through to
+// index.html instead of the file, even correctly percent-encoded.
+const SVG_FILES = {
+  'plan-15': '15TH FLOOR.svg',
+  'plan-16-18': '16TH 17TH AND 18TH FLOOR.svg',
+  'plan-19-26': '19TH AND 21ST TO 26TH FLOOR.svg',
+  'plan-20-27': '20TH AND 27TH FLOOR.svg',
+  'plan-29': '29TH FLOOR.svg',
+  'plan-30-33': '30TH TO 33RD FLOOR.svg',
+  'plan-34': '34TH FLOOR.svg',
+  'plan-35': '35TH FLOOR.svg',
+  'plan-36-40': '36TH TO 40TH FLOOR.svg',
+};
+
+export const PLAN_SVG_ASSETS = Object.fromEntries(
+  Object.entries(SVG_FILES).map(([id, name]) => [id, `/assets/svg/${encodeURIComponent(name)}`]),
+);
+
+export const getPlanSvg = (id) => (id ? PLAN_SVG_ASSETS[id] ?? null : null);
+
 export const TOWER_ELEVATION = {
   src: '/assets/tower/tower-elevation.png',
   width: 920,

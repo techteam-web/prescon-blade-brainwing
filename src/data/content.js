@@ -23,7 +23,7 @@ export const CONTENT = {
   /* ------------------------------------------------------------------- 01 views */
   views: {
     headline: ['THE VIEW FROM', 'EVERY ALTITUDE'],
-    body: 'One view, three moods. Watch the city turn from day to evening to night.',
+    body: 'One view, three moods. Watch the city turn from day to evening to twilight.',
     hint: 'Drag to look around · ↑ ↓ to change view',
     empty: 'Panorama pending — drone capture scheduled for this view.',
   },

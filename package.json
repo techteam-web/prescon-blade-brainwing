@@ -12,13 +12,15 @@
     "assets:brand": "node scripts/extract-brand.mjs",
     "assets:renders": "node scripts/ingest-renders.mjs",
     "assets:plans": "node scripts/extract-plans.mjs",
-    "assets:corridors": "node scripts/build-corridors.mjs"
+    "assets:corridors": "node scripts/build-corridors.mjs",
+    "assets:panoramas": "node scripts/resize-panoramas.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
     "@tailwindcss/vite": "^4.3.3",
     "gsap": "^3.15.0",
     "maplibre-gl": "^5.24.0",
+    "marzipano": "^0.10.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-map-gl": "^8.1.2",

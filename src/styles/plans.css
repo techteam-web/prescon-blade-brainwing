@@ -1,0 +1,16 @@
+/* The unit overlay traced over each floor plate (FloorPlanOverlay.jsx). Shapes sit
+   invisible at rest — only the raster plan underneath is meant to read — and wash
+   copper on hover to confirm which office a click will open. */
+
+.plan-overlay-shape {
+  fill: color-mix(in srgb, var(--color-blade-copper) 65%, black);
+  opacity: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: opacity 0.2s ease;
+}
+
+.plan-overlay-shape:hover,
+.plan-overlay-shape:focus-visible {
+  opacity: 0.7;
+}

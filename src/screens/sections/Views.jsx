@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { Screen } from '../../layout/Screen';
 import { SectionTitle } from './SectionShell';
-import { Panorama } from '../../features/views/Panorama';
+import { TiledPanorama } from '../../features/plans/TiledPanorama';
 import { PANORAMAS } from '../../data/panoramas';
 import { CONTENT } from '../../data/content';
 import { gsap, useGSAP, Observer, E } from '../../gsap/Gsapconfig';
@@ -9,7 +9,7 @@ import { gsap, useGSAP, Observer, E } from '../../gsap/Gsapconfig';
 // No sheen: the view IS the page.
 //
 // A time-of-day rail down the right, a 360° stage filling the screen. Day, evening and
-// night advance on the arrow keys, a swipe, or the rail itself. Every swap is a masked
+// twilight advance on the arrow keys, a swipe, or the rail itself. Every swap is a masked
 // wipe — never a cut.
 
 export function Views() {
@@ -105,8 +105,8 @@ export function Views() {
         }}
       >
         <div ref={stage} className="absolute inset-0 bg-blade-black">
-          {active.src ? (
-            <Panorama key={active.id} src={active.src} />
+          {active.sceneId ? (
+            <TiledPanorama key={active.id} sceneId={active.sceneId} autorotate />
           ) : (
             // No panorama yet. The slot stays structurally empty rather than showing a
             // flat render dressed up as a 360° view.
@@ -135,7 +135,7 @@ export function Views() {
           <SectionTitle id="views" />
           <span className="max-md:hidden" />
 
-          {/* The time-of-day rail: day, evening, night, in that order. A vertical list
+          {/* The time-of-day rail: day, evening, twilight, in that order. A vertical list
               pinned to the right on wide screens; on phones it would collide with the
               centred stage content, so it collapses into a horizontal row under the
               title instead. */}
@@ -151,7 +151,7 @@ export function Views() {
                     className="group/f flex items-center justify-end gap-[0.8em] py-[0.28em] text-right max-md:justify-start max-md:gap-[0.5em] max-md:py-[0.15em] max-md:text-left"
                   >
                     <span
-                      className={`text-subhead font-medium uppercase transition-colors duration-300 ease-out max-md:text-caption ${
+                      className={`text-subhead font-medium uppercase transition-colors duration-300 ease-out max-md:text-caption [text-shadow:0_1px_3px_rgb(5_4_3_/_0.9),0_0_8px_rgb(5_4_3_/_0.6)] ${
                         on ? 'text-blade-copper' : 'text-blade-cream/45 group-hover/f:text-blade-cream'
                       }`}
                     >
