@@ -33,12 +33,15 @@ export function PanoramaFloorRadar({
 
   return (
     <div
-      className={`pointer-events-auto w-[15.5em] max-w-[50vw] border border-blade-copper/45 bg-blade-black-2/95 p-[0.85em] max-sm:w-[12.5em] max-sm:max-w-[62vw] max-sm:p-[0.65em] ${className}`}
+      className={`pointer-events-auto w-[18em] max-w-[62vw] border border-blade-copper/45 bg-blade-black-2/95 p-[0.85em] max-sm:w-[14.5em] max-sm:max-w-[72vw] max-sm:p-[0.65em] ${className}`}
     >
-      <div className="flex items-center justify-between gap-[1em] max-sm:gap-[0.6em]">
-        <span className="flex min-w-0 items-center gap-[0.5em] text-caption font-medium uppercase tracking-[0.08em] text-blade-cream">
-          <MapPinIcon size="0.95em" className="shrink-0 text-blade-copper" />
-          <span className="truncate">{floorLabel} Plan</span>
+      <div className="flex items-start justify-between gap-[1em] max-sm:gap-[0.6em]">
+        {/* No truncate: a full label like "32nd Floor Plan" was clipping to
+            "32ND FLO..." at the old, narrower card width — this wraps onto a second
+            line instead of hiding the floor number altogether. */}
+        <span className="flex min-w-0 items-start gap-[0.5em] text-caption font-medium uppercase tracking-[0.08em] text-blade-cream">
+          <MapPinIcon size="0.95em" className="mt-[0.15em] shrink-0 text-blade-copper" />
+          <span>{floorLabel} Plan</span>
         </span>
         <EnterPortal
           size="sm"

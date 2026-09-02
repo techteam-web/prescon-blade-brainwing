@@ -74,8 +74,13 @@ export function UnitPanoramaViewer({ view, panorama, onClose, onChangeUnit }) {
       />
 
       {/* Own inset overlay rather than folded into the top one below — that one is
-          items-start (top content only); this is the one corner that anchors bottom. */}
-      <div className="screen-inset pointer-events-none absolute inset-0 flex items-end justify-end">
+          items-start (top content only); this is the one corner that anchors bottom.
+          screen-inset-bare (flat screen-margin on every side), not screen-inset — the
+          latter pads its bottom with an extra --chrome-bottom on top of the margin,
+          same as its extra --chrome-top does for the header row above, which left this
+          corner sitting visibly farther from the bottom edge than TopRail's HOME button
+          sits from the top (TopRail pads flat screen-margin too, no chrome offset). */}
+      <div className="screen-inset-bare pointer-events-none absolute inset-0 flex items-end justify-end">
         <PanoramaFloorRadar
           zoneId={view.zoneId}
           unitId={view.unitId}

@@ -31,20 +31,20 @@ export const RADAR_OVERRIDES = {
   room: {
     [BUILDING_ID]: {
       '34th Floor': {
-        Office_1: { yawDeg: 0, panRightDeg: 90, panLeftDeg: 100},
-        Office_2: { yawDeg:225,  panRightDeg: 40, panLeftDeg: 130},
+        Office_1: { yawDeg: 0, panRightDeg: 90, panLeftDeg: 100,panUpDeg: 25},
+        Office_2: { yawDeg:225,  panRightDeg: 40, panLeftDeg: 130,panUpDeg: 25},
       },
       // 35th Floor has only one sellable unit — Office_1 — plus a life-safety refuge
       // area in the same north-east corner Office_2 occupies on the other floors. It's
       // still a clickable shape (FloorPlanOverlay doesn't special-case it), so it gets
       // the same fixed NE framing rather than an unpredictable, unspecified one.
       '35th Floor': {
-        Office_1: { yawDeg: 0, panRightDeg: 90, panLeftDeg: 140},
-        Refuge:  { yawDeg:225,  panRightDeg: 25, panLeftDeg: 140},
+        Office_1: { yawDeg: 0, panRightDeg: 90, panLeftDeg: 140,panUpDeg: 25},
+        Refuge:  { yawDeg:225,  panRightDeg: 25, panLeftDeg: 140,panUpDeg: 25},
       },
       '40th Floor': {
-        Office_1: { yawDeg: 0, panRightDeg: 90, panLeftDeg: 100},
-        Office_2: { yawDeg:225,  panRightDeg: 40, panLeftDeg: 130},
+        Office_1: { yawDeg: 0, panRightDeg: 90, panLeftDeg: 100,panUpDeg: 25},
+        Office_2: { yawDeg:225,  panRightDeg: 40, panLeftDeg: 130,panUpDeg: 25},
       },
 
     
