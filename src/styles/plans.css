@@ -14,3 +14,27 @@
 .plan-overlay-shape:focus-visible {
   opacity: 0.7;
 }
+
+/* The radar's read-only copy of this same overlay: no pointer, no click target — it is
+   a picture of where you are, not a second way to open a unit. pointer-events: none
+   alone already keeps :hover from ever matching, so there is no separate hover rule to
+   undo here. */
+.plan-overlay--readonly .plan-overlay-shape {
+  pointer-events: none;
+  cursor: default;
+}
+
+.plan-overlay-pin {
+  fill: var(--color-blade-black);
+  stroke: var(--color-blade-cream);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+/* The live look-direction wedge off the pin (FloorPlanOverlay's `viewBearingDeg`) — a
+   soft copper wash. No stroke/vector-effect here, unlike the pin: this is meant to
+   scale with the drawing rather than hold a constant screen width. */
+.plan-overlay-pin-cone {
+  fill: var(--color-blade-copper);
+  opacity: 0.4;
+}

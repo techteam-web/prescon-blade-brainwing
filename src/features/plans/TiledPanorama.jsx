@@ -61,11 +61,19 @@ export function TiledPanorama({
   fovDeg = null,
   panDeg = null,
   panCenterDeg = null,
+  pitchMinDeg = -90,
+  pitchMaxDeg = 90,
   // Only meaningful for an unrestricted (panDeg null/≥360) view — a floor unit's pan
   // window is a deliberate framing choice, not something that should drift on its own.
   autorotate = false,
   className = '',
   onReady,
+  // Fired with the scene's own raw yaw, in degrees, every time the view moves — drag,
+  // inertia, or autorotate. Same raw frame as `initialYaw` (see UnitPanoramaViewer's
+  // northDeg translation), not yet a compass bearing — feeds the radar's look-direction
+  // cone (PanoramaFloorRadar.jsx). rAF-throttled to one call per frame regardless of how
+  // many 'change' events Marzipano fires in between.
+  onViewChange,
 }) {
   const container = useRef(null);
   const [, setReady] = useState(false);
@@ -90,7 +98,7 @@ export function TiledPanorama({
       const limiter = Marzipano.util.compose(
         Marzipano.RectilinearView.limit.resolution(scene.faceSize),
         Marzipano.RectilinearView.limit.vfov(24 * DEG, 100 * DEG),
-        Marzipano.RectilinearView.limit.pitch(-Math.PI / 2, Math.PI / 2),
+        Marzipano.RectilinearView.limit.pitch(pitchMinDeg * DEG, pitchMaxDeg * DEG),
         windowYawLimiter(panCenter, panDeg == null ? null : panDeg * DEG),
       );
 
@@ -107,6 +115,17 @@ export function TiledPanorama({
       mzScene.switchTo();
       setReady(true);
       onReady?.();
+
+      let pendingFrame = null;
+      const reportView = () => {
+        if (pendingFrame != null) return;
+        pendingFrame = requestAnimationFrame(() => {
+          pendingFrame = null;
+          onViewChange?.((view.yaw() * 180) / Math.PI);
+        });
+      };
+      view.addEventListener('change', reportView);
+      reportView();
 
       if (autorotate) {
         viewer.setIdleMovement(
@@ -126,10 +145,24 @@ export function TiledPanorama({
       }
 
       return () => {
+        view.removeEventListener('change', reportView);
+        if (pendingFrame != null) cancelAnimationFrame(pendingFrame);
         viewer.destroy();
       };
     },
-    { dependencies: [sceneId, initialYaw, initialPitch, fovDeg, panDeg, panCenterDeg, autorotate] },
+    {
+      dependencies: [
+        sceneId,
+        initialYaw,
+        initialPitch,
+        fovDeg,
+        panDeg,
+        panCenterDeg,
+        pitchMinDeg,
+        pitchMaxDeg,
+        autorotate,
+      ],
+    },
   );
 
   if (!sceneId) return null;

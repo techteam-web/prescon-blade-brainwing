@@ -84,6 +84,13 @@ export function resolveFacing({ buildingId, floorLabel, regionName, baselineDeg,
 // flanks, which starts to read as "spun around" rather than "looked out the window".
 const DEFAULT_PAN_DEG = 150;
 
+// A unit's opening framing without its own fovDeg override otherwise fell back to
+// TiledPanorama's scene default (~72°, the same walked-in capture fov every scene
+// ships with) — noticeably "zoomed in" for a unit view's first impression. Pinned to
+// TiledPanorama's own vfov limiter ceiling (100°) so a unit opens as fully zoomed OUT
+// as the viewer allows, not partway there.
+const DEFAULT_UNIT_FOV_DEG = 100;
+
 // A window can also be dialled in as swing off the opening yawDeg — panLeftDeg/
 // panRightDeg, e.g. "2° left, 90° right of due-North" — rather than pre-computed into a
 // width and an off-centre centre by hand. Both shapes resolve to the same panDeg/
@@ -100,6 +107,19 @@ function resolvePanWindow(matched, yawDeg) {
   return { panDeg: left + right, panCenterDeg: yawDeg + (right - left) / 2 };
 }
 
+// Vertical counterpart to panLeftDeg/panRightDeg: panUpDeg/panDownDeg swing off the
+// opening pitchDeg rather than the fixed -90..90 full tilt range. Unset on either side
+// falls back to the full range on that side, same as an unconfigured yaw window has
+// nothing to restrict it — most rooms have no vertical override at all.
+function resolvePitchWindow(matched, pitchDeg) {
+  const up = matched?.panUpDeg;
+  const down = matched?.panDownDeg;
+  return {
+    pitchMinDeg: down == null ? -90 : Math.max(-90, pitchDeg - down),
+    pitchMaxDeg: up == null ? 90 : Math.min(90, pitchDeg + up),
+  };
+}
+
 // The full view Panorama.jsx actually renders with — everything resolveFacing collapses
 // down to one number, plus pitch/fov/pan. No override at all still freezes the CENTRE of
 // that look-around window to the click baseline, rather than a free-look tour with no
@@ -111,13 +131,17 @@ export function resolveUnitView({ buildingId, floorLabel, regionName, baselineDe
   // swing) must still resolve to a real heading here rather than to undefined.
   const yawDeg = wrap360(matched?.yawDeg ?? snapToCompass(baselineDeg));
   const { panDeg, panCenterDeg } = resolvePanWindow(matched, yawDeg);
+  const pitchDeg = matched?.pitchDeg ?? 0;
+  const { pitchMinDeg, pitchMaxDeg } = resolvePitchWindow(matched, pitchDeg);
   return {
     yawDeg,
-    pitchDeg: matched?.pitchDeg ?? 0,
-    fovDeg: matched?.fovDeg ?? null,
+    pitchDeg,
+    fovDeg: matched?.fovDeg ?? DEFAULT_UNIT_FOV_DEG,
     panDeg,
     // null tells Panorama.jsx to centre the pan window on yawDeg itself — the common
     // case. Only set when the opening view sits off-centre in its own window.
     panCenterDeg: panCenterDeg != null ? wrap360(panCenterDeg) : null,
+    pitchMinDeg,
+    pitchMaxDeg,
   };
 }

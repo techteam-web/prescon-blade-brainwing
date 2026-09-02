@@ -253,6 +253,14 @@ export function Plans() {
 
   const closeView = useCallback(() => setActiveView(null), []);
 
+  // Same floor's panorama, a different room: the radar's own mini plan (PanoramaFloorRadar,
+  // rendered inside UnitPanoramaViewer) is clickable too, so picking a unit there re-frames
+  // the already-open scene instead of routing back through onOpenView's zone/panorama guard.
+  const onChangeUnit = useCallback(
+    (unitId, bearingDeg) => setActiveView((v) => (v ? { ...v, unitId, bearingDeg } : v)),
+    [],
+  );
+
   // ↑/↓ move between zones, Enter locks (or picks, in compare mode).
   const onKeyDown = (event) => {
     const list = comparing ? COMPARABLE : TOWER_ZONES;
@@ -660,7 +668,7 @@ export function Plans() {
                             clickable shape per office. Invisible at rest, so the
                             brochure drawing reads exactly as before; a copper wash on
                             hover marks which unit a click will open. */}
-                        {planSvg ? (
+                        {planSvg && zone.id !== 'f19' && zone.id !== 'f15' ? (
                           <FloorPlanOverlay
                             src={planSvg}
                             onSelectUnit={(unitId, bearingDeg) => onOpenView(zone.id, unitId, bearingDeg)}
@@ -779,6 +787,7 @@ export function Plans() {
         view={activeView}
         panorama={getFloorPanorama(activeView?.zoneId)}
         onClose={closeView}
+        onChangeUnit={onChangeUnit}
       />
 
     </Screen>

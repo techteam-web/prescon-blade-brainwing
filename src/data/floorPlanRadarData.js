@@ -31,30 +31,24 @@ export const RADAR_OVERRIDES = {
   room: {
     [BUILDING_ID]: {
       '34th Floor': {
-        Office_1: { yawDeg: 0, panRightDeg: 90, panLeftDeg: 140},
-        Office_2: { yawDeg:225,  panRightDeg: 5, panLeftDeg: 90},
+        Office_1: { yawDeg: 0, panRightDeg: 90, panLeftDeg: 100},
+        Office_2: { yawDeg:225,  panRightDeg: 40, panLeftDeg: 130},
       },
       // 35th Floor has only one sellable unit — Office_1 — plus a life-safety refuge
       // area in the same north-east corner Office_2 occupies on the other floors. It's
       // still a clickable shape (FloorPlanOverlay doesn't special-case it), so it gets
       // the same fixed NE framing rather than an unpredictable, unspecified one.
       '35th Floor': {
-        Office_1: { yawDeg: 0, panRightDeg: 90, panLeftDeg: 200},
-        Refuge:  { yawDeg:225,  panRightDeg: 5, panLeftDeg: 90},
+        Office_1: { yawDeg: 0, panRightDeg: 90, panLeftDeg: 140},
+        Refuge:  { yawDeg:225,  panRightDeg: 25, panLeftDeg: 140},
       },
       '40th Floor': {
-        Office_1: { yawDeg: 0, panRightDeg: 90, panLeftDeg: 200},
-        Office_2: { yawDeg:225,  panRightDeg: 5, panLeftDeg: 90},
+        Office_1: { yawDeg: 0, panRightDeg: 90, panLeftDeg: 100},
+        Office_2: { yawDeg:225,  panRightDeg: 40, panLeftDeg: 130},
       },
 
-      // 16th–18th Floor (svg: "16TH 17TH AND 18TH FLOOR.svg"). Note the source SVG's own
-      // typo in the fourth id — "_0ffice_6_7" (a zero, not a letter O) — regionName has
-      // to match it exactly since it comes straight off the clicked shape's id.
-      //
-      // yawDeg is from the client's own compass sheet for this floor: offices 1–5 (the
-      // Office_2_3/Office_4_5 shapes cover the sold-as-one 2+3 and 4+5 pairs) all face
-      // due North; the two offices in the south-west corner (_0ffice_6_7) face South-West.
-      //
+    
+
       // (Corrected from an earlier South/South-East reading of the same sheet — the
       // Office_4_5-only "narrow window toward the corner unit" tweak that went with that
       // reading is dropped here rather than carried over rotated, since it was a manual
@@ -64,41 +58,42 @@ export const RADAR_OVERRIDES = {
         // far as South-West (225°) — the natural way round, turning through West rather
         // than back through East/South. That's a 135°-wide window centred on 292.5°
         // (WNW), with the opening yaw sitting right at the window's own North edge.
-        Office_1: { yawDeg: 0, panDeg: 135, panCenterDeg: 292.5 },
-        Office_2_3: { yawDeg: 0, panDeg: 4 },
-       Office_4_5: {  yawDeg: 0, panLeftDeg: 2, panRightDeg: 90},
-        _0ffice_6_7: { yawDeg: 225,  panLeftDeg: 90},
+        Office_1: {yawDeg:320 ,panLeftDeg:140,panRightDeg:65, panUpDeg: 25},
+        Office_2_3: { yawDeg: 0, panLeftDeg:25, panRightDeg:25 ,panUpDeg: 25},
+       Office_4_5: {  yawDeg: 45 , panLeftDeg:58, panRightDeg: 90 , panUpDeg: 25},
+        _0ffice_6_7: { yawDeg: 250  ,  panLeftDeg:160,panRightDeg:30, panUpDeg: 25},
        },
    
       '20th Floor': {
-        Office_1: { yawDeg: 0, panRightDeg: 3, panLeftDeg:180 },
-        Office_2: { yawDeg: 0, panRightDeg: 90, panLeftDeg:3 },
-        Refuge: { yawDeg:225, panRightDeg: 4, panLeftDeg:90 },
+        Office_1: { yawDeg: 0, panRightDeg:30, panLeftDeg:200 , panUpDeg: 25},
+        Office_2: { yawDeg: 0, panRightDeg: 90, panLeftDeg:25, panUpDeg: 25},
+        Refuge: { yawDeg:255, panRightDeg: 4, panLeftDeg:170, panUpDeg: 25},
       },
       '27th Floor': {
-        Office_1: { yawDeg: 0, panRightDeg:3, panLeftDeg:200 },
-        Office_2: { yawDeg: 0, panRightDeg: 90, panLeftDeg:3 },
-        Refuge: { yawDeg:225, panRightDeg: 4, panLeftDeg:90 },
+        Office_1:  { yawDeg: 0, panRightDeg:30, panLeftDeg:200 , panUpDeg: 25},
+        Office_2: { yawDeg: 0, panRightDeg: 90, panLeftDeg:25, panUpDeg: 25},
+        Refuge:  { yawDeg:255, panRightDeg: 4, panLeftDeg:170, panUpDeg: 25},
       },
       // 21st–26th Floor (svg: "19TH AND 21ST TO 26TH FLOOR.svg"). "office_4" is
       // lower-case in the source SVG — again, has to match exactly.
       '25th Floor': {
-        Office_1: { yawDeg: 0, panLeftDeg:180, panRightDeg:5},
-        Office_2: { yawDeg: 0, panDeg: 4 },
-        Office_3: {  yawDeg: 0, panLeftDeg: 2, panRightDeg: 90},
-        office_4: { yawDeg: 225, panLeftDeg: 90 },
+        Office_1: {yawDeg:320 ,panLeftDeg:140,panRightDeg:65, panUpDeg: 25},
+        Office_2:  { yawDeg: 0, panLeftDeg:25, panRightDeg:25 ,panUpDeg: 25},
+        Office_3:  {  yawDeg: 45 , panLeftDeg:58, panRightDeg: 90 , panUpDeg: 25},
+        office_4:  { yawDeg: 250  ,  panLeftDeg:160,panRightDeg:30, panUpDeg: 25},
       },
       '29th Floor': {
-        Office_1:  { yawDeg: 0, panLeftDeg:180, panRightDeg:5},
-        Office_2: { yawDeg: 0, panLeftDeg:3, panRightDeg:3},
-        Office_3:  { yawDeg: 0, panLeftDeg:3, panRightDeg:90},
-        Office_4:  { yawDeg: 225, panLeftDeg:90, panRightDeg:5},
+        Office_1:  { yawDeg: 330, panLeftDeg:180, panRightDeg:50, panUpDeg: 25},
+        Office_2: { yawDeg: 0, panLeftDeg:30, panRightDeg:30, panUpDeg: 25},
+        Office_3:  { yawDeg:30, panLeftDeg:50, panRightDeg:90, panUpDeg: 25},
+        Office_4:  { yawDeg: 235, panLeftDeg:130, panRightDeg:30, panUpDeg: 25},
       },
       '32nd Floor': {
-        Office_1: { yawDeg: 0, panLeftDeg:180, panRightDeg:5},
-        Office_2: { yawDeg: 0, panLeftDeg:3, panRightDeg:3},
-        Office_3: { yawDeg: 0, panLeftDeg:3, panRightDeg:90},
-        Office_4: { yawDeg: 225, panLeftDeg:90, panRightDeg:5},
+        Office_1: {yawDeg:320 ,panLeftDeg:140,panRightDeg:65, panUpDeg: 25},
+        Office_2: { yawDeg: 0, panLeftDeg:25, panRightDeg:25 ,panUpDeg: 25},
+        Office_3: {  yawDeg: 45 , panLeftDeg:58, panRightDeg: 90 , panUpDeg: 25},
+        Office_4: { yawDeg: 250  ,  panLeftDeg:160,panRightDeg:30, panUpDeg: 25},
+
       },
     },
   },

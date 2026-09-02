@@ -1,5 +1,6 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TiledPanorama } from './TiledPanorama';
+import { PanoramaFloorRadar } from './PanoramaFloorRadar';
 import { CloseIcon } from '../../components/Icons';
 import { EnterPortal } from '../../components/Primitives';
 import { resolveUnitView, wrap360 } from './floorPlanRadar';
@@ -10,7 +11,7 @@ import { BUILDING_ID, RADAR_OVERRIDES } from '../../data/floorPlanRadarData';
 // entrance choreography of its own to protect, so plain conditional rendering is enough;
 // Panorama re-running its mount effect on every open is exactly what resets the view to
 // the resolved framing each time rather than resuming wherever the last visit left off.
-export function UnitPanoramaViewer({ view, panorama, onClose }) {
+export function UnitPanoramaViewer({ view, panorama, onClose, onChangeUnit }) {
   useEffect(() => {
     if (!view) return undefined;
     const onKey = (e) => {
@@ -44,6 +45,17 @@ export function UnitPanoramaViewer({ view, panorama, onClose }) {
   const rawYaw = unitView ? wrap360(unitView.yawDeg - northDeg) : null;
   const rawPanCenter = unitView?.panCenterDeg != null ? wrap360(unitView.panCenterDeg - northDeg) : null;
 
+  // The radar's live look-direction cone (PanoramaFloorRadar.jsx) — still the scene's
+  // raw frame, same as rawYaw above, translated to a true compass bearing only where
+  // it's actually rendered below. TiledPanorama reports into this on every drag/inertia
+  // frame; the effect re-freezes it to the opening framing whenever a different unit's
+  // view mounts (a new `rawYaw`, driven by TiledPanorama's own `key` change in the JSX
+  // below).
+  const [liveRawYaw, setLiveRawYaw] = useState(rawYaw);
+  useEffect(() => {
+    setLiveRawYaw(rawYaw);
+  }, [rawYaw]);
+
   if (!view || !panorama || !unitView) return null;
 
   return (
@@ -56,6 +68,9 @@ export function UnitPanoramaViewer({ view, panorama, onClose }) {
         fovDeg={unitView.fovDeg}
         panDeg={unitView.panDeg}
         panCenterDeg={rawPanCenter}
+        pitchMinDeg={unitView.pitchMinDeg}
+        pitchMaxDeg={unitView.pitchMaxDeg}
+        onViewChange={setLiveRawYaw}
       />
 
       <div
@@ -66,6 +81,24 @@ export function UnitPanoramaViewer({ view, panorama, onClose }) {
             'linear-gradient(180deg, rgb(var(--scrim-rgb) / 0.6) 0%, transparent 18%, transparent 82%, rgb(var(--scrim-rgb) / 0.7) 100%)',
         }}
       />
+
+      {/* Own inset overlay rather than folded into the top one below — that one is
+          items-start (top content only); this is the one corner that anchors bottom. */}
+      <div className="screen-inset pointer-events-none absolute inset-0 flex items-end justify-end">
+        <PanoramaFloorRadar
+          zoneId={view.zoneId}
+          unitId={view.unitId}
+          floorLabel={panorama.label}
+          onSelectUnit={onChangeUnit}
+          // Mirrored, not just offset: Marzipano's own yaw and this drawing's compass
+          // bearing turn out to wind in OPPOSITE directions — confirmed by two headings
+          // (true North showing South, then true East showing West once a plain +180
+          // "fix" was tried), not derived on paper. A plain rawYaw+northDeg (or that plus
+          // 180) only ever gets one axis right at a time; negating rawYaw first is what
+          // gets both.
+          viewBearingDeg={wrap360(180 - northDeg - liveRawYaw)}
+        />
+      </div>
 
       {/* pt- on top of this div's own screen-inset, same fix as Plans.jsx's plan panel:
           --chrome-top is a fixed clamp(), not remeasured off the rail, so it doesn't grow
