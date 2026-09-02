@@ -97,10 +97,12 @@ export function UnitPanoramaViewer({ view, panorama, onClose, onChangeUnit }) {
           same corner as the mark) sits right under its tail instead of clear of it. */}
       <div className="screen-inset pointer-events-none absolute inset-0 flex items-start justify-between pt-[3.6em]">
         <div className="flex flex-col gap-[0.3em]">
-          {/* text-shadow, same treatment as the map's bare labels (map.css) — this eyebrow
-              and label sit directly on the panorama with no chip behind them, and a
-              bright sky in the shot (see the 18th floor scene) washes flat cream out. */}
-          <span className="eyebrow [text-shadow:0_1px_3px_rgb(5_4_3_/_0.9),0_0_8px_rgb(5_4_3_/_0.6)]">
+          {/* Flat copper (the plain .eyebrow color) reads as a dull, near-illegible blur
+              against a bright sky — too close in luminance even with a shadow behind it.
+              The same --copper-gradient the nav's accent bar uses, clipped to the text,
+              reads as lit metal instead of a flat wash; the shadow still does the work of
+              separating it from the sky. */}
+          <span className="eyebrow bg-[image:var(--copper-gradient)] bg-clip-text text-transparent [-webkit-text-fill-color:transparent] [text-shadow:0_1px_3px_rgb(5_4_3_/_0.9),0_0_10px_rgb(5_4_3_/_0.7)]">
             360° View
           </span>
           <span className="text-subhead font-medium uppercase text-blade-cream [text-shadow:0_1px_3px_rgb(5_4_3_/_0.9),0_0_8px_rgb(5_4_3_/_0.6)]">

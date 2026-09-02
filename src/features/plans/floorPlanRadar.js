@@ -87,9 +87,9 @@ const DEFAULT_PAN_DEG = 150;
 // A unit's opening framing without its own fovDeg override otherwise fell back to
 // TiledPanorama's scene default (~72°, the same walked-in capture fov every scene
 // ships with) — noticeably "zoomed in" for a unit view's first impression. Pinned to
-// TiledPanorama's own vfov limiter ceiling (100°) so a unit opens as fully zoomed OUT
+// TiledPanorama's own vfov limiter ceiling (90°) so a unit opens as fully zoomed OUT
 // as the viewer allows, not partway there.
-const DEFAULT_UNIT_FOV_DEG = 100;
+const DEFAULT_UNIT_FOV_DEG = 90;
 
 // A window can also be dialled in as swing off the opening yawDeg — panLeftDeg/
 // panRightDeg, e.g. "2° left, 90° right of due-North" — rather than pre-computed into a

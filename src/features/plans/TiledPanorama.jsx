@@ -86,18 +86,26 @@ export function TiledPanorama({
 
       const viewer = new Marzipano.Viewer(el, { controls: { mouseViewMode: 'drag' } });
 
+      // No cubeMapPreviewUrl: that single low-res (256px) image was the visible "blurry
+      // for a moment" flash on open. Without it, Marzipano requests real tiles from the
+      // smallest level up — level 0 (512px, one tile per face) loads about as fast and
+      // is sharper, and pinFirstLevel below keeps it resident as the fallback while
+      // higher levels stream in.
       const source = Marzipano.ImageUrlSource.fromString(
         `/assets/panoramas/tiles/${scene.id}/{z}/{f}/{y}/{x}.jpg`,
-        { cubeMapPreviewUrl: `/assets/panoramas/tiles/${scene.id}/preview.jpg` },
       );
       const geometry = new Marzipano.CubeGeometry(scene.levels);
 
       const panCenter = (panCenterDeg ?? initialYaw) * DEG;
       // Zoom is never part of what `panDeg` restricts — see the ZOOM_MIN/MAX comment on
       // the flat viewer for why: a fixed framing still lets a visitor lean in on detail.
+      // vfov max capped well under Marzipano's 100°+ ceiling: a rectilinear (perspective)
+      // projection stretches hard toward the edges at very wide fov, which reads as blur
+      // once a visitor zooms all the way out — 90° keeps the "zoom out" gesture usable
+      // without hitting that distortion.
       const limiter = Marzipano.util.compose(
         Marzipano.RectilinearView.limit.resolution(scene.faceSize),
-        Marzipano.RectilinearView.limit.vfov(24 * DEG, 100 * DEG),
+        Marzipano.RectilinearView.limit.vfov(24 * DEG, 90 * DEG),
         Marzipano.RectilinearView.limit.pitch(pitchMinDeg * DEG, pitchMaxDeg * DEG),
         windowYawLimiter(panCenter, panDeg == null ? null : panDeg * DEG),
       );

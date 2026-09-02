@@ -17,11 +17,6 @@ export const APP_DATA = {
       "name": "floor-crown",
       "levels": [
         {
-          "tileSize": 256,
-          "size": 256,
-          "fallbackOnly": true
-        },
-        {
           "tileSize": 512,
           "size": 512
         },
@@ -51,11 +46,6 @@ export const APP_DATA = {
       "id": "1-floor-40",
       "name": "floor-40",
       "levels": [
-        {
-          "tileSize": 256,
-          "size": 256,
-          "fallbackOnly": true
-        },
         {
           "tileSize": 512,
           "size": 512
@@ -87,11 +77,6 @@ export const APP_DATA = {
       "name": "floor-35",
       "levels": [
         {
-          "tileSize": 256,
-          "size": 256,
-          "fallbackOnly": true
-        },
-        {
           "tileSize": 512,
           "size": 512
         },
@@ -121,11 +106,6 @@ export const APP_DATA = {
       "id": "3-floor-34",
       "name": "floor-34",
       "levels": [
-        {
-          "tileSize": 256,
-          "size": 256,
-          "fallbackOnly": true
-        },
         {
           "tileSize": 512,
           "size": 512
@@ -157,11 +137,6 @@ export const APP_DATA = {
       "name": "floor-27",
       "levels": [
         {
-          "tileSize": 256,
-          "size": 256,
-          "fallbackOnly": true
-        },
-        {
           "tileSize": 512,
           "size": 512
         },
@@ -191,11 +166,6 @@ export const APP_DATA = {
       "id": "5-floor-29",
       "name": "floor-29",
       "levels": [
-        {
-          "tileSize": 256,
-          "size": 256,
-          "fallbackOnly": true
-        },
         {
           "tileSize": 512,
           "size": 512
@@ -227,11 +197,6 @@ export const APP_DATA = {
       "name": "floor-25",
       "levels": [
         {
-          "tileSize": 256,
-          "size": 256,
-          "fallbackOnly": true
-        },
-        {
           "tileSize": 512,
           "size": 512
         },
@@ -261,11 +226,6 @@ export const APP_DATA = {
       "id": "7-floor-32",
       "name": "floor-32",
       "levels": [
-        {
-          "tileSize": 256,
-          "size": 256,
-          "fallbackOnly": true
-        },
         {
           "tileSize": 512,
           "size": 512
@@ -297,11 +257,6 @@ export const APP_DATA = {
       "name": "floor-20",
       "levels": [
         {
-          "tileSize": 256,
-          "size": 256,
-          "fallbackOnly": true
-        },
-        {
           "tileSize": 512,
           "size": 512
         },
@@ -331,11 +286,6 @@ export const APP_DATA = {
       "id": "9-floor-18",
       "name": "floor-18",
       "levels": [
-        {
-          "tileSize": 256,
-          "size": 256,
-          "fallbackOnly": true
-        },
         {
           "tileSize": 512,
           "size": 512
@@ -367,11 +317,6 @@ export const APP_DATA = {
       "name": "DJI_0002_180M",
       "levels": [
         {
-          "tileSize": 256,
-          "size": 256,
-          "fallbackOnly": true
-        },
-        {
           "tileSize": 512,
           "size": 512
         },
@@ -402,11 +347,6 @@ export const APP_DATA = {
       "name": "DJI_0158_180M",
       "levels": [
         {
-          "tileSize": 256,
-          "size": 256,
-          "fallbackOnly": true
-        },
-        {
           "tileSize": 512,
           "size": 512
         },
@@ -436,11 +376,6 @@ export const APP_DATA = {
       "id": "2-dji_0010_180m",
       "name": "DJI_0010_180M",
       "levels": [
-        {
-          "tileSize": 256,
-          "size": 256,
-          "fallbackOnly": true
-        },
         {
           "tileSize": 512,
           "size": 512
