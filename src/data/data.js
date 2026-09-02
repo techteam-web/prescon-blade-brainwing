@@ -28,9 +28,17 @@ export const APP_DATA = {
         {
           "tileSize": 512,
           "size": 1024
+        },
+        {
+          "tileSize": 512,
+          "size": 2048
+        },
+        {
+          "tileSize": 512,
+          "size": 4096
         }
       ],
-      "faceSize": 1024,
+      "faceSize": 3600,
       "initialViewParameters": {
         "yaw": -3.062817913055227,
         "pitch": -0.07032035848741813,
@@ -55,9 +63,17 @@ export const APP_DATA = {
         {
           "tileSize": 512,
           "size": 1024
+        },
+        {
+          "tileSize": 512,
+          "size": 2048
+        },
+        {
+          "tileSize": 512,
+          "size": 4096
         }
       ],
-      "faceSize": 1024,
+      "faceSize": 3600,
       "initialViewParameters": {
         "yaw": 3.133795767686731,
         "pitch": -0.11666547952898121,
@@ -82,9 +98,17 @@ export const APP_DATA = {
         {
           "tileSize": 512,
           "size": 1024
+        },
+        {
+          "tileSize": 512,
+          "size": 2048
+        },
+        {
+          "tileSize": 512,
+          "size": 4096
         }
       ],
-      "faceSize": 1024,
+      "faceSize": 3600,
       "initialViewParameters": {
         "yaw": 3.1220705236993664,
         "pitch": -0.17373532574493922,
@@ -109,9 +133,17 @@ export const APP_DATA = {
         {
           "tileSize": 512,
           "size": 1024
+        },
+        {
+          "tileSize": 512,
+          "size": 2048
+        },
+        {
+          "tileSize": 512,
+          "size": 4096
         }
       ],
-      "faceSize": 1024,
+      "faceSize": 3600,
       "initialViewParameters": {
         "yaw": -3.1341081815807783,
         "pitch": -0.18281291431334523,
@@ -136,9 +168,17 @@ export const APP_DATA = {
         {
           "tileSize": 512,
           "size": 1024
+        },
+        {
+          "tileSize": 512,
+          "size": 2048
+        },
+        {
+          "tileSize": 512,
+          "size": 4096
         }
       ],
-      "faceSize": 1024,
+      "faceSize": 3600,
       "initialViewParameters": {
         "yaw": -3.0992700284596353,
         "pitch": -0.12860522752676218,
@@ -163,9 +203,17 @@ export const APP_DATA = {
         {
           "tileSize": 512,
           "size": 1024
+        },
+        {
+          "tileSize": 512,
+          "size": 2048
+        },
+        {
+          "tileSize": 512,
+          "size": 4096
         }
       ],
-      "faceSize": 1024,
+      "faceSize": 3600,
       "initialViewParameters": {
         "yaw": 3.105200715814523,
         "pitch": -0.08729914939483763,
@@ -190,9 +238,17 @@ export const APP_DATA = {
         {
           "tileSize": 512,
           "size": 1024
+        },
+        {
+          "tileSize": 512,
+          "size": 2048
+        },
+        {
+          "tileSize": 512,
+          "size": 4096
         }
       ],
-      "faceSize": 1024,
+      "faceSize": 3600,
       "initialViewParameters": {
         "yaw": 3.1049560045683258,
         "pitch": -0.04447753461017534,
@@ -217,9 +273,17 @@ export const APP_DATA = {
         {
           "tileSize": 512,
           "size": 1024
+        },
+        {
+          "tileSize": 512,
+          "size": 2048
+        },
+        {
+          "tileSize": 512,
+          "size": 4096
         }
       ],
-      "faceSize": 1024,
+      "faceSize": 3600,
       "initialViewParameters": {
         "yaw": 3.1297111077592508,
         "pitch": -0.028505106767745758,
@@ -244,9 +308,17 @@ export const APP_DATA = {
         {
           "tileSize": 512,
           "size": 1024
+        },
+        {
+          "tileSize": 512,
+          "size": 2048
+        },
+        {
+          "tileSize": 512,
+          "size": 4096
         }
       ],
-      "faceSize": 1024,
+      "faceSize": 3600,
       "initialViewParameters": {
         "yaw": -3.062833821176831,
         "pitch": 0.06869469176378473,
@@ -271,9 +343,17 @@ export const APP_DATA = {
         {
           "tileSize": 512,
           "size": 1024
+        },
+        {
+          "tileSize": 512,
+          "size": 2048
+        },
+        {
+          "tileSize": 512,
+          "size": 4096
         }
       ],
-      "faceSize": 1024,
+      "faceSize": 3600,
       "initialViewParameters": {
         "yaw": -3.0850048011888944,
         "pitch": 0.03703365128341396,

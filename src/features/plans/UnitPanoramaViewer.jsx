@@ -73,15 +73,6 @@ export function UnitPanoramaViewer({ view, panorama, onClose, onChangeUnit }) {
         onViewChange={setLiveRawYaw}
       />
 
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'linear-gradient(180deg, rgb(var(--scrim-rgb) / 0.6) 0%, transparent 18%, transparent 82%, rgb(var(--scrim-rgb) / 0.7) 100%)',
-        }}
-      />
-
       {/* Own inset overlay rather than folded into the top one below — that one is
           items-start (top content only); this is the one corner that anchors bottom. */}
       <div className="screen-inset pointer-events-none absolute inset-0 flex items-end justify-end">
