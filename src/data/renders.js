@@ -56,6 +56,51 @@ export const RENDERS = [
     "lqip": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAwBACdASoYABEAPu1mqk2ppaQiMAgBMB2JZQC7IUwC8X0xebP+yHKC1gAA/hD8mZ6cAItbXvIwS7P8B6KDSEVxkh4KKt8dlcufGdr54wy8Zucb5WZuCK2EAYwAAA==",
     "alt": "The Blade by Prescon — artistic impression"
   },
+   {
+    "id": "newrender-01",
+    "src": "/assets/renders/NewRender-01.webp",
+    "srcSet": "/assets/renders/NewRender-01.webp 1280w, /assets/renders/NewRender-01.webp 1920w, /assets/renders/NewRender-01.webp 2560w",
+    "width": 4295,
+    "height": 3072,
+    "lqip": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAwBACdASoYABEAPu1mqk2ppaQiMAgBMB2JZQC7IUwC8X0xebP+yHKC1gAA/hD8mZ6cAItbXvIwS7P8B6KDSEVxkh4KKt8dlcufGdr54wy8Zucb5WZuCK2EAYwAAA==",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+    {
+    "id": "newrender-02",
+    "src": "/assets/renders/NewRender-02.webp",
+    "srcSet": "/assets/renders/NewRender-02.webp 1280w, /assets/renders/NewRender-02.webp 1920w, /assets/renders/NewRender-02.webp 2560w",
+    "width": 4295,
+    "height": 3072,
+    "lqip": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAwBACdASoYABEAPu1mqk2ppaQiMAgBMB2JZQC7IUwC8X0xebP+yHKC1gAA/hD8mZ6cAItbXvIwS7P8B6KDSEVxkh4KKt8dlcufGdr54wy8Zucb5WZuCK2EAYwAAA==",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+   {
+    "id": "newrender-03",
+    "src": "/assets/renders/NewRender-03.webp",
+    "srcSet": "/assets/renders/NewRender-03.webp 1280w, /assets/renders/NewRender-03.webp 1920w, /assets/renders/NewRender-03.webp 2560w",
+    "width": 4295,
+    "height": 3072,
+    "lqip": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAwBACdASoYABEAPu1mqk2ppaQiMAgBMB2JZQC7IUwC8X0xebP+yHKC1gAA/hD8mZ6cAItbXvIwS7P8B6KDSEVxkh4KKt8dlcufGdr54wy8Zucb5WZuCK2EAYwAAA==",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+   {
+    "id": "newrender-04",
+    "src": "/assets/renders/NewRender-04.webp",
+    "srcSet": "/assets/renders/NewRender-04.webp 1280w, /assets/renders/NewRender-04.webp 1920w, /assets/renders/NewRender-04.webp 2560w",
+    "width": 4295,
+    "height": 3072,
+    "lqip": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAwBACdASoYABEAPu1mqk2ppaQiMAgBMB2JZQC7IUwC8X0xebP+yHKC1gAA/hD8mZ6cAItbXvIwS7P8B6KDSEVxkh4KKt8dlcufGdr54wy8Zucb5WZuCK2EAYwAAA==",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+   {
+    "id": "newrender-06",
+    "src": "/assets/renders/NewRender-06.webp",
+    "srcSet": "/assets/renders/NewRender-06.webp 1280w, /assets/renders/NewRender-06.webp 1920w, /assets/renders/NewRender-06.webp 2560w",
+    "width": 4295,
+    "height": 3072,
+    "lqip": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAwBACdASoYABEAPu1mqk2ppaQiMAgBMB2JZQC7IUwC8X0xebP+yHKC1gAA/hD8mZ6cAItbXvIwS7P8B6KDSEVxkh4KKt8dlcufGdr54wy8Zucb5WZuCK2EAYwAAA==",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
   {
     "id": "render-07",
     "src": "/assets/renders/render-07-2560.webp",
@@ -223,7 +268,7 @@ export const RENDERS = [
   {
     "id": "group-01",
     "src": "/assets/renders/blade-11-2560.webp",
-    "srcSet": "/assets/renders/blade-11-2560.webp 1280w",
+    "srcSet": "/assets/renders/ blade-11-2560.webp 1280w",
     "width": 1376,
     "height": 768,
     "lqip": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAAAQBACdASoYAA0APu1iqU2ppaOiMAgBMB2JYgCdMoACXt+LgINPjXkYAAD+ueatbQoqfS5cUYz3u3CCYJu8l7Bn37BcvknVUxIzI/eXC5cXQ4ry/AA=",

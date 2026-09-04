@@ -32,17 +32,24 @@ export const GALLERY_RENDERS = [
   'blade-05', // Arrival plaza, water walls and planting
   'blade-06', // Grand Hall, dark vein stone and commissioned sculpture
   'blade-07', // The Upper Retreat — café and terrace
-  'blade-08', // The Members' Lounge — library to private dining
+ 
   'blade-09', // The Crown — sports bar
   'blade-03', // A typical office floor at dusk
   'blade-04', // The podium and porte-cochère at night
   'amenity-13',
-  'amenity-14',
+  
   'amenity-15',
-  'render-01',
-  'render-02',
+
+ 
   'render-05',
-  'render-06',
+ 
+  'newrender-01',
+  'newrender-02',
+  'newrender-03',
+  'newrender-04',
+  'newrender-06',
+
+  
 ];
 
 // Features. One backdrop per slide, in slide order. Every one is landscape, because a

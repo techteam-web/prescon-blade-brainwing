@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from 'react';
 import { Screen } from '../../layout/Screen';
 import { SectionTitle } from './SectionShell';
-import { TiledPanorama } from '../../features/plans/TiledPanorama';
-import { PANORAMAS } from '../../data/panoramas';
+import { TimeOfDayPanorama } from '../../features/plans/TimeOfDayPanorama';
+import { PANORAMAS, hasPanoramas } from '../../data/panoramas';
 import { CONTENT } from '../../data/content';
 import { gsap, useGSAP, Observer, E } from '../../gsap/Gsapconfig';
 
@@ -19,13 +19,6 @@ export function Views() {
   const root = useRef(null);
   const stage = useRef(null);
   const busy = useRef(false);
-  // Carries the look direction across a time-of-day swap: each scene remounts fresh
-  // (key={active.id} below), so without this it would always reopen facing whatever
-  // yaw 0 happens to be for that scene instead of where the visitor was just looking.
-  // liveYaw tracks every frame (ref — no re-render needed for that); openingYaw is only
-  // read at render time, so it's state, snapshotted from liveYaw right before a switch.
-  const liveYaw = useRef(0);
-  const [openingYaw, setOpeningYaw] = useState(0);
   const active = PANORAMAS[index];
 
   const settle = () => {
@@ -41,7 +34,6 @@ export function Views() {
       const next = i + delta;
       if (next < 0 || next >= PANORAMAS.length) return i;
       setDir(delta);
-      setOpeningYaw(liveYaw.current);
       settle();
       return next;
     });
@@ -51,7 +43,6 @@ export function Views() {
     (i) => {
       if (i === index || busy.current) return;
       setDir(i > index ? 1 : -1);
-      setOpeningYaw(liveYaw.current);
       setIndex(i);
       settle();
     },
@@ -114,16 +105,12 @@ export function Views() {
         }}
       >
         <div ref={stage} className="absolute inset-0 bg-blade-black">
-          {active.sceneId ? (
-            <TiledPanorama
-              key={active.id}
-              sceneId={active.sceneId}
-              initialYaw={openingYaw}
-              onViewChange={(v) => {
-                liveYaw.current = v;
-              }}
-              autorotate
-            />
+          {hasPanoramas ? (
+            // One persistent viewer for all three times of day (see TimeOfDayPanorama) —
+            // switching crossfades between already-loaded scenes instead of tearing down
+            // and rebuilding Marzipano, which was the source of the blank flash a plain
+            // remount-per-scene approach used to show on every switch.
+            <TimeOfDayPanorama scenes={PANORAMAS} activeIndex={index} autorotate />
           ) : (
             // No panorama yet. The slot stays structurally empty rather than showing a
             // flat render dressed up as a 360° view.
