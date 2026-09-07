@@ -22,7 +22,8 @@ export default function App() {
       <img
             src="/assets/Brainwinglogo/Brainwing-logo.webp"
             alt="Brainwing"
-            className="fixed bottom-3 right-3 w-42 z-2 pointer-events-none opacity-95
+            className="fixed bottom-2 right-2 w-24 z-2 pointer-events-none opacity-95
+             [@media(max-height:480px)]:bottom-2 [@media(max-height:480px)]:right-2 [@media(max-height:480px)]:w-24
              sm:bottom-4 sm:right-4 sm:w-42
              md:bottom-5 md:right-5 md:w-48
              lg:bottom-2 lg:right-6 lg:w-56

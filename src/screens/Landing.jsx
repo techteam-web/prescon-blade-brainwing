@@ -57,14 +57,17 @@ export function Landing() {
       <div
         className="screen-inset-bare relative grid h-full min-h-0 grid-rows-[1fr_auto] gap-[3%]"
       >
-        <div className="flex min-h-0 max-w-[65%] flex-col justify-center gap-[4%] max-lg:max-w-[80%] max-md:max-w-none">
-          
+        <div className="flex min-h-0 max-w-[65%] flex-col justify-center gap-[4%] max-lg:max-w-[80%] max-md:max-w-none max-sm:gap-[2.6%] [@media(max-height:480px)]:gap-[2.6%]">
 
-          {/* Futura Light. The one place in the app that uses weight 300. */}
+
+          {/* Futura Light. The one place in the app that uses weight 300. Line-height
+              lives in the class, not inline, so short/small phones can tighten it —
+              the intro sequence has no dependency on the exact number. The max-height
+              variant repeats the max-sm one so a landscape phone (wide but short) gets
+              the same squeeze a narrow portrait one does — width alone misses it. */}
           <h1
             data-headline
-            className="text-hero font-light uppercase text-blade-cream"
-            style={{ lineHeight: 1.16 }}
+            className="text-hero font-light uppercase leading-[1.16] text-blade-cream max-sm:text-[1.6rem] max-sm:leading-[1.08] [@media(max-height:480px)]:text-[1.6rem] [@media(max-height:480px)]:leading-[1.08]"
           >
             {LANDING.headline.map((line) => (
               <span key={line} data-landing-line className="block">
@@ -74,7 +77,7 @@ export function Landing() {
           </h1>
 
           <div className="flex min-w-0 flex-wrap items-end gap-x-[1.4em] gap-y-[0.8em]">
-            <Wordmark className="w-[clamp(14rem,22vw,30rem)] shrink-0" />
+            <Wordmark className="w-[clamp(14rem,22vw,30rem)] shrink-0 max-sm:w-[11rem] [@media(max-height:480px)]:w-[11rem]" />
             <span aria-hidden="true" className="mb-[0.3em] h-[3.2em] w-px bg-blade-ink" />
             <span className="mb-[0.3em] flex min-w-0 items-center gap-[0.5em] text-subhead text-blade-cream">
               <MapPinIcon className="text-blade-copper" size="1.1em" />
@@ -102,7 +105,7 @@ export function Landing() {
           ref={disclaimerRef}
           data-landing-disclaimer
           onMouseMove={onDisclaimerMove}
-          className="group/disclaimer relative max-w-[46ch] border border-blade-copper/35 bg-blade-black/45 px-[1.1em] py-[0.85em] backdrop-blur-[2px] max-md:max-w-none"
+          className="group/disclaimer relative max-w-[46ch] border border-blade-copper/35 bg-blade-black/45 px-[1.1em] py-[0.85em] backdrop-blur-[2px] max-md:max-w-none max-sm:py-[0.6em] max-sm:pr-[6.75rem] [@media(max-height:480px)]:py-[0.6em] [@media(max-height:480px)]:pr-[6.75rem]"
         >
           <span
             aria-hidden="true"
@@ -117,7 +120,7 @@ export function Landing() {
               maskComposite: 'exclude',
             }}
           />
-          <p className="relative text-caption leading-snug text-blade-cream/60">{LANDING.disclaimer}</p>
+          <p className="relative text-caption leading-snug text-blade-cream/60 max-sm:text-[0.625rem] max-sm:leading-[1.2] [@media(max-height:480px)]:text-[0.625rem] [@media(max-height:480px)]:leading-[1.2]">{LANDING.disclaimer}</p>
         </div>
       </div>
     </Screen>

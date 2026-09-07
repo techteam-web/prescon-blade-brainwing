@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Screen } from '../../layout/Screen';
 import { SectionTitle } from './SectionShell';
 import { CONTENT } from '../../data/content';
@@ -28,11 +28,54 @@ const SPINE_BOTTOM = FLOOR_Y.GL;
 export function Profile() {
   const c = CONTENT.profile;
   const root = useRef(null);
+  const imgWrapRef = useRef(null);
+
+  // The leader column's height used to be a flat 92%/62%/92% of the row per
+  // breakpoint — tuned by eye against whatever the image happened to render at when
+  // that number was picked. `object-contain` on a tall, narrow tower image
+  // (aspect ~0.24) is width-constrained on a phone's cramped column, so its real
+  // pixel height there is far shorter than the row's own h-full — the leader
+  // column stayed at the old, taller span and drifted away from the artwork. This
+  // measures the image wrapper's own box and derives the same width-constrained
+  // height object-contain would use, so the spine always spans the actual tower,
+  // not a guess of it.
+  const [leaderHeight, setLeaderHeight] = useState(null);
+
+  useLayoutEffect(() => {
+    const el = imgWrapRef.current;
+    if (!el) return;
+    const measure = () => {
+      const { width, height } = el.getBoundingClientRect();
+      if (!width || !height) return;
+      const visibleImgHeight = Math.min(height, width / TOWER_RATIO);
+      setLeaderHeight(visibleImgHeight * 0.92);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const marks = [
     ...c.floors.map((f) => ({ ...f, y: FLOOR_Y[f.level], kind: 'floor' })),
     ...c.ranges.map((r) => ({ ...r, y: RANGE_Y[r.code], kind: 'range' })),
   ].sort((a, b) => a.y - b.y);
+
+  // 12F and 13F share one narrow copper band on the real elevation (see the FLOOR_Y
+  // comment above) — at the shrunk mobile leaderHeight, that band is only a few
+  // pixels tall, well under a mark's own circle. Once the real pixel height is
+  // known, nudge marks down just enough to clear the one before them; the spine
+  // below then spans between the first and last nudged position instead of the
+  // untouched 41F/GL percentages, so it still reaches every circle.
+  const MIN_MARK_GAP = 26;
+  const markPositions = leaderHeight
+    ? marks.reduce((acc, m) => {
+        const raw = (m.y / 100) * leaderHeight;
+        const prev = acc.length ? acc[acc.length - 1].py : -Infinity;
+        acc.push({ ...m, py: Math.max(raw, prev + MIN_MARK_GAP) });
+        return acc;
+      }, [])
+    : marks;
 
   // Same rise-and-fade arrival every default-layout screen uses (see Group.jsx) for the
   // text column. The tower's own callouts get a second idea layered on top: the spine
@@ -104,7 +147,7 @@ export function Profile() {
                 aspect-ratio box — the browser fits both the column's width and the
                 row's height at once, so no breakpoint (this now includes mobile) needs
                 its own guessed percentage to avoid clipping or overflow. */}
-            <div className="relative h-full w-full">
+            <div ref={imgWrapRef} className="relative h-full w-full">
               <img
                 src={TOWER_SRC}
                 alt="The Blade — massing elevation, floor zones marked"
@@ -121,24 +164,34 @@ export function Profile() {
                 node circles and labels shrink further there (max-md below) and the
                 labels lean on `truncate` the same way the floor list opposite already
                 does, rather than disappearing outright. */}
-            <div className="relative h-[92%] w-[6em] shrink-0 md:h-[62%] md:w-[9em] lg:h-[92%] lg:w-[13em]">
+            <div
+              className="relative w-[6em] shrink-0 md:w-[9em] lg:w-[13em]"
+              style={{ height: leaderHeight ? `${leaderHeight}px` : '92%' }}
+            >
               {/* Centred under the node column below, so the line runs through every
                   circle's middle rather than its own left edge. */}
               <span
                 data-spine
                 aria-hidden="true"
                 className="absolute left-[0.75em] w-px bg-blade-cream/25 md:left-[1.2em]"
-                style={{ top: `${SPINE_TOP}%`, height: `${SPINE_BOTTOM - SPINE_TOP}%` }}
+                style={
+                  leaderHeight
+                    ? {
+                        top: `${markPositions[0].py}px`,
+                        height: `${markPositions[markPositions.length - 1].py - markPositions[0].py}px`,
+                      }
+                    : { top: `${SPINE_TOP}%`, height: `${SPINE_BOTTOM - SPINE_TOP}%` }
+                }
               />
 
-              {marks.map((m) => {
+              {markPositions.map((m) => {
                 const isFloor = m.kind === 'floor';
                 return (
                   <div
                     key={isFloor ? m.level : m.code}
                     data-mark
                     className="absolute left-0 flex items-center gap-[0.4em] md:gap-[0.7em]"
-                    style={{ top: `${m.y}%`, transform: 'translateY(-50%)' }}
+                    style={{ top: leaderHeight ? `${m.py}px` : `${m.y}%`, transform: 'translateY(-50%)' }}
                   >
                     {/* A fixed-width slot, floor or range mark alike, so both share the
                         same centre line as the spine above instead of each drifting to

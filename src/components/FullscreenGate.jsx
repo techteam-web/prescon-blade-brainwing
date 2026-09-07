@@ -146,7 +146,10 @@ export function FullscreenGate() {
         style={{ padding: 'var(--screen-margin)' }}
       >
         <div className="flex justify-end">
-          <PresconLogo className="w-[clamp(3.2rem,4.4vw,5.6rem)]" />
+          {/* Same size as the corner mark everywhere else (BrandLockup, Wordmark.jsx) —
+              this used to be its own hand-tuned clamp, close but not identical, so the
+              logo visibly jumped in size the moment the gate handed off to the real app. */}
+          <PresconLogo className="w-[clamp(3.4rem,4.6vw,5.8rem)] max-sm:w-[2.1rem]" />
         </div>
       </div>
 
