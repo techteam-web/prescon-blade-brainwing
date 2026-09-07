@@ -4,11 +4,27 @@
 // document. Do not paraphrase, do not invent marketing copy, do not add lorem. A slot
 // with no content stays structurally empty with a // TODO: client content marker.
 
+import {
+  LuLightbulb,
+  LuAppWindow,
+  LuSunMedium,
+  LuShieldCheck,
+  LuCloudRain,
+  LuDroplets,
+  LuRecycle,
+  LuLeaf,
+  LuTrash2,
+  LuZap,
+  LuFan,
+} from 'react-icons/lu';
+
 export const LANDING = {
 
   headline: ['SCULPTED FOR', 'THE DISTINGUISHED,', 'THE INFLUENTIAL,', 'THE POWERFUL.'],
   place: 'Worli Naka',
   enter: 'ENTER EXPERIENCE',
+  disclaimer:
+    'This presentation is prepared by Prescon Group solely for informational purposes in relation to Codename The Blade by Prescon, a proposed commercial development at Worli, Mumbai. "The Blade" is the project\'s codename and is used for identification purpose only. This document in meant for internal use only, and does not constitue an offer, invitation, solicitation, or committment of any kind, and shall not be construed as a prospectus, advertisement, or public offering under any applicable law.',
 };
 
 export const GATE = {
@@ -201,19 +217,20 @@ export const FEATURE_SLIDES = [
     eyebrow: 'Sustainability',
     headline: ['GREEN BUILDING FEATURES'],
     stat: { label: 'Certification', value: 'IGBC Platinum (Proposed)' },
+    
     items: [
-      'efficient lighting system design and fixtures to reduce total energy demand',
-      'high performance glass to reduce internal heat gain through glazing',
-      'well day-lit habitats to enhance the indoor environment',
-      'low VOC material to reduce adverse health impacts for occupants',
-      'rainwater harvesting to reduce municipal water demand and maintain the groundwater table',
-      'water efficient fixtures and flushing systems',
-      'waste water treatment plant with reuse for landscaping and flushing',
-      'native species landscaping to reduce water demand and maintain biodiversity',
-      'centralised garbage disposal and waste management',
-      'electric charging provision to encourage non-fossil-fuel vehicles',
-      'energy efficient HVAC to optimise consumption',
-    ],
+  { icon: LuLightbulb, text: 'Efficient Lighting System Design and Fixtures to Reduce Total Energy Demand' },
+  { icon: LuAppWindow, text: 'High Performance Glass to Reduce Internal Heat Gain Through Glazing' },
+  { icon: LuSunMedium, text: 'Well Day-Lit Habitats to Enhance the Indoor Environment' },
+  { icon: LuShieldCheck, text: 'Low VOC Material to Reduce Adverse Health Impacts for Occupants' },
+  { icon: LuCloudRain, text: 'Rainwater Harvesting to Reduce Municipal Water Demand and Maintain the Groundwater Table' },
+  { icon: LuDroplets, text: 'Water Efficient Fixtures and Flushing Systems' },
+  { icon: LuRecycle, text: 'Waste Water Treatment Plant With Reuse for Landscaping and Flushing' },
+  { icon: LuLeaf, text: 'Native Species Landscaping to Reduce Water Demand and Maintain Biodiversity' },
+  { icon: LuTrash2, text: 'Centralised Garbage Disposal and Waste Management' },
+  { icon: LuZap, text: 'Electric Charging Provision to Encourage Non-Fossil-Fuel Vehicles' },
+  { icon: LuFan, text: 'Energy Efficient HVAC to Optimise Consumption' },
+],
   },
   {
     id: 'partners',

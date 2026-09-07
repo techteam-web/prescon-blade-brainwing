@@ -99,7 +99,7 @@ export function Profile() {
         className="grid h-full min-h-0 w-full grid-cols-[48fr_52fr] gap-[3%] md:grid-cols-[52fr_48fr] md:gap-[4%]"
       >
         <div data-rise className="relative min-h-0 min-w-0 overflow-hidden">
-          <div className="flex h-full items-center justify-start gap-[0.7em] pl-[clamp(1rem,4vw,4.5rem)] lg:gap-[1.1em]">
+          <div className="flex h-full items-center justify-start gap-[0.7em] pl-[clamp(0.3rem,2vw,4.5rem)] lg:gap-[1.1em] lg:pl-[clamp(1rem,4vw,4.5rem)]">
             {/* h-full w-full plus object-contain on the <img>, not a hand-tuned
                 aspect-ratio box — the browser fits both the column's width and the
                 row's height at once, so no breakpoint (this now includes mobile) needs
@@ -121,7 +121,7 @@ export function Profile() {
                 node circles and labels shrink further there (max-md below) and the
                 labels lean on `truncate` the same way the floor list opposite already
                 does, rather than disappearing outright. */}
-            <div className="relative h-[92%] w-[4.6em] shrink-0 md:h-[62%] md:w-[9em] lg:h-[92%] lg:w-[13em]">
+            <div className="relative h-[92%] w-[6em] shrink-0 md:h-[62%] md:w-[9em] lg:h-[92%] lg:w-[13em]">
               {/* Centred under the node column below, so the line runs through every
                   circle's middle rather than its own left edge. */}
               <span
@@ -160,11 +160,17 @@ export function Profile() {
                       )}
                     </span>
                     {isFloor ? (
-                      <span className="min-w-0 truncate text-[0.625rem] text-blade-cream/85 md:text-caption">{m.label}</span>
+                      <span className="line-clamp-2 min-w-0 text-[0.56rem] leading-[1.15] text-blade-cream/85 md:text-[0.625rem] md:line-clamp-1 md:text-caption">
+                        {m.label}
+                      </span>
                     ) : (
-                      <span className="flex min-w-0 items-baseline gap-[0.4em] whitespace-nowrap">
-                        <span className="text-[0.55rem] tabular-nums text-blade-cream/45 md:text-[0.625rem]">{m.code}</span>
-                        <span className="truncate text-[0.55rem] text-blade-cream/45 md:text-[0.625rem]">{m.label}</span>
+                      <span className="flex min-w-0 flex-col gap-[0.05em] md:flex-row md:items-baseline md:gap-[0.4em]">
+                        <span className="shrink-0 whitespace-nowrap text-[0.55rem] tabular-nums text-blade-cream/45 md:text-[0.625rem]">
+                          {m.code}
+                        </span>
+                        <span className="line-clamp-2 min-w-0 text-[0.55rem] leading-[1.15] text-blade-cream/45 md:line-clamp-1 md:text-[0.625rem]">
+                          {m.label}
+                        </span>
                       </span>
                     )}
                   </div>

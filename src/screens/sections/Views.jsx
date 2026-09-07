@@ -4,13 +4,14 @@ import { SectionTitle } from './SectionShell';
 import { TimeOfDayPanorama } from '../../features/plans/TimeOfDayPanorama';
 import { PANORAMAS, hasPanoramas } from '../../data/panoramas';
 import { CONTENT } from '../../data/content';
-import { gsap, useGSAP, Observer, E } from '../../gsap/Gsapconfig';
+import { gsap, useGSAP, E } from '../../gsap/Gsapconfig';
 
 // No sheen: the view IS the page.
 //
 // A time-of-day rail down the right, a 360° stage filling the screen. Day, evening and
-// twilight advance on the arrow keys, a swipe, or the rail itself. Every swap is a masked
-// wipe — never a cut.
+// twilight advance on the arrow keys or the rail itself — never on a swipe or scroll,
+// which the 360° stage needs for looking around instead. Every swap is a masked wipe —
+// never a cut.
 
 export function Views() {
   const c = CONTENT.views;
@@ -47,22 +48,6 @@ export function Views() {
       settle();
     },
     [index],
-  );
-
-  // Observer, never a scroll listener — there is no scroller in this app.
-  useGSAP(
-    () => {
-      const o = Observer.create({
-        target: root.current,
-        type: 'touch',
-        dragMinimum: 30,
-        tolerance: 40,
-        onUp: () => move(1),
-        onDown: () => move(-1),
-      });
-      return () => o.kill();
-    },
-    { dependencies: [move], scope: root },
   );
 
   // The stage wipes on every view change. killTweensOf first so a fast run up the rail

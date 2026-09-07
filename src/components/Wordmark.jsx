@@ -98,7 +98,7 @@ export function BrandLockup({ className = '' }) {
           no longer fit and this mark ran off the right edge instead of MENU/HOME
           clipping. max-sm drops the floor further, since this mark is decorative and
           the nav buttons are the ones that have to stay full size. */}
-      <PresconLogo className="w-[clamp(2.6rem,3.5vw,4.5rem)] max-sm:w-[1.6rem]" />
+      <PresconLogo className="w-[clamp(3.4rem,4.6vw,5.8rem)] max-sm:w-[2.1rem]" />
       {/* A single straight copper stroke, standing in for a "/" the way a plain divider
           would, rather than italicised at the blade angle.
 

@@ -170,8 +170,9 @@ function SlideBody({ slide }) {
               <ul key={ci} className="flex min-w-0 flex-col">
                 {col.map((m) => (
     // font size for features sustainability — PHONE TEXT FIX: max-md:text-[0.625rem] added
-                  <li key={m} className="border-t border-blade-ink py-[0.5em] text-[calc(var(--text-caption)*1.03)] text-blade-cream/80 3xl:text-[calc(var(--text-caption)*1.04)] 4xl:text-[1.475rem] 6xl:text-[1.55rem] max-md:text-[0.625rem]">
-                    {m}
+                  <li key={m.text} className="flex items-baseline gap-[0.7em] border-t border-blade-ink py-[0.5em] text-[calc(var(--text-caption)*1.03)] text-blade-cream/80 3xl:text-[calc(var(--text-caption)*1.04)] 4xl:text-[1.475rem] 6xl:text-[1.55rem] max-md:text-[0.625rem]">
+                    <m.icon aria-hidden="true" className="shrink-0 translate-y-[0.15em] text-blade-copper" size="1.1em" />
+                    <span>{m.text}</span>
                   </li>
                 ))}
               </ul>
@@ -186,18 +187,23 @@ function SlideBody({ slide }) {
         <>
           {/* PHONE TEXT FIX: max-md:text-caption added */}
           <p data-rise className="max-w-[58ch] text-body text-blade-cream/80 max-md:text-caption">{slide.body}</p>
-          <ul data-rise className="flex flex-col">
+          <ul
+            data-rise
+            className="grid grid-cols-[auto_auto] items-baseline gap-x-[20em] self-start max-lg:grid-cols-1 max-lg:gap-y-[0.15em] max-lg:self-auto"
+          >
+            {/* make to left or right the text */}
             {slide.rows.map((p) => (
-              <li key={p.name} className="group/p relative border-t border-blade-ink last:border-b">
-                <span aria-hidden="true" className="absolute left-0 top-0 h-px w-full origin-left scale-x-0 bg-blade-copper transition-transform duration-500 ease-out group-hover/p:scale-x-100" />
-                <div className="grid grid-cols-[1fr_auto] items-baseline gap-[1.4em] py-[0.5em] max-lg:grid-cols-1 max-lg:gap-[0.15em]">
-                  <span className="min-w-0 text-caption font-medium text-blade-cream transition-transform duration-300 ease-out group-hover/p:translate-x-[6px]">
-                    {p.name}
-                  </span>
-                  <span className="shrink-0 text-caption uppercase tracking-[0.2em] text-blade-copper">
-                    {p.role}
-                  </span>
-                </div>
+              <li key={p.name} className="group/p relative col-span-full grid grid-cols-subgrid items-baseline border-t border-blade-cream/20 py-[0.5em] last:border-b max-lg:col-span-1 max-lg:grid-cols-1">
+                <span
+                  aria-hidden="true"
+                  className="col-start-1 row-start-1 -mt-[0.5em] h-px w-full origin-left scale-x-0 self-start bg-blade-copper transition-transform duration-500 ease-out group-hover/p:scale-x-137 max-lg:hidden"
+                />
+                <span className="col-start-1 row-start-1 min-w-0 text-caption font-medium text-blade-cream transition-transform duration-300 ease-out group-hover/p:translate-x-[6px] max-lg:col-auto max-lg:row-auto">
+                  {p.name}
+                </span>
+                <span className="col-start-2 row-start-1 mr-[-0.08em] shrink-0 text-caption uppercase tracking-[0.08em] text-blade-copper max-lg:col-auto max-lg:row-auto">
+                  {p.role}
+                </span>
               </li>
             ))}
           </ul>

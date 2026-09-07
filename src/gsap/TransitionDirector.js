@@ -307,6 +307,9 @@ function partsOf(el) {
     // fixed, never-animated corner BrandLockup and its own hero mark.
     lockup: el?.querySelector('[data-wordmark]:not([data-menu-brand]):not([data-corner-mark])') ?? null,
     enter: el?.querySelector('[data-enter]') ?? null,
+    // The landing's legal disclaimer — reveals in lockstep with the enter button
+    // (below) rather than being visible from frame 0 like an untagged element would.
+    disclaimer: el?.querySelector('[data-landing-disclaimer]') ?? null,
   };
 }
 
@@ -329,6 +332,7 @@ function stageIncoming(tl, inEl, cleanups, at) {
   set(tl, some(p.eyebrow), { autoAlpha: 0, y: 12 }, at);
   set(tl, some(p.lockup), { autoAlpha: 0, y: 18 }, at);
   set(tl, some(p.enter), { autoAlpha: 0, y: 14 }, at);
+  set(tl, some(p.disclaimer), { autoAlpha: 0, y: 14 }, at);
 }
 
 function revealIncoming(tl, inEl, at) {
@@ -350,6 +354,7 @@ function revealIncoming(tl, inEl, at) {
   to(tl, p.landing, { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.075 }, at + 0.1);
   to(tl, some(p.lockup), { autoAlpha: 1, y: 0, duration: 0.8 }, at + 0.35);
   to(tl, some(p.enter), { autoAlpha: 1, y: 0, duration: 0.7 }, at + 0.5);
+  to(tl, some(p.disclaimer), { autoAlpha: 1, y: 0, duration: 0.7 }, at + 0.5);
 }
 
 /* ---------------------------------------------------------------- factories */
@@ -393,6 +398,7 @@ export function introSequence({ inEl, chrome, tl, cleanups }) {
   const lines = splitLines(headlineOf(inEl), cleanups);
   const enter = inEl?.querySelector('[data-enter]') ?? null;
   const enterRule = inEl?.querySelector('[data-enter] [data-control-rule]') ?? null;
+  const disclaimer = inEl?.querySelector('[data-landing-disclaimer]') ?? null;
 
   // Stroke-draw needs a measured path length per glyph contour.
   for (const p of marks) {
@@ -415,7 +421,7 @@ export function introSequence({ inEl, chrome, tl, cleanups }) {
     .set(strike, { autoAlpha: 1, scaleY: 0, skewX: 0, transformOrigin: 'center center' })
     .set(lockup, { autoAlpha: 1, x: travel.x, y: travel.y, scale: travel.scale })
     .set(has(marks) ? marks : {}, { fillOpacity: 0, strokeOpacity: 1 })
-    .set(some(eyebrow, byline, enter), { autoAlpha: 0 })
+    .set(some(eyebrow, byline, enter, disclaimer), { autoAlpha: 0 })
     .set(some(eyebrow), { letterSpacing: '1.2em' })
     .set(some(byline), { y: 12 })
     .set(some(hero, scrim), { autoAlpha: 0 })
@@ -438,7 +444,7 @@ export function introSequence({ inEl, chrome, tl, cleanups }) {
     .to(some(lockup), { x: 0, y: 0, scale: 1, duration: 1.1 }, 2.4)
     .addLabel('swap', 2.4)
     .to(some(enterRule), { scaleX: 1, duration: 0.7 }, 3.6)
-    .to(some(enter), { autoAlpha: 1, duration: 0.7 }, 3.6);
+    .to(some(enter, disclaimer), { autoAlpha: 1, duration: 0.7 }, 3.6);
   to(tl, lines, { clipPath: LINE_MASK_SHOWN, duration: 1.0, stagger: 0.09 }, 3.1);
 
   if (has(lines)) gsap.set(lines, { clipPath: LINE_MASK_HIDDEN });

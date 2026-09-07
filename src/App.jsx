@@ -22,17 +22,17 @@ export default function App() {
       <img
             src="/assets/Brainwinglogo/Brainwing-logo.webp"
             alt="Brainwing"
-            className="fixed bottom-3 right-3 w-30 z-2 pointer-events-none opacity-95
-             sm:bottom-4 sm:right-4 sm:w-30
-             md:bottom-5 md:right-5 md:w-35
-             lg:bottom-2 lg:right-6 lg:w-40
-             xl:bottom-3 xl:right-7 xl:w-42
-             2xl:bottom-4 2xl:right-8 2xl:w-46
-             3xl:bottom-5 3xl:right-10 3xl:w-44
-             4xl:bottom-12 4xl:right-12 4xl:w-50
-             5xl:bottom-16 5xl:right-16 5xl:w-62
-             6xl:bottom-20 6xl:right-20 6xl:w-74"
-          /> 
+            className="fixed bottom-3 right-3 w-42 z-2 pointer-events-none opacity-95
+             sm:bottom-4 sm:right-4 sm:w-42
+             md:bottom-5 md:right-5 md:w-48
+             lg:bottom-2 lg:right-6 lg:w-56
+             xl:bottom-3 xl:right-7 xl:w-58
+             2xl:bottom-4 2xl:right-8 2xl:w-64
+             3xl:bottom-5 3xl:right-10 3xl:w-60
+             4xl:bottom-12 4xl:right-12 4xl:w-70
+             5xl:bottom-16 5xl:right-16 5xl:w-86
+             6xl:bottom-20 6xl:right-20 6xl:w-100"
+          />
     </AppStateProvider>
   );
 }

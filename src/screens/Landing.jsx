@@ -1,3 +1,4 @@
+import { useCallback, useRef } from 'react';
 import { Screen } from '../layout/Screen';
 import { Eyebrow, EnterPortal, RenderImage } from '../components/Primitives';
 import { MapPinIcon } from '../components/Icons';
@@ -17,6 +18,19 @@ import { useApp } from '../app/appContext';
 
 export function Landing() {
   const { goToMenu, isTransitioning } = useApp();
+  const disclaimerRef = useRef(null);
+
+  // Written straight to the element, not React state — a mousemove-driven re-render
+  // would be wasted work here. The glow layer below reads these back out as a CSS
+  // custom property, so only the border-ring pixels near the cursor actually light up
+  // (see the mask trick on that layer).
+  const onDisclaimerMove = useCallback((e) => {
+    const el = disclaimerRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    el.style.setProperty('--glow-x', `${e.clientX - r.left}px`);
+    el.style.setProperty('--glow-y', `${e.clientY - r.top}px`);
+  }, []);
 
   return (
     <Screen id="landing" padded={false}>
@@ -59,10 +73,10 @@ export function Landing() {
             ))}
           </h1>
 
-          <div className="flex min-w-0 flex-wrap items-center gap-x-[1.4em] gap-y-[0.8em]">
+          <div className="flex min-w-0 flex-wrap items-end gap-x-[1.4em] gap-y-[0.8em]">
             <Wordmark className="w-[clamp(14rem,22vw,30rem)] shrink-0" />
-            <span aria-hidden="true" className="h-[3.2em] w-px bg-blade-ink" />
-            <span className="flex min-w-0 items-center gap-[0.5em] text-subhead text-blade-cream">
+            <span aria-hidden="true" className="mb-[0.3em] h-[3.2em] w-px bg-blade-ink" />
+            <span className="mb-[0.3em] flex min-w-0 items-center gap-[0.5em] text-subhead text-blade-cream">
               <MapPinIcon className="text-blade-copper" size="1.1em" />
               <span className="font-serif italic">{LANDING.place}</span>
             </span>
@@ -73,7 +87,38 @@ export function Landing() {
           </EnterPortal>
         </div>
 
-      
+        {/* Legal disclaimer — framed the same way as the app's one other bordered
+            control (EnterPortal): square corners, a hairline border, no radius. Here it
+            reads as a plate rather than a button — a translucent black fill behind the
+            copper-bordered box so the copy stays legible over the render without a full
+            scrim.
+
+            The glow tracks the cursor rather than lighting the whole frame: the ring
+            below is the same 1px border redrawn as a radial gradient centred on
+            --glow-x/--glow-y (set on pointer move), then masked down to just the
+            border's own width (padding-box XOR border-box) so only the ring — never the
+            fill — carries the light, brightest exactly under the cursor. */}
+        <div
+          ref={disclaimerRef}
+          data-landing-disclaimer
+          onMouseMove={onDisclaimerMove}
+          className="group/disclaimer relative max-w-[46ch] border border-blade-copper/35 bg-blade-black/45 px-[1.1em] py-[0.85em] backdrop-blur-[2px] max-md:max-w-none"
+        >
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300 ease-out group-hover/disclaimer:opacity-100"
+            style={{
+              padding: '1px',
+              background:
+                'radial-gradient(9em circle at var(--glow-x, 50%) var(--glow-y, 50%), rgb(240 231 211) 0%, rgb(202 142 91) 35%, transparent 72%)',
+              WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0) border-box',
+              WebkitMaskComposite: 'xor',
+              mask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0) border-box',
+              maskComposite: 'exclude',
+            }}
+          />
+          <p className="relative text-caption leading-snug text-blade-cream/60">{LANDING.disclaimer}</p>
+        </div>
       </div>
     </Screen>
   );

@@ -23,6 +23,7 @@
     "marzipano": "^0.10.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-icons": "^5.7.0",
     "react-map-gl": "^8.1.2",
     "react-router-dom": "^7.18.2",
     "tailwindcss": "^4.3.3"

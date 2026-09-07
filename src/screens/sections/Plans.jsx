@@ -675,6 +675,16 @@ export function Plans() {
                           />
                         ) : null}
                       </div>
+                      {/* Hint that the drawing above is clickable — only where the
+                          overlay actually is (same guard as FloorPlanOverlay itself). */}
+                      {planSvg && zone.id !== 'f19' && zone.id !== 'f15' ? (
+                        <span
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-x-0 bottom-[0.4em] text-center text-caption uppercase tracking-[0.2em] text-blade-cream/50"
+                        >
+                          Click on any office
+                        </span>
+                      ) : null}
                     </div>
                     <span
                       aria-hidden="true"

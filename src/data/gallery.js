@@ -70,5 +70,5 @@ export const MENU_BACKDROPS = {
   plans: 'blade-03',
   location: 'blade-02',
   features: 'blade-01',
-  group: 'blade-02',
+  group: 'group-02',
 };

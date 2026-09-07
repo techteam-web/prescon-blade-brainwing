@@ -273,6 +273,15 @@ export const RENDERS = [
     "height": 768,
     "lqip": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAAAQBACdASoYAA0APu1iqU2ppaOiMAgBMB2JYgCdMoACXt+LgINPjXkYAAD+ueatbQoqfS5cUYz3u3CCYJu8l7Bn37BcvknVUxIzI/eXC5cXQ4ry/AA=",
     "alt": "The Blade by Prescon — the design team at work"
+  },
+   {
+    "id": "group-02",
+    "src": "/assets/renders/group-01-1280.webp",
+    "srcSet": "/assets/renders/group-01-1280.webp 1280w",
+    "width": 1376,
+    "height": 768,
+    "lqip": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAAAQBACdASoYAA0APu1iqU2ppaOiMAgBMB2JYgCdMoACXt+LgINPjXkYAAD+ueatbQoqfS5cUYz3u3CCYJu8l7Bn37BcvknVUxIzI/eXC5cXQ4ry/AA=",
+    "alt": "The Blade by Prescon — the design team at work"
   }
 ];
 

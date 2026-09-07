@@ -234,7 +234,7 @@ export function Amenities() {
           <div className="relative flex min-h-0 w-full flex-1 flex-col justify-center gap-[0.9em] overflow-hidden bg-blade-black px-[8%] py-[6%] max-md:px-[7%] max-md:py-[5%] md:w-[40%] md:flex-none md:px-[5%]">
             <div aria-hidden="true" className="sheen-soft absolute inset-0" />
             <div className="relative flex flex-col gap-[0.9em]">
-              <span data-panel-anim className="block text-caption uppercase tracking-[0.3em] text-blade-copper">
+              <span data-panel-anim className="block text-subhead uppercase tracking-[0.3em] text-blade-copper">
                 {panel.level}
               </span>
               <div className="flex flex-col gap-[0.1em]">
