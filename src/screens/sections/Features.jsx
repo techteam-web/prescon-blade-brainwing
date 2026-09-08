@@ -196,7 +196,7 @@ function SlideBody({ slide }) {
               <li key={p.name} className="group/p relative col-span-full grid grid-cols-subgrid items-baseline border-t border-blade-cream/20 py-[0.5em] last:border-b max-lg:col-span-1 max-lg:grid-cols-1">
                 <span
                   aria-hidden="true"
-                  className="col-start-1 row-start-1 -mt-[0.5em] h-px w-full origin-left scale-x-0 self-start bg-blade-copper transition-transform duration-500 ease-out group-hover/p:scale-x-137 max-lg:hidden"
+                  className="col-start-1 row-start-1 -mt-[0.5em] h-px w-full origin-left scale-x-0 self-start bg-blade-copper transition-transform duration-500 ease-out group-hover/p:scale-x-366 max-lg:hidden"
                 />
                 <span className="col-start-1 row-start-1 min-w-0 text-caption font-medium text-blade-cream transition-transform duration-300 ease-out group-hover/p:translate-x-[6px] max-lg:col-auto max-lg:row-auto">
                   {p.name}

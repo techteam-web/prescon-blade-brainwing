@@ -24,32 +24,73 @@ export const AMENITY_PANEL_BY_RENDER = {
   'amenity-15': 'crown',
 };
 
+// The plate under each Gallery slide — reference screenshot: a title, then "ARTIST'S
+// IMPRESSION" beneath it. Titles are pulled from what's already established elsewhere
+// rather than invented: the client's own space names in CONTENT.gallery (src/data/
+// content.js) and its `list` entries, matched against the descriptive comments already
+// on GALLERY_RENDERS below. Where a render has no named space behind it (an exterior or
+// site-context shot), the title is a plain, factual description of the shot itself —
+// never marketing copy — same rule as content.js's own LAW 4.
+export const GALLERY_CAPTIONS = {
+  'new8':'Grand Entrance Lobby',
+  'new86':'Reception & Lift Screening Area',
+  'new87': 'Ground Floor Lounge',
+  'new85': 'Reception & Lift Screening Area',
+  'newsep4': 'Crown Facade',
+  'newsep3': 'Front Elevation View',
+  'new81': 'Front Elevation View',
+  'newsep2': 'Front Elevation View',
+  'newsep6': 'West Facade View',
+  'newsep1': 'West Facade View',
+  'newsep9': 'West Facade View',
+   'newsep7': 'Silhouette Glass Facade',
+    'newsep8': 'Signature Entrance Facade',
+    'blade-05' : 'Garden Court',
+  'blade-06' : ' Members Lounge ',
+  'blade-07': 'Indoor Cafeteria',
+  'blade-09' : 'Restaurant & Bar',
+  'blade-03': 'Sky Lounge Office',
+  'blade-04':'Arrival Plaza',
+  'blade-08' : 'Library',
+};
+
+// Gallery slides that are a real photograph, not a 3D render — the plate under these
+// reads "Stock Image" instead of "Artist's Impression" (Gallery.jsx).
+export const GALLERY_STOCK_IDS = new Set([
+  'blade-05',
+  'blade-06',
+  'blade-07',
+  'blade-09',
+  'blade-03',
+  'blade-04',
+  'blade-08',
+]);
+
 // Gallery menu entry. Independent of AMENITY_GALLERY above — editing one must never
 // change the other — so it carries its own full running order, unaffected by whatever
 // the Amenities screen curates.
 export const GALLERY_RENDERS = [
-  'blade-12', // Entrance lobby — the arrival
-  'blade-05', // Arrival plaza, water walls and planting
-  'blade-06', // Grand Hall, dark vein stone and commissioned sculpture
-  'blade-07', // The Upper Retreat — café and terrace
- 
-  'blade-09', // The Crown — sports bar
-  'blade-03', // A typical office floor at dusk
-  'blade-04', // The podium and porte-cochère at night
-  'amenity-13',
-  
-  'amenity-15',
 
- 
-  'render-05',
- 
-  'newrender-01',
-  'newrender-02',
-  'newrender-03',
-  'newrender-04',
-  'newrender-06',
-
-  
+  'new8',
+  'new86',
+  'new87',
+  'new85',
+  'newsep4',
+  'newsep3',
+  'new81',
+  'newsep2',
+ 'newsep6',
+  'newsep1',
+  'newsep9',
+  'newsep7',
+  'newsep8',
+  'blade-05',
+  'blade-06',
+  'blade-07',
+  'blade-09',
+  'blade-03',
+  'blade-04',
+  'blade-08',
 ];
 
 // Features. One backdrop per slide, in slide order. Every one is landscape, because a

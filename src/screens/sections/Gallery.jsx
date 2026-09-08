@@ -4,7 +4,7 @@ import { Screen } from '../../layout/Screen';
 import { SectionTitle } from './SectionShell';
 import { ArrowIcon, FullscreenIcon, CloseIcon } from '../../components/Icons';
 import { getRender } from '../../data/renders';
-import { GALLERY_RENDERS } from '../../data/gallery';
+import { GALLERY_RENDERS, GALLERY_CAPTIONS, GALLERY_STOCK_IDS } from '../../data/gallery';
 import { gsap, useGSAP, Observer, E, durationScale } from '../../gsap/Gsapconfig';
 
 // The same render carousel as Amenities — see src/data/gallery.js for why
@@ -280,17 +280,50 @@ export function Gallery() {
             the reference screenshot's own red-boxed frame — rather than the full-bleed
             treatment Amenities and Views use. Every render is shown WHOLE inside it —
             object-contain, same reasoning as before, just inside a box instead of the
-            full screen — and the LQIP fills whatever the mat doesn't. Centred in its own
-            absolute layer so the title/counter chrome below can overlay the corners
-            exactly like every other screen, instead of eating into the frame's own width
-            from a dedicated grid column. */}
-        <div className="absolute inset-0 flex items-center justify-center">
+            full screen — and the LQIP fills whatever the mat doesn't.
+
+            The caption plate sits directly under the frame rather than overlaid as
+            page chrome, the way a museum label sits under the print, not on it — a
+            title (curated in GALLERY_CAPTIONS, src/data/gallery.js) over the fixed
+            "Artist's Impression" tag, and the counter/arrows moved down to sit on the
+            same rule instead of floating at the screen's own corner. Both frame and
+            plate are direct children of this flex COLUMN (not nested inside an
+            auto-height wrapper) specifically so the frame's max-h percentage below
+            still resolves against this container's own definite height, the same way
+            it did before the plate existed. */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-[0.9em] max-md:gap-[0.6em]">
           {!fullscreen && (
-            <div
-              className="relative aspect-[3/2] w-[58%] max-h-[70%] bg-blade-black max-md:aspect-[4/3] max-md:w-[92%] max-md:max-h-none"
-            >
-              {frameInner}
-            </div>
+            <>
+              <div className="relative aspect-[3/2] w-[58%] max-h-[62%] bg-blade-black max-md:aspect-[4/3] max-md:w-[92%] max-md:max-h-none">
+                {frameInner}
+              </div>
+
+              <div className="flex w-[58%] items-end justify-between gap-[1.5em] max-md:w-[92%]">
+                <div className="flex min-w-0 items-stretch gap-[0.9em]">
+                  <span aria-hidden="true" className="w-[3px] shrink-0 bg-blade-copper" />
+                  <div className="flex min-w-0 flex-col justify-center gap-[0.2em]">
+                    <span className="truncate text-subhead font-medium uppercase text-blade-cream max-md:text-body">
+                      {GALLERY_CAPTIONS[active.id] ?? ''}
+                    </span>
+                    <span className="truncate text-caption uppercase tracking-[0.3em] text-blade-copper max-md:text-[0.625rem]">
+                      {GALLERY_STOCK_IDS.has(active.id) ? 'Stock Image' : "Artist's Impression"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-[1.4em]">
+                  <span className="text-caption tabular-nums tracking-[0.3em] text-blade-cream/75">
+                    {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
+                  </span>
+                  <button type="button" onClick={() => move(-1)} aria-label="Previous render" className="group/n text-blade-cream">
+                    <ArrowIcon size="1.6em" className="rotate-180 transition-transform duration-300 ease-out group-hover/n:-translate-x-[5px]" />
+                  </button>
+                  <button type="button" onClick={() => move(1)} aria-label="Next render" className="group/n text-blade-cream">
+                    <ArrowIcon size="1.6em" className="transition-transform duration-300 ease-out group-hover/n:translate-x-[5px]" />
+                  </button>
+                </div>
+              </div>
+            </>
           )}
         </div>
 
@@ -300,7 +333,8 @@ export function Gallery() {
             a containing block for `position: fixed`, trapping it exactly the way a
             `filter` would (see the gate's own sibling-of-frozen-layer comment in
             FullscreenGate.jsx — same class of bug). A portal sidesteps every such
-            ancestor instead of auditing all of them. */}
+            ancestor instead of auditing all of them. No caption plate here — a true
+            fullscreen view is meant to be just the image. */}
         {fullscreen &&
           createPortal(
             <div
@@ -311,26 +345,10 @@ export function Gallery() {
             document.body,
           )}
 
-        {/* Chrome overlay: title top-left, counter and arrows bottom-right — the same
-            grid every full-bleed screen in the app uses, just with nothing behind it now
-            that the render sits inside its own bordered box instead of full-screen. */}
-        <div className="screen-inset pointer-events-none absolute inset-0 z-20 grid grid-rows-[auto_1fr_auto]">
+        {/* Section title only now — the counter and arrows moved down to the caption
+            plate under the frame. */}
+        <div className="screen-inset pointer-events-none absolute inset-0 z-20">
           <SectionTitle id="gallery" />
-          <span />
-
-          <div className="flex items-end justify-end gap-[2em]">
-            <div className="pointer-events-auto flex items-center gap-[1.4em]">
-              <span className="text-caption tabular-nums tracking-[0.3em] text-blade-cream/75">
-                {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
-              </span>
-              <button type="button" onClick={() => move(-1)} aria-label="Previous render" className="group/n text-blade-cream">
-                <ArrowIcon size="1.6em" className="rotate-180 transition-transform duration-300 ease-out group-hover/n:-translate-x-[5px]" />
-              </button>
-              <button type="button" onClick={() => move(1)} aria-label="Next render" className="group/n text-blade-cream">
-                <ArrowIcon size="1.6em" className="transition-transform duration-300 ease-out group-hover/n:translate-x-[5px]" />
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 

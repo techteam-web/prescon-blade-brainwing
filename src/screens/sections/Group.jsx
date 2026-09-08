@@ -158,10 +158,18 @@ export function Group() {
               replaces it, in-flow and fully legible, sized to fit the same no-scroll
               screen instead of the roomier two-column desktop layout. */}
           <div data-rise className="hidden flex-col gap-[0.7em] max-md:flex">
-            <div className="flex items-center gap-[1em]">
-              <PresconLogo className="w-[4.6rem] shrink-0" />
+            <div className="flex items-center gap-[1em] max-sm:gap-[0.6em]">
+              {/* RESPONSIVE FIX: max-sm:w-[3.2rem] — this logo was a flat 4.6rem with no
+                  narrower step, unlike every other placement of the same mark (see
+                  BrandLockup in Wordmark.jsx, which drops to a smaller fixed size below
+                  640px). At 320-375px this block's own width budget is the tightest in
+                  the file — the fixed logo was eating a quarter of the row before the
+                  3-column stat grid beside it got a share, cramming those numbers and
+                  labels. Shrinking it below 640px frees width for the stats without
+                  touching anything visible above md, where the compact block is hidden. */}
+              <PresconLogo className="w-[4.6rem] shrink-0 max-sm:w-[3.2rem]" />
               <span aria-hidden="true" className="h-[1.8em] w-px shrink-0 bg-blade-ink" />
-              <ul className="grid min-w-0 flex-1 grid-cols-3 gap-x-[0.8em]">
+              <ul className="grid min-w-0 flex-1 grid-cols-3 gap-x-[0.8em] max-sm:gap-x-[0.5em]">
                 {numericStats.map((s) => (
                   <li key={s.id} className="flex min-w-0 flex-col gap-[0.15em]">
                     <span className="flex items-baseline gap-[0.1em] text-caption font-bold tabular-nums text-blade-copper">
