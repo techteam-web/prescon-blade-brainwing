@@ -42,12 +42,33 @@ function MenuRow({ section, index, onEnter, onSelect, disabled, active }) {
       data-section={section.id}
       disabled={disabled}
       aria-current={active}
-      onPointerEnter={() => {
+      // pointerType 'touch' only: a tap on iOS Safari synthesizes pointerenter right
+      // before the click, and setHovered here re-renders the crossfading backdrop
+      // mid-gesture — WebKit reads that DOM change as the target moving under the
+      // finger and swallows the click, so the tap just "hovers" and a second tap is
+      // what actually opens the section. Touch has no real hover to preview anyway,
+      // so it skips straight to the click instead of triggering this at all.
+      onPointerEnter={(e) => {
+        if (e.pointerType === 'touch') return;
         onEnter(section.id);
         hover(true);
       }}
-      onPointerLeave={() => hover(false)}
-      onFocus={() => {
+      onPointerLeave={(e) => {
+        if (e.pointerType === 'touch') return;
+        hover(false);
+      }}
+      // A tap also focuses the button, which would otherwise retrigger the same
+      // mid-gesture re-render the pointerType guard above avoids — :focus-visible is
+      // false for a pointer-driven focus, true for real keyboard focus, so this only
+      // fires for the keyboard case onFocus exists for.
+      onFocus={(e) => {
+        let visible = true;
+        try {
+          visible = e.target.matches(':focus-visible');
+        } catch {
+          /* older engines without :focus-visible support — fall back to firing */
+        }
+        if (!visible) return;
         onEnter(section.id);
         hover(true);
       }}

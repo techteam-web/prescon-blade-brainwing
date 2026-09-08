@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Screen } from '../../layout/Screen';
 import { SectionTitle } from './SectionShell';
 import { ArrowIcon, FullscreenIcon, CloseIcon } from '../../components/Icons';
 import { getRender } from '../../data/renders';
 import { GALLERY_RENDERS } from '../../data/gallery';
 import { gsap, useGSAP, Observer, E, durationScale } from '../../gsap/Gsapconfig';
+import { fullscreenSupported } from '../../hooks/useFullscreen';
 
 // The same render carousel as Amenities — see src/data/gallery.js for why
 // GALLERY_RENDERS is a separate export rather than a rename of AMENITY_GALLERY.
@@ -40,15 +42,26 @@ export function Gallery() {
   // this render properly" control, not a re-entry into the app's own LAW-2 fullscreen
   // gate. The browser's UA stylesheet stretches whatever element is fullscreened to fill
   // the viewport on its own; nothing here has to size it by hand.
-  const [fullscreen, setFullscreen] = useState(false);
+  const [nativeFullscreen, setNativeFullscreen] = useState(false);
+  // iOS Safari has no Fullscreen API for a plain element — `requestFullscreen` doesn't
+  // exist on iPhone (only iPadOS gets it), so the button did nothing there. `faked`
+  // covers that case with a fixed, viewport-covering box instead of the real API; see
+  // fullscreenSupported (the same feature detection the app-wide LAW-2 gate uses).
+  const [faked, setFaked] = useState(false);
+  const fullscreen = nativeFullscreen || faked;
 
   useEffect(() => {
-    const onChange = () => setFullscreen(document.fullscreenElement === frame.current);
+    if (!fullscreenSupported) return;
+    const onChange = () => setNativeFullscreen(document.fullscreenElement === frame.current);
     document.addEventListener('fullscreenchange', onChange);
     return () => document.removeEventListener('fullscreenchange', onChange);
   }, []);
 
   const toggleFullscreen = useCallback(() => {
+    if (!fullscreenSupported) {
+      setFaked((v) => !v);
+      return;
+    }
     const el = frame.current;
     if (!el) return;
     if (document.fullscreenElement === el) document.exitFullscreen();
@@ -202,6 +215,47 @@ export function Gallery() {
     );
   };
 
+  // Shared between the in-place frame and the portaled faked-fullscreen one below —
+  // same mat, mask and toggle button either way, just a different box around them.
+  const frameInner = (
+    <>
+      <div className="absolute inset-0 border border-blade-copper/55" />
+      <div data-overflow-ok className="absolute inset-[1.6%] overflow-hidden">
+        {/* The outgoing render sits plainly in the frame. */}
+        {prev !== null && prev !== index && slot(prev, 'out')}
+
+        {/* The incoming one is behind a 12° mask that sweeps across to uncover it.
+            RESPONSIVE FIX: data-overflow-ok added here (and on the mat above) — the
+            mask bleeds sideways by 34dvh (see .blade-reveal in base.css) so the
+            skewed edge never shows a cut corner, and is clipped to this frame's own
+            `overflow: hidden` rather than the viewport now that the render sits in a
+            bordered box instead of full-bleed. Without the flag the dev-only LAW 1
+            overflow guard (useOverflowGuard.js) reports it as a violation. */}
+        <div data-mask data-overflow-ok className="blade-reveal z-[4]">
+          <span aria-hidden="true" className={`blade-wipe-edge ${dir > 0 ? 'left-0' : 'right-0'}`} />
+          <div className="blade-reveal-inner">{slot(index, 'in')}</div>
+        </div>
+      </div>
+
+      {/* The frame itself is the fullscreen target — clicking this expands just the
+          render to fill the screen (the browser's UA stylesheet stretches whatever
+          element is fullscreened, no manual sizing needed here), and the same
+          control closes it again. */}
+      <button
+        type="button"
+        onClick={toggleFullscreen}
+        aria-label={fullscreen ? 'Exit fullscreen' : 'View fullscreen'}
+        className="group/fs absolute right-[2.8em] top-[1.5em] z-[5] flex items-center justify-center bg-blade-black/55 p-[0.55em] text-blade-cream/85 transition-colors duration-200 hover:bg-blade-black/75 hover:text-blade-cream"
+      >
+        {fullscreen ? (
+          <CloseIcon size="1.3em" />
+        ) : (
+          <FullscreenIcon size="1.3em" className="transition-transform duration-200 ease-out group-hover/fs:scale-110" />
+        )}
+      </button>
+    </>
+  );
+
   return (
     <Screen id="gallery" padded={false}>
       <div
@@ -213,6 +267,9 @@ export function Gallery() {
         onKeyDown={(e) => {
           if (e.key === 'ArrowRight') move(1);
           else if (e.key === 'ArrowLeft') move(-1);
+          // The real Fullscreen API exits on Escape on its own; the faked one has no
+          // browser behaviour to lean on, so it needs its own Escape handling.
+          else if (e.key === 'Escape' && faked) setFaked(false);
           else return;
           e.preventDefault();
           e.stopPropagation();
@@ -227,46 +284,33 @@ export function Gallery() {
             exactly like every other screen, instead of eating into the frame's own width
             from a dedicated grid column. */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div
-            ref={frame}
-            className="relative aspect-[3/2] w-[58%] max-h-[70%] bg-blade-black max-md:aspect-[4/3] max-md:w-[92%] max-md:max-h-none"
-          >
-            <div className="absolute inset-0 border border-blade-copper/55" />
-            <div data-overflow-ok className="absolute inset-[1.6%] overflow-hidden">
-              {/* The outgoing render sits plainly in the frame. */}
-              {prev !== null && prev !== index && slot(prev, 'out')}
-
-              {/* The incoming one is behind a 12° mask that sweeps across to uncover it.
-                  RESPONSIVE FIX: data-overflow-ok added here (and on the mat above) — the
-                  mask bleeds sideways by 34dvh (see .blade-reveal in base.css) so the
-                  skewed edge never shows a cut corner, and is clipped to this frame's own
-                  `overflow: hidden` rather than the viewport now that the render sits in a
-                  bordered box instead of full-bleed. Without the flag the dev-only LAW 1
-                  overflow guard (useOverflowGuard.js) reports it as a violation. */}
-              <div data-mask data-overflow-ok className="blade-reveal z-[4]">
-                <span aria-hidden="true" className={`blade-wipe-edge ${dir > 0 ? 'left-0' : 'right-0'}`} />
-                <div className="blade-reveal-inner">{slot(index, 'in')}</div>
-              </div>
-            </div>
-
-            {/* The frame itself is the fullscreen target — clicking this expands just the
-                render to fill the screen (the browser's UA stylesheet stretches whatever
-                element is fullscreened, no manual sizing needed here), and the same
-                control closes it again. */}
-            <button
-              type="button"
-              onClick={toggleFullscreen}
-              aria-label={fullscreen ? 'Exit fullscreen' : 'View fullscreen'}
-              className="group/fs absolute right-[2.8em] top-[1.5em] z-[5] flex items-center justify-center bg-blade-black/55 p-[0.55em] text-blade-cream/85 transition-colors duration-200 hover:bg-blade-black/75 hover:text-blade-cream"
+          {!faked && (
+            <div
+              ref={frame}
+              className="relative aspect-[3/2] w-[58%] max-h-[70%] bg-blade-black max-md:aspect-[4/3] max-md:w-[92%] max-md:max-h-none"
             >
-              {fullscreen ? (
-                <CloseIcon size="1.3em" />
-              ) : (
-                <FullscreenIcon size="1.3em" className="transition-transform duration-200 ease-out group-hover/fs:scale-110" />
-              )}
-            </button>
-          </div>
+              {frameInner}
+            </div>
+          )}
         </div>
+
+        {/* Faked fullscreen is portaled to <body> rather than just switched to `fixed`
+            in place — this screen sits deep inside GSAP's transition tree, and any
+            ancestor there with a live transform (routine for it, even at rest) becomes
+            a containing block for `position: fixed`, trapping it exactly the way a
+            `filter` would (see the gate's own sibling-of-frozen-layer comment in
+            FullscreenGate.jsx — same class of bug). A portal sidesteps every such
+            ancestor instead of auditing all of them. */}
+        {faked &&
+          createPortal(
+            <div
+              ref={frame}
+              className="fixed inset-0 z-[210] bg-blade-black"
+            >
+              {frameInner}
+            </div>,
+            document.body,
+          )}
 
         {/* Chrome overlay: title top-left, counter and arrows bottom-right — the same
             grid every full-bleed screen in the app uses, just with nothing behind it now
