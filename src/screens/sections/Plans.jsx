@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Screen } from '../../layout/Screen';
 import { SectionTitle } from './SectionShell';
 import { TowerElevation } from '../../features/plans/TowerElevation';
@@ -166,6 +167,78 @@ function ComparePrompt({ innerRef, picks, onRemove, onCompare, onCancel }) {
   );
 }
 
+/* ---------------------------------------------------------- expanded plate view */
+
+// The "maximise" state for a floor plate. Portaled to <body>, never `fixed` in place:
+// this screen sits inside GSAP's transition tree and an ancestor there with a live
+// transform becomes the containing block for `position: fixed`, which would pin this to
+// the panel it is supposed to escape. Same reasoning as Gallery's overlay and the
+// fullscreen gate's sibling-of-frozen-layer placement.
+//
+// z-190 is deliberate: above everything in the app, below the LAW-2 gate at z-200, so
+// losing fullscreen while a plate is expanded still puts the gate on top.
+function PlanFullscreen({ zone, onClose, onSelectUnit }) {
+  const plan = getPlan(zone.plan);
+  const planSvg = getPlanSvg(zone.plan);
+  const plate = getPlate(zone.plan);
+  if (!plan) return null;
+
+  // Same guard the in-panel card uses — these two plates have no traced vector overlay.
+  const interactive = planSvg && zone.id !== 'f19' && zone.id !== 'f15';
+
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${plate?.label ?? zone.label} — architectural plan`}
+      className="fixed inset-0 z-[190] flex flex-col gap-[0.9em] bg-blade-black-2 p-[1.4em]"
+    >
+      <div className="flex shrink-0 items-baseline gap-[1.4em] border-b border-blade-copper/30 pb-[0.7em]">
+        <h2 className="text-subhead font-medium uppercase tracking-[0.06em] text-blade-cream">
+          {zone.label}
+        </h2>
+      </div>
+
+      <div className="relative min-h-0 flex-1 p-[2%]">
+        {/* The unpadded inner box the raster and the vector overlay both size against —
+            `absolute inset-0` on the overlay resolves to the PADDING edge, so without
+            this every unit shape would drift off the drawing beneath it. */}
+        <div className="relative h-full w-full">
+          <img
+            src={plan.src}
+            srcSet={plan.srcSet}
+            sizes="100vw"
+            width={plan.width}
+            height={plan.height}
+            alt={`${plate?.label ?? zone.label} — architectural plan`}
+            decoding="async"
+            className="h-full w-full object-contain"
+          />
+          {interactive ? <FloorPlanOverlay src={planSvg} onSelectUnit={onSelectUnit} /> : null}
+        </div>
+        {interactive ? (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 text-center text-caption uppercase tracking-[0.2em] text-blade-cream/50"
+          >
+            Click on any office
+          </span>
+        ) : null}
+      </div>
+
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Exit fullscreen"
+        className="absolute right-[1.1em] top-[0.75em] z-[1] flex items-center justify-center bg-blade-black/55 p-[0.55em] text-blade-cream/85 transition-colors duration-200 hover:bg-blade-black/75 hover:text-blade-cream"
+      >
+        <CloseIcon size="1.2em" />
+      </button>
+    </div>,
+    document.body,
+  );
+}
+
 /* ------------------------------------------------------------------- the screen */
 
 export function Plans() {
@@ -194,25 +267,34 @@ export function Plans() {
 
   usePreloadPlans();
 
-  // The plan panel itself is the fullscreen target, same trick as Gallery's render
-  // view — the browser's UA stylesheet stretches whatever element is fullscreened to
-  // fill the viewport, so the currently shown plate just gets more room for free. The
-  // RERA table is hidden while fullscreen (see the `fullscreen &&` below) since the
-  // point is to see the plan itself, not the numbers next to it.
-  const [planFullscreen, setPlanFullscreen] = useState(false);
+  // Expanding a plate is a viewport-covering overlay (PlanFullscreen, below), not
+  // Element.requestFullscreen(). This used to call the real API on the plan panel and
+  // did nothing at all in Safari or on iOS — see the long note in Gallery.jsx for why
+  // a nested fullscreen request is the wrong tool here on every engine, not just
+  // WebKit: the app is already fullscreen by the time this screen is reachable.
+  //
+  // The panel itself is NOT what gets moved. It is the scope for the plate-wipe shader
+  // and the compare-mode timeline, so portaling it out of the tree — the fix Gallery
+  // uses — would take those with it. The overlay re-renders just the shown plate
+  // instead: the drawing, its clickable unit overlay, and nothing else. The RERA table
+  // is deliberately left behind; the point of expanding is to read the plan, not the
+  // numbers beside it.
+  //
+  // State is the zone the expansion was opened FOR, not a boolean: picking another
+  // floor or entering compare mode then invalidates it on its own, with no effect
+  // chasing `shown` and no stale overlay reappearing when compare mode closes again.
+  const [expanded, setExpanded] = useState(null);
 
   useEffect(() => {
-    const onChange = () => setPlanFullscreen(document.fullscreenElement === frame.current);
-    document.addEventListener('fullscreenchange', onChange);
-    return () => document.removeEventListener('fullscreenchange', onChange);
-  }, []);
-
-  const togglePlanFullscreen = useCallback(() => {
-    const el = frame.current;
-    if (!el) return;
-    if (document.fullscreenElement === el) document.exitFullscreen();
-    else el.requestFullscreen?.().catch(() => {});
-  }, []);
+    if (expanded === null) return;
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      e.stopPropagation();
+      setExpanded(null);
+    };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [expanded]);
 
   // Hover only highlights the band and the label chip — the panel on the right is a
   // click-only choice, so sweeping the pointer up the tower never thrashes it.
@@ -519,6 +601,8 @@ export function Plans() {
   const chip = ZONE_BY_ID[hovered ?? locked];
   const chipPlate = chip?.plan ? getPlate(chip.plan) : null;
   const shownHasPlan = Boolean(ZONE_BY_ID[shown]?.plan);
+  // Expanded only counts while it still matches what the panel is showing.
+  const planFullscreen = expanded !== null && expanded === shown && shownHasPlan && !comparing;
 
   const zoneList = useMemo(() => (comparing ? COMPARABLE : TOWER_ZONES), [comparing]);
 
@@ -688,11 +772,9 @@ export function Plans() {
                     </div>
                     <span
                       aria-hidden="true"
-                      className={`block h-px w-full shrink-0 bg-blade-copper/30 max-md:hidden ${
-                        planFullscreen ? 'hidden' : ''
-                      }`}
+                      className="block h-px w-full shrink-0 bg-blade-copper/30 max-md:hidden"
                     />
-                    <ReraTable plate={plate} className={`max-md:hidden ${planFullscreen ? 'hidden' : ''}`} />
+                    <ReraTable plate={plate} className="max-md:hidden" />
                   </>
                 ) : (
                   <div className="row-span-2 min-h-0">
@@ -751,13 +833,13 @@ export function Plans() {
 
           <PlateWipeCanvas ref={wipe} />
 
-          {/* Fullscreen just the plan panel — same requestFullscreen trick as Gallery's
-              render view. Only offered when a real floor plate is on screen; the tower
-              prompt and amenity cards have nothing worth expanding. */}
+          {/* Expands the plate over the viewport — see PlanFullscreen. Only offered when
+              a real floor plate is on screen; the tower prompt and amenity cards have
+              nothing worth expanding. */}
           {shownHasPlan && !comparing ? (
             <button
               type="button"
-              onClick={togglePlanFullscreen}
+              onClick={() => setExpanded((v) => (v === null ? shown : null))}
               aria-label={planFullscreen ? 'Exit fullscreen' : 'View plan fullscreen'}
               className="group/pfs absolute right-[1.1em] top-[0.75em] z-[60] flex items-center justify-center bg-blade-black/55 p-[0.55em] text-blade-cream/85 transition-colors duration-200 hover:bg-blade-black/75 hover:text-blade-cream"
             >
@@ -792,6 +874,20 @@ export function Plans() {
           onEdit={() => setCompare('picking')}
         />
       </div>
+
+      {/* Opening a unit's 360 view from the expanded plate closes the expansion first —
+          UnitPanoramaViewer renders inside this screen at z-100, so it would otherwise
+          come up UNDER the portaled overlay, which sits at the body level. */}
+      {planFullscreen ? (
+        <PlanFullscreen
+          zone={ZONE_BY_ID[shown]}
+          onClose={() => setExpanded(null)}
+          onSelectUnit={(unitId, bearingDeg) => {
+            setExpanded(null);
+            onOpenView(shown, unitId, bearingDeg);
+          }}
+        />
+      ) : null}
 
       <UnitPanoramaViewer
         view={activeView}

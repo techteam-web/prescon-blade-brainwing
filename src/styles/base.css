@@ -325,7 +325,25 @@
     /* Same cut as the nav buttons (top-right sharp, bottom-right chamfered on a
        full-height diagonal) — one shape across every EnterPortal size, not a rectangle
        here and a cut corner there. `--cut` scales per size below. */
-    clip-path: polygon(0 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%);
+    /* The polygon bleeds 1px past the top, left and bottom edges rather than landing exactly
+       on them. WebKit rasterises clip-path in device pixels and rounds the boundary; an
+       edge that sits exactly ON 0%/100% of a box whose height is fractional (this one's
+       is — the padding is in `em`) rounds inwards and takes the 1px border with it, so
+       Safari dropped the bottom hairline entirely while Chrome kept it. Which edge
+       disappears depends on the element's subpixel offset, which is why it only showed
+       up after entering fullscreen: the viewport resize moved the button onto a
+       different fraction. The bleed puts the cut outside the painted border, so no
+       rounding decision can ever fall on it.
+
+       It also makes the diagonal match .enter-portal-edge exactly — that layer is
+       inset by -1px, so its diagonal already ran from -1px to 100%+1px while this one
+       ran 0 → 100%, leaving the two very slightly out of parallel. */
+    clip-path: polygon(
+      -1px -1px,
+      100% -1px,
+      calc(100% - var(--cut)) calc(100% + 1px),
+      -1px calc(100% + 1px)
+    );
   }
 
   /* The real `border` above draws the top, left and bottom edges fine — clip-path only

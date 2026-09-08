@@ -6,7 +6,6 @@ import { ArrowIcon, FullscreenIcon, CloseIcon } from '../../components/Icons';
 import { getRender } from '../../data/renders';
 import { GALLERY_RENDERS } from '../../data/gallery';
 import { gsap, useGSAP, Observer, E, durationScale } from '../../gsap/Gsapconfig';
-import { fullscreenSupported } from '../../hooks/useFullscreen';
 
 // The same render carousel as Amenities — see src/data/gallery.js for why
 // GALLERY_RENDERS is a separate export rather than a rename of AMENITY_GALLERY.
@@ -33,40 +32,46 @@ export function Gallery() {
   const [view, setView] = useState({ index: 0, prev: null, dir: 1, token: 0 });
   const { index, prev, dir, token } = view;
   const root = useRef(null);
-  const frame = useRef(null);
   const busy = useRef(false);
   const total = RENDERS.length;
   const active = RENDERS[index];
 
-  // The frame itself is the fullscreen target, not the whole page — this is a "look at
-  // this render properly" control, not a re-entry into the app's own LAW-2 fullscreen
-  // gate. The browser's UA stylesheet stretches whatever element is fullscreened to fill
-  // the viewport on its own; nothing here has to size it by hand.
-  const [nativeFullscreen, setNativeFullscreen] = useState(false);
-  // iOS Safari has no Fullscreen API for a plain element — `requestFullscreen` doesn't
-  // exist on iPhone (only iPadOS gets it), so the button did nothing there. `faked`
-  // covers that case with a fixed, viewport-covering box instead of the real API; see
-  // fullscreenSupported (the same feature detection the app-wide LAW-2 gate uses).
-  const [faked, setFaked] = useState(false);
-  const fullscreen = nativeFullscreen || faked;
+  // "Maximise" is a viewport-covering overlay, NOT Element.requestFullscreen().
+  //
+  // It used to be the real API, and that was wrong on every engine for the same reason
+  // it was broken on WebKit: by the time anyone can reach this screen the app is ALREADY
+  // in fullscreen — LAW 2's gate fullscreens <html> and freezes everything behind a
+  // modal the moment fullscreen is lost, so the gallery is only ever interactive while
+  // the viewport is the whole display. A second, nested request therefore buys no extra
+  // pixels; all it does is hand the browser a case the engines disagree about:
+  //
+  //   • WebKit does not honour a fullscreen request for a descendant while an ancestor
+  //     is already the fullscreen element — it fails, the `.catch(() => {})` below
+  //     swallowed it, and the button did nothing. That is the Safari bug.
+  //   • Even where it is honoured, WebKit's exitFullscreen() pops the WHOLE stack
+  //     rather than one level, so closing the maximised render dropped the app out of
+  //     LAW-2 fullscreen and put the gate back up over the gallery.
+  //   • iOS Safari has no element Fullscreen API at all, on any version.
+  //
+  // One overlay covers all three, behaves identically everywhere, and needs no feature
+  // detection or vendor prefixes.
+  const [fullscreen, setFullscreen] = useState(false);
 
+  const toggleFullscreen = useCallback(() => setFullscreen((v) => !v), []);
+
+  // Escape closes it. The keydown handler on the carousel root can't be relied on here:
+  // the overlay is portaled to <body>, so whether a key event reaches that root depends
+  // on where focus happens to be, and on a touch device nothing focuses it at all.
   useEffect(() => {
-    if (!fullscreenSupported) return;
-    const onChange = () => setNativeFullscreen(document.fullscreenElement === frame.current);
-    document.addEventListener('fullscreenchange', onChange);
-    return () => document.removeEventListener('fullscreenchange', onChange);
-  }, []);
-
-  const toggleFullscreen = useCallback(() => {
-    if (!fullscreenSupported) {
-      setFaked((v) => !v);
-      return;
-    }
-    const el = frame.current;
-    if (!el) return;
-    if (document.fullscreenElement === el) document.exitFullscreen();
-    else el.requestFullscreen?.().catch(() => {});
-  }, []);
+    if (!fullscreen) return;
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      e.stopPropagation();
+      setFullscreen(false);
+    };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [fullscreen]);
 
   // The arrow keys below only fire while this element has focus, and nothing put focus
   // here otherwise — a mouse click did on a desktop that happened to land inside the
@@ -215,8 +220,8 @@ export function Gallery() {
     );
   };
 
-  // Shared between the in-place frame and the portaled faked-fullscreen one below —
-  // same mat, mask and toggle button either way, just a different box around them.
+  // Shared between the in-place frame and the portaled maximised one below — same mat,
+  // mask and toggle button either way, just a different box around them.
   const frameInner = (
     <>
       <div className="absolute inset-0 border border-blade-copper/55" />
@@ -237,9 +242,7 @@ export function Gallery() {
         </div>
       </div>
 
-      {/* The frame itself is the fullscreen target — clicking this expands just the
-          render to fill the screen (the browser's UA stylesheet stretches whatever
-          element is fullscreened, no manual sizing needed here), and the same
+      {/* Expands the render to cover the viewport (see toggleFullscreen), and the same
           control closes it again. */}
       <button
         type="button"
@@ -267,9 +270,7 @@ export function Gallery() {
         onKeyDown={(e) => {
           if (e.key === 'ArrowRight') move(1);
           else if (e.key === 'ArrowLeft') move(-1);
-          // The real Fullscreen API exits on Escape on its own; the faked one has no
-          // browser behaviour to lean on, so it needs its own Escape handling.
-          else if (e.key === 'Escape' && faked) setFaked(false);
+          else if (e.key === 'Escape' && fullscreen) setFullscreen(false);
           else return;
           e.preventDefault();
           e.stopPropagation();
@@ -284,9 +285,8 @@ export function Gallery() {
             exactly like every other screen, instead of eating into the frame's own width
             from a dedicated grid column. */}
         <div className="absolute inset-0 flex items-center justify-center">
-          {!faked && (
+          {!fullscreen && (
             <div
-              ref={frame}
               className="relative aspect-[3/2] w-[58%] max-h-[70%] bg-blade-black max-md:aspect-[4/3] max-md:w-[92%] max-md:max-h-none"
             >
               {frameInner}
@@ -294,18 +294,17 @@ export function Gallery() {
           )}
         </div>
 
-        {/* Faked fullscreen is portaled to <body> rather than just switched to `fixed`
+        {/* The maximised view is portaled to <body> rather than just switched to `fixed`
             in place — this screen sits deep inside GSAP's transition tree, and any
             ancestor there with a live transform (routine for it, even at rest) becomes
             a containing block for `position: fixed`, trapping it exactly the way a
             `filter` would (see the gate's own sibling-of-frozen-layer comment in
             FullscreenGate.jsx — same class of bug). A portal sidesteps every such
             ancestor instead of auditing all of them. */}
-        {faked &&
+        {fullscreen &&
           createPortal(
             <div
-              ref={frame}
-              className="fixed inset-0 z-[210] bg-blade-black"
+              className="fixed inset-0 z-[190] bg-blade-black"
             >
               {frameInner}
             </div>,
