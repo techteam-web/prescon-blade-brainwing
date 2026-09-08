@@ -445,6 +445,16 @@
     transform: none;
   }
 
+  /* Disabled, in the rail: the frame and its glass stay exactly as they are and only
+     the label softens. See the note on the className in Primitives.jsx for why the
+     landing CTA's whole-control fade is wrong here — these two are disabled on every
+     arrival, not just on a click, so anything that touches the panel reads as a paint
+     bug rather than as feedback. */
+  .enter-portal--sm:disabled .enter-portal-label {
+    opacity: 0.5;
+    transition: opacity 0.3s ease-out;
+  }
+
   /* Compare mode's selection badge. It lives inside the tower, which GSAP scales, so it
      undoes that scale from --tower-scale — set on the tower by the same tween. */
   .zone-badge {
