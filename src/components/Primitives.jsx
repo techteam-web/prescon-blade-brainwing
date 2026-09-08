@@ -176,11 +176,10 @@ export function EnterPortal({
       // The 40% disabled fade is for the LANDING CTA only — there it acknowledges the
       // click you just made while the intro takes the nav lock. The rail's MENU/HOME
       // are disabled for the whole of every transition, arrivals included, where the
-      // visitor has clicked nothing; fading the entire control there took its dark
-      // glass panel down with it and the buttons read as unstyled text for two seconds
-      // before "gaining a background" when the lock released. The sm variant dims only
-      // its label instead (see .enter-portal--sm:disabled in base.css), so the rail's
-      // ground is constant.
+      // visitor has clicked nothing; fading the control there took its dark glass panel
+      // down with it, so the buttons read as unstyled text for two seconds and then
+      // "gained a background" when the lock released. The sm variant changes nothing at
+      // all while disabled — see the note in base.css.
       className={`enter-portal group ${
         nav ? 'enter-portal--sm' : 'disabled:opacity-40'
       } ${className}`}

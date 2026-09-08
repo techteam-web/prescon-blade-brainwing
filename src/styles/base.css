@@ -445,15 +445,18 @@
     transform: none;
   }
 
-  /* Disabled, in the rail: the frame and its glass stay exactly as they are and only
-     the label softens. See the note on the className in Primitives.jsx for why the
-     landing CTA's whole-control fade is wrong here — these two are disabled on every
-     arrival, not just on a click, so anything that touches the panel reads as a paint
-     bug rather than as feedback. */
-  .enter-portal--sm:disabled .enter-portal-label {
-    opacity: 0.5;
-    transition: opacity 0.3s ease-out;
-  }
+  /* Disabled, in the rail: NOTHING changes. Not the frame, not the glass, not the
+     label. See the note on the className in Primitives.jsx for why the landing CTA's
+     whole-control fade is wrong here — MENU/HOME are disabled on every arrival, not
+     just on a click, so any state they take on for the duration of a transition is a
+     change the visitor never asked for and then watches undo itself.
+
+     Dimming just the label was tried and is still wrong: it lands the same two-second
+     dark-then-light flick on the type instead of the panel. (It was also declared with
+     its transition inside this `:disabled` rule, so the fade applied on the way IN and
+     the restore snapped on the way OUT — but even done correctly, a control that
+     visibly recolours itself on arrival is the thing being complained about.) The rail
+     is furniture: it is painted once and it holds still. */
 
   /* Compare mode's selection badge. It lives inside the tower, which GSAP scales, so it
      undoes that scale from --tower-scale — set on the tower by the same tween. */
