@@ -33,3 +33,6 @@ dist-ssr
 # Everything under public/assets/ IS committed — the app must build without the
 # original 127 MB render folder or the 46 MB source PDF.
 .cache/
+
+# Local Supabase CLI state
+supabase/.temp/

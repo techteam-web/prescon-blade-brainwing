@@ -52,6 +52,12 @@ export const GALLERY_CAPTIONS = {
   'blade-03': 'Sky Lounge Office',
   'blade-04':'Arrival Plaza',
   'blade-08' : 'Library',
+  'view-01' : 'West Facade View',
+  'view-02': 'West Facade View',
+  'view-03' : 'Worm Eye View',
+  'view-04' : 'Multi-Level Ramp Parking',
+  'view-05' : '12th Floor Upper Retreat',
+  'view-06' : 'Birds Eye View',
 };
 
 // Gallery slides that are a real photograph, not a 3D render — the plate under these
@@ -91,6 +97,13 @@ export const GALLERY_RENDERS = [
   'blade-03',
   'blade-04',
   'blade-08',
+  'view-01',
+  'view-02',
+  'view-03',
+  'view-04',
+  'view-05',
+  'view-06',
+
 ];
 
 // Features. One backdrop per slide, in slide order. Every one is landscape, because a

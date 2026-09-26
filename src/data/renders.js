@@ -436,6 +436,60 @@ export const RENDERS = [
     "lqip": "data:image/webp;base64,UklGRpAAAABXRUJQVlA4IIQAAAAQBgCdASoYACgAPuFco02opSMiNVv4ARAcCUATpmjpTwQPvF4EY3DavOsBFyPKudQ7K7snAg3NFkAA7SfoXqfn4uHgVcOnrHQooOrb+yL+suhDQbd8RtP0fFq+U9KHKOhZs8rD74AcKG1IALIYKtPYmd5bRM7hhQDLnbM4k5tvX9mAAAA=",
     "alt": "The Blade by Prescon — artistic impression"
   },
+  {
+    "id": "view-01",
+    "src": "/assets/renders/view-01-1920.webp",
+    "srcSet": "/assets/renders/view-01-1280.webp 1280w, /assets/renders/view-01-1920.webp 1920w, /assets/renders/view-01-2560.webp 2560w",
+    "width": 3576,
+    "height": 6000,
+    "lqip": "data:image/webp;base64,UklGRogAAABXRUJQVlA4IHwAAACQBQCdASoYACgAPuVeo02pJSMmNVv4ASAciUAQUUDYOW6JDdQCbAAXFeMIXaRv6hoT+xT+AADtJ+hep+f/i7Ohi/RTf8FtVtn2R0eapxfOHJcS4xPXxQdKRqVPECK0bqqF4AlrYTH3xUiMTEIb4wNqYUf7WwwuF7OXQAAA",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "view-02",
+    "src": "/assets/renders/view-02-1920.webp",
+    "srcSet": "/assets/renders/view-02-1280.webp 1280w, /assets/renders/view-02-1920.webp 1920w, /assets/renders/view-02-2560.webp 2560w",
+    "width": 3577,
+    "height": 6000,
+    "lqip": "data:image/webp;base64,UklGRo4AAABXRUJQVlA4IIIAAAAwBgCdASoYACgAPuVYp02pJKOiNVgMASAciWMAnTlBVcIb6HTr9meLup7IS2UGGqGiAxyxEMRGRzHgAPxMZi/mIYis+Fohx0s1mUeTloEDyLp2GGPHJNMTAUvyESdsRunua51brrgCWKqpsX/qC7ipNYjXh47uuZgCeL18tMBAVpAA",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "view-03",
+    "src": "/assets/renders/view-03-1920.webp",
+    "srcSet": "/assets/renders/view-03-1280.webp 1280w, /assets/renders/view-03-1920.webp 1920w, /assets/renders/view-03-2560.webp 2560w",
+    "width": 6000,
+    "height": 3159,
+    "lqip": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAADwAwCdASoYAA0APu1iqU2ppaOiMAgBMB2JQBYdg28D3+HoG55O6upAAP6vbYFFYN+mS4ipgNQRbH0DTOMCektXS6vYc107OL7RmXgAAAA=",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "view-04",
+    "src": "/assets/renders/view-04-1920.webp",
+    "srcSet": "/assets/renders/view-04-1280.webp 1280w, /assets/renders/view-04-1920.webp 1920w, /assets/renders/view-04-2560.webp 2560w",
+    "width": 6000,
+    "height": 4918,
+    "lqip": "data:image/webp;base64,UklGRnQAAABXRUJQVlA4IGgAAAAQBQCdASoYABQAPuFcp02opSOiMAwBEBwJQBUk6FhWFtglZuOgHyi4Nh6VqyYxFsFAAP7DpeqqcLhSsheTiOeBbFGhjQCzj4yG2WUl/hks2afOCVJJ8K2mtQ1Aw8BGWi5cKWkgfigAAA==",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "view-05",
+    "src": "/assets/renders/view-05-1920.webp",
+    "srcSet": "/assets/renders/view-05-1280.webp 1280w, /assets/renders/view-05-1920.webp 1920w, /assets/renders/view-05-2560.webp 2560w",
+    "width": 6000,
+    "height": 2500,
+    "lqip": "data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAACQAwCdASoYAAoAPu1qrU8ppiQiMAgBMB2JZQC+SBW4ocmkeSUAAP7JDKvY26mVyh/2CrCtOtqsH4CxKuMknuNyNPTjT9COLGHcAA==",
+    "alt": "The Blade by Prescon — artistic impression"
+  },
+  {
+    "id": "view-06",
+    "src": "/assets/renders/view-06-1920.webp",
+    "srcSet": "/assets/renders/view-06-1280.webp 1280w, /assets/renders/view-06-1920.webp 1920w, /assets/renders/view-06-2560.webp 2560w",
+    "width": 3960,
+    "height": 6000,
+    "lqip": "data:image/webp;base64,UklGRooAAABXRUJQVlA4IH4AAABwBQCdASoYACQAPuVaqE2pJKQiNVgMASAciWMAxzAWWkgq4i2wYCeYsRjOGGAzuCfkWX6AAP6uqdNkQ+gRuFLQm6X6qn4vsJ/IxULRCFquIbBZTx/F61MUOXfDtGq3xis6aodaxExniao/D6Hxyy1p14Y5Thy64LdWQzesAAA=",
+    "alt": "The Blade by Prescon — artistic impression"
+  }
 ];
 
 export const RENDER_BY_ID = Object.fromEntries(RENDERS.map((r) => [r.id, r]));
