@@ -32,19 +32,8 @@ export const AMENITY_PANEL_BY_RENDER = {
 // site-context shot), the title is a plain, factual description of the shot itself —
 // never marketing copy — same rule as content.js's own LAW 4.
 export const GALLERY_CAPTIONS = {
-  'new8':'Grand Entrance Lobby',
-  'new86':'Reception & Lift Screening Area',
-  'new87': 'Ground Floor Lounge',
-  'new85': 'Reception & Lift Screening Area',
-  'newsep4': 'Crown Facade',
-  'newsep3': 'Front Elevation View',
-  'new81': 'Front Elevation View',
-  'newsep2': 'Front Elevation View',
-  'newsep6': 'West Facade View',
-  'newsep1': 'West Facade View',
-  'newsep9': 'West Facade View',
-   'newsep7': 'Silhouette Glass Facade',
-    'newsep8': 'Signature Entrance Facade',
+ 
+
     'blade-05' : 'Garden Court',
   'blade-06' : ' Members Lounge ',
   'blade-07': 'Indoor Cafeteria',
@@ -58,6 +47,17 @@ export const GALLERY_CAPTIONS = {
   'view-04' : 'Multi-Level Ramp Parking',
   'view-05' : '12th Floor Upper Retreat',
   'view-06' : 'Birds Eye View',
+  'restaurant': "Restaurant",
+  'screenroom': "Screen Room",
+  '1-view-1': "West Facade View",
+  '2-view-2': "West Facade View",
+  '3-view-3': "Worm's Eye View",
+  '4-view-4': "Multi-Level Ramp Parking",
+  '5-view-5': "12th Floor Upper Retreat",
+  '6-view-6': "Birds Eye View",
+  '7-view-7': "North View Elevation",
+  '8-view-8': "Arrival Lounge",
+  '9-view-9': "Water Feature"
 };
 
 // Gallery slides that are a real photograph, not a 3D render — the plate under these
@@ -70,26 +70,25 @@ export const GALLERY_STOCK_IDS = new Set([
   'blade-03',
   'blade-04',
   'blade-08',
+
 ]);
 
 // Gallery menu entry. Independent of AMENITY_GALLERY above — editing one must never
 // change the other — so it carries its own full running order, unaffected by whatever
 // the Amenities screen curates.
 export const GALLERY_RENDERS = [
+    '1-view-1',
+  '2-view-2',
+  '3-view-3',
+  '4-view-4',
+  '5-view-5',
+  '6-view-6',
+  '7-view-7',
+  '8-view-8',
+  '9-view-9',
+  'restaurant',
+  'screenroom',
 
-  'new8',
-  'new86',
-  'new87',
-  'new85',
-  'newsep4',
-  'newsep3',
-  'new81',
-  'newsep2',
- 'newsep6',
-  'newsep1',
-  'newsep9',
-  'newsep7',
-  'newsep8',
   'blade-05',
   'blade-06',
   'blade-07',
@@ -97,12 +96,7 @@ export const GALLERY_RENDERS = [
   'blade-03',
   'blade-04',
   'blade-08',
-  'view-01',
-  'view-02',
-  'view-03',
-  'view-04',
-  'view-05',
-  'view-06',
+ 
 
 ];
 
