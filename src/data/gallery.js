@@ -89,13 +89,7 @@ export const GALLERY_RENDERS = [
   'restaurant',
   'screenroom',
 
-  'blade-05',
-  'blade-06',
-  'blade-07',
-  'blade-09',
-  'blade-03',
-  'blade-04',
-  'blade-08',
+  
  
 
 ];
