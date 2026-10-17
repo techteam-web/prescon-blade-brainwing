@@ -33,6 +33,7 @@ export function Gallery() {
   const { index, prev, dir, token } = view;
   const root = useRef(null);
   const busy = useRef(false);
+  const frameEl = useRef(null); // the render mat — lives in the portal while maximised
   const total = RENDERS.length;
   const active = RENDERS[index];
 
@@ -59,20 +60,6 @@ export function Gallery() {
 
   const toggleFullscreen = useCallback(() => setFullscreen((v) => !v), []);
 
-  // Escape closes it. The keydown handler on the carousel root can't be relied on here:
-  // the overlay is portaled to <body>, so whether a key event reaches that root depends
-  // on where focus happens to be, and on a touch device nothing focuses it at all.
-  useEffect(() => {
-    if (!fullscreen) return;
-    const onKey = (e) => {
-      if (e.key !== 'Escape') return;
-      e.stopPropagation();
-      setFullscreen(false);
-    };
-    document.addEventListener('keydown', onKey, true);
-    return () => document.removeEventListener('keydown', onKey, true);
-  }, [fullscreen]);
-
   // The arrow keys below only fire while this element has focus, and nothing put focus
   // here otherwise — a mouse click did on a desktop that happened to land inside the
   // frame, but a laptop that only ever used the keyboard (or arrived via the rail /
@@ -96,6 +83,26 @@ export function Gallery() {
     },
     [total],
   );
+
+  // Escape closes it. The keydown handler on the carousel root can't be relied on here:
+  // the overlay is portaled to <body>, so whether a key event reaches that root depends
+  // on where focus happens to be, and on a touch device nothing focuses it at all.
+  useEffect(() => {
+    if (!fullscreen) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        setFullscreen(false);
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        // Focus may sit on the portaled overlay, outside the carousel root's handler.
+        e.stopPropagation();
+        e.preventDefault();
+        move(e.key === 'ArrowRight' ? 1 : -1);
+      }
+    };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [fullscreen, move]);
 
   // Swipe, and the arrow keys. lockAxis keeps a vertical flick from being read as a
   // page change, which on a phone is most of what "it goes everywhere" was.
@@ -134,12 +141,15 @@ export function Gallery() {
 
   useGSAP(
     () => {
-      const el = root.current;
+      const el = frameEl.current;
       if (!el) return;
       const mask = el.querySelector('[data-mask]');
       const incoming = el.querySelector('[data-slot="in"] [data-sharp]');
       const outgoing = el.querySelector('[data-slot="out"]');
-      if (!mask) return;
+      if (!mask) {
+        busy.current = false;
+        return;
+      }
 
       const d = SWEEP * durationScale();
       const from = dir > 0 ? 120 : -120;
@@ -225,7 +235,7 @@ export function Gallery() {
   const frameInner = (
     <>
       <div className="absolute inset-0 border border-blade-copper/55" />
-      <div data-overflow-ok className="absolute inset-[1.6%] overflow-hidden">
+      <div ref={frameEl} data-overflow-ok className="absolute inset-[1.6%] overflow-hidden">
         {/* The outgoing render sits plainly in the frame. */}
         {prev !== null && prev !== index && slot(prev, 'out')}
 
@@ -256,6 +266,28 @@ export function Gallery() {
           <FullscreenIcon size="1.3em" className="transition-transform duration-200 ease-out group-hover/fs:scale-110" />
         )}
       </button>
+
+      {/* Previous / next while maximised — the caption plate's arrows are hidden then. */}
+      {fullscreen && (
+        <>
+          <button
+            type="button"
+            onClick={() => move(-1)}
+            aria-label="Previous render"
+            className="group/n absolute left-[1.5em] top-1/2 z-[5] -translate-y-1/2 bg-blade-black/55 p-[0.8em] text-blade-cream/85 transition-colors duration-200 hover:bg-blade-black/75 hover:text-blade-cream"
+          >
+            <ArrowIcon size="1.6em" className="rotate-180 transition-transform duration-300 ease-out group-hover/n:-translate-x-[4px]" />
+          </button>
+          <button
+            type="button"
+            onClick={() => move(1)}
+            aria-label="Next render"
+            className="group/n absolute right-[1.5em] top-1/2 z-[5] -translate-y-1/2 bg-blade-black/55 p-[0.8em] text-blade-cream/85 transition-colors duration-200 hover:bg-blade-black/75 hover:text-blade-cream"
+          >
+            <ArrowIcon size="1.6em" className="transition-transform duration-300 ease-out group-hover/n:translate-x-[4px]" />
+          </button>
+        </>
+      )}
     </>
   );
 
